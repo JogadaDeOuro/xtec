@@ -243,6 +243,24 @@ export default function NovaPropostaPage() {
   const garantiaValor = garantiaEstendida ? calcExtendedWarranty(valorFinal) : 0;
   const totalGeral = valorFinal + garantiaValor;
 
+  const buildProposalInput = (status: 'rascunho' | 'enviada' | 'aceita'): ProposalInput => ({
+    clientId: client?.id || '',
+    clientName: client?.name || '',
+    systemType,
+    potenciaKwp: potencia,
+    valorSistema: valorFinal,
+    producaoEstimada: producao,
+    economiaMensal,
+    economiaAnual,
+    paybackAnos: paybackExato,
+    status,
+    condicaoPagamento: getCondicaoLabel(condicao),
+    desconto,
+    consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
+    garantiaEstendida,
+    garantiaEstendidaValor: garantiaValor,
+  });
+
 
   const totalEtapas = etapasPersonalizadas.reduce((s, e) => s + (e.valor || 0), 0);
   const restantePersonalizada = valorFinal - totalEtapas;
