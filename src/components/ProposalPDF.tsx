@@ -113,18 +113,27 @@ export function ProposalPDF(props: ProposalPDFProps) {
       <style>${PRINT_PAGE_RULE}${buildDocumentCss(config)}</style></head>
       <body><div class="pdoc">${content.innerHTML}</div></body></html>`);
     win.document.close();
-    setTimeout(() => win.print(), 600);
+    const start = () => setTimeout(() => win.print(), 300);
+    const fonts = (win.document as Document & { fonts?: FontFaceSet }).fonts;
+    if (fonts?.ready) fonts.ready.then(start).catch(start);
+    else start();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto bg-muted/40">
+      <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-muted/40">
         <DialogHeader className="no-print">
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex flex-wrap items-center justify-between gap-2">
             <span>Pré-visualização A4</span>
-            <Button onClick={handlePrint} className="gap-2 mr-8">
-              <Printer className="h-4 w-4" /> Gerar PDF / Imprimir
-            </Button>
+            <div className="flex items-center gap-2 mr-8">
+              <Button onClick={handleDownload} disabled={downloading} className="gap-2">
+                {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {downloading ? 'Gerando PDF...' : 'Baixar PDF'}
+              </Button>
+              <Button variant="outline" onClick={handlePrint} className="gap-2">
+                <Printer className="h-4 w-4" /> Imprimir
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
