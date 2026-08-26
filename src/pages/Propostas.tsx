@@ -177,8 +177,14 @@ export default function Propostas() {
                     <p className="text-xs text-muted-foreground">Economia: {formatCurrency(p.economiaMensal)}/mês</p>
                   </div>
                   <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Send className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Abrir PDF / imprimir"
+                      onClick={() => setPdfProposal(p)}
+                    >
+                      <Printer className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -188,6 +194,15 @@ export default function Propostas() {
                       onClick={() => handleCopyLink(p.publicToken)}
                     >
                       <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-primary"
+                      title="Copiar link de aceite (cliente confirma com CPF/CNPJ)"
+                      onClick={() => handleCopyAcceptLink(p.publicToken)}
+                    >
+                      <Link2 className="h-4 w-4" />
                     </Button>
                     {isAdmin && (
                       <AlertDialog>
