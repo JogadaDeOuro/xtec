@@ -19,7 +19,7 @@ import { fetchPublicProposal, type ProposalRecord } from '@/lib/proposals';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import {
-  getMilestones, mapCondicaoFromLabel, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION,
+  mapCondicaoFromLabel, getCondicaoLabel, parseAlt, altRows, altTotal, buildPaymentRows, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION,
   STANDARD_WARRANTY_DESCRIPTION, calcExtendedWarranty,
 } from '@/lib/payment-options';
 
@@ -103,7 +103,6 @@ export default function AceiteProposta() {
     );
   }
 
-  const baseValor = proposal.valorSistema;
   const opcoesPagamento = [
     {
       raw: proposal.condicaoPagamento,
@@ -118,6 +117,9 @@ export default function AceiteProposta() {
   ].filter(o => o.cond);
   const opcaoAtual = opcoesPagamento.find(o => o.raw === condicaoEscolhida) ?? opcoesPagamento[0];
   const milestones = opcaoAtual?.rows ?? [];
+  const baseValor = opcaoAtual?.total ?? proposal.valorSistema;
+  const garantiaValor = garantia ? calcExtendedWarranty(baseValor) : 0;
+  const totalGeral = baseValor + garantiaValor;
   const docOk = isValidCpfCnpj(documento);
 
   if (result) {
@@ -241,7 +243,7 @@ export default function AceiteProposta() {
                   <p className="text-sm font-medium">Garantia estendida (+{EXTENDED_WARRANTY_YEARS} anos)</p>
                   <p className="text-xs text-muted-foreground mt-1">{EXTENDED_WARRANTY_DESCRIPTION}</p>
                   <p className="text-xs font-medium text-primary mt-2">
-                    + {formatCurrency(calcExtendedWarranty(proposal.valorSistema))} (8% do contrato)
+                    + {formatCurrency(calcExtendedWarranty(baseValor))} (8% do contrato)
                   </p>
                 </div>
                 <Switch checked={garantia} onCheckedChange={setGarantia} />
@@ -253,7 +255,7 @@ export default function AceiteProposta() {
             <section className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Sistema fotovoltaico</span>
-                <span className="font-medium">{formatCurrency(proposal.valorSistema)}</span>
+                <span className="font-medium">{formatCurrency(baseValor)}</span>
               </div>
               {garantia && (
                 <div className="flex justify-between text-sm">
