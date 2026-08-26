@@ -51,6 +51,11 @@ export interface BrandingConfig {
   logoEscuro: string;
   icone: string;
   imagemCapa: string;
+  /** multiplicadores de escala dos logotipos (1 = tamanho padrão) */
+  escalaLogoCabecalho?: number;
+  escalaLogoRodape?: number;
+  escalaLogoCapa?: number;
+
   imagensInstitucionais: string[];
   corPrimaria: string;
   corSecundaria: string;
