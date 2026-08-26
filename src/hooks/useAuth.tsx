@@ -64,37 +64,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            fetchRoles(session.user.id);
-            fetchPermissions(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles([]);
-          setAllowedPages([]);
-        }
-        setLoading(false);
-      }
-    );
+    let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Loads profile, roles and permissions BEFORE releasing the loading flag,
+    // otherwise ProtectedRoute evaluates permissions with empty arrays and
+    // bounces the user back to the dashboard.
+    const hydrate = async (session: Session | null) => {
+      if (!active) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchRoles(session.user.id);
-        fetchPermissions(session.user.id);
+        await Promise.all([
+          fetchProfile(session.user.id),
+          fetchRoles(session.user.id),
+          fetchPermissions(session.user.id),
+        ]);
+      } else {
+        setProfile(null);
+        setRoles([]);
+        setAllowedPages([]);
       }
-      setLoading(false);
-    });
+      if (active) setLoading(false);
+    };
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        void hydrate(session);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => hydrate(session));
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const isAdmin = roles.includes('admin');
