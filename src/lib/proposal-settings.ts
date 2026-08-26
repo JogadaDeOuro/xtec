@@ -210,10 +210,18 @@ const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 const NATIVE_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif'];
 const NATIVE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'jfif', 'webp', 'gif', 'svg', 'avif'];
 
-/** Converte formatos menos comuns (heic, bmp, tiff, ico...) em PNG usando o próprio navegador. */
+/** Converte formatos menos comuns (heic, bmp, tiff, ico...) em PNG/JPEG usando o próprio navegador. */
 async function normalizeImage(file: File): Promise<{ blob: Blob; ext: string; contentType: string }> {
   const ext = (file.name.split('.').pop() || '').toLowerCase();
   const type = (file.type || '').toLowerCase();
+
+  // HEIC/HEIF: nenhum navegador decodifica nativamente — converte via heic2any
+  if (['heic', 'heif'].includes(ext) || type.includes('heic') || type.includes('heif')) {
+    const { default: heic2any } = await import('heic2any');
+    const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+    const blob = Array.isArray(out) ? out[0] : out;
+    return { blob: blob as Blob, ext: 'jpg', contentType: 'image/jpeg' };
+  }
 
   if (NATIVE_IMAGE_TYPES.includes(type) || NATIVE_EXTENSIONS.includes(ext)) {
     return { blob: file, ext: ext || 'png', contentType: type || `image/${ext === 'jpg' ? 'jpeg' : ext}` };
