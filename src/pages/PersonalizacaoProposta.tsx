@@ -241,6 +241,7 @@ export default function PersonalizacaoProposta() {
             <TabsTrigger value="capa">Capa</TabsTrigger>
             <TabsTrigger value="estrutura">Estrutura</TabsTrigger>
             <TabsTrigger value="textos">Textos padrão</TabsTrigger>
+            <TabsTrigger value="galeria">Galeria</TabsTrigger>
             <TabsTrigger value="equipamentos">Equipamentos</TabsTrigger>
             <TabsTrigger value="premissas">Premissas</TabsTrigger>
             <TabsTrigger value="rodape">Rodapé e contato</TabsTrigger>
@@ -612,6 +613,96 @@ export default function PersonalizacaoProposta() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* GALERIA */}
+          <TabsContent value="galeria" className="space-y-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Galeria de projetos entregues</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Título da seção</Label>
+                    <Input value={config.gallery.titulo}
+                      onChange={e => patch('gallery', { titulo: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Colunas do grid</Label>
+                    <Select value={String(config.gallery.colunas)}
+                      onValueChange={v => patch('gallery', { colunas: v === '2' ? 2 : 3 })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 colunas</SelectItem>
+                        <SelectItem value="3">3 colunas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Descrição</Label>
+                  <Textarea rows={2} value={config.gallery.descricao}
+                    onChange={e => patch('gallery', { descricao: e.target.value })} />
+                </div>
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <Label className="text-xs">Mostrar títulos nos cards</Label>
+                  <Switch checked={config.gallery.mostrarTitulos}
+                    onCheckedChange={v => patch('gallery', { mostrarTitulos: v })} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  A galeria aparece logo após as condições de pagamento. Ative ou reordene em “Estrutura”.
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => patch('gallery', {
+                itens: [...config.gallery.itens, { id: `img-${Date.now()}`, url: '', titulo: '', descricao: '' }],
+              })}><Plus className="h-4 w-4" /> Adicionar imagem</Button>
+            </div>
+
+            {config.gallery.itens.length === 0 && (
+              <p className="rounded-md border border-dashed p-6 text-center text-xs text-muted-foreground">
+                Nenhuma imagem cadastrada ainda.
+              </p>
+            )}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {config.gallery.itens.map((item, i) => (
+                <Card key={item.id}>
+                  <CardContent className="space-y-3 p-4">
+                    <ImageField label={`Imagem ${i + 1}`} value={item.url}
+                      onChange={v => patch('gallery', {
+                        itens: config.gallery.itens.map(x => x.id === item.id ? { ...x, url: v } : x),
+                      })} />
+                    <Input placeholder="Título do projeto" value={item.titulo}
+                      onChange={e => patch('gallery', {
+                        itens: config.gallery.itens.map(x => x.id === item.id ? { ...x, titulo: e.target.value } : x),
+                      })} />
+                    <Input placeholder="Descrição curta (opcional)" value={item.descricao ?? ''}
+                      onChange={e => patch('gallery', {
+                        itens: config.gallery.itens.map(x => x.id === item.id ? { ...x, descricao: e.target.value } : x),
+                      })} />
+                    <div className="flex justify-between">
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" disabled={i === 0} onClick={() => {
+                          const arr = [...config.gallery.itens];
+                          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+                          patch('gallery', { itens: arr });
+                        }}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                        <Button size="sm" variant="outline" disabled={i === config.gallery.itens.length - 1} onClick={() => {
+                          const arr = [...config.gallery.itens];
+                          [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
+                          patch('gallery', { itens: arr });
+                        }}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => patch('gallery', {
+                        itens: config.gallery.itens.filter(x => x.id !== item.id),
+                      })}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* MODELOS */}
