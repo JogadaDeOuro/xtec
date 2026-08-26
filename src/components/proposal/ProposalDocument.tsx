@@ -314,15 +314,16 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
                 <div className="row"><span>Garantia estendida ({EXTENDED_WARRANTY_YEARS} anos)</span><span>{formatCurrency(valorGarantia)}</span></div>
               )}
               <div className="row total">
-                <span>Valor final</span>
-                <span>{formatCurrency(data.valorFinal + (data.payment.garantiaEstendida ? valorGarantia : 0))}</span>
+                <span>Economia anual estimada</span>
+                <span>{formatCurrency(data.economiaAnual)}</span>
               </div>
             </div>
             <div className="pdoc-grid g3" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card"><div className="k">Economia mensal</div><div className="v">{formatCurrency(data.economiaMensal)}</div></div>
-              <div className="pdoc-card"><div className="k">Economia anual</div><div className="v">{formatCurrency(data.economiaAnual)}</div></div>
+              <div className="pdoc-card"><div className="k">Economia em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(data.economiaTotal)}</div></div>
               <div className="pdoc-card"><div className="k">Payback simples</div><div className="v">{paybackLabel(data.paybackAnos)}</div></div>
             </div>
+
           </>);
         case 'economia':
           return (<>
