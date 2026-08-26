@@ -29,6 +29,8 @@ const mainItems = [
 const secondaryItems = [
   { title: 'WhatsApp Gestão', url: '/whatsapp-admin', icon: MessageSquare },
   { title: 'Personalização da Proposta', url: '/personalizacao-proposta', icon: Palette },
+  { title: 'Modelo de Contrato', url: '/modelo-contrato', icon: FileSignature },
+
   { title: 'Integrações', url: '/integracoes', icon: Plug },
   { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
