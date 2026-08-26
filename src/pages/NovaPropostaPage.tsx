@@ -889,6 +889,15 @@ export default function NovaPropostaPage() {
                       )}
 
 
+                      {condicao === 'parcelado' && (
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <div className="flex justify-between font-medium text-foreground">
+                            <span>{numParcelas}x de</span><span>{formatCurrency(valorParcela)}</span>
+                          </div>
+                          <div className="text-[11px] font-semibold text-primary">Sem entrada · sem juros</div>
+                        </div>
+                      )}
+
                       {condicao === 'entrada-saldo' && (
                         <div className="space-y-1 text-xs text-muted-foreground">
                           <div className="flex justify-between"><span>Entrada</span><span>{formatCurrency(entradaValor)}</span></div>
