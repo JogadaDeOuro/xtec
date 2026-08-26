@@ -21,6 +21,7 @@ import { ProposalPreview } from '@/components/ProposalPreview';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel, mapCondicaoFromLabel, calcExtendedWarranty, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
 
@@ -113,14 +114,10 @@ export default function EditarPropostaPage() {
   const [etapasPersonalizadas, setEtapasPersonalizadas] = useState<EtapaPersonalizada[]>([{ descricao: '', valor: 0 }]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
+  const [garantiaEstendida, setGarantiaEstendida] = useState(false);
 
   function mapCondicao(label: string): string {
-    if (label.includes('vista')) return 'avista';
-    if (label.includes('40% + 40% + 20%')) return '40-40-20';
-    if (label.includes('40%')) return '40-20-20-20';
-    if (label.includes('parcelamento')) return 'entrada-parcelas';
-    if (label.includes('saldo')) return 'entrada-saldo';
-    return '';
+    return mapCondicaoFromLabel(label);
   }
 
   const handleSystemTypeChange = (t: SystemType) => {
@@ -323,12 +320,9 @@ export default function EditarPropostaPage() {
                 <Select value={condicao} onValueChange={setCondicao}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="avista">À vista antecipado</SelectItem>
-                    <SelectItem value="40-20-20-20">40% / 20% / 20% / 20%</SelectItem>
-                    <SelectItem value="40-40-20">40% + 40% + 20%</SelectItem>
-                    <SelectItem value="entrada-saldo">Entrada + saldo na entrega</SelectItem>
-                    <SelectItem value="entrada-parcelas">Entrada + parcelamento</SelectItem>
-                    <SelectItem value="personalizada">Condição personalizada</SelectItem>
+                    {PAYMENT_CONDITIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -366,20 +360,9 @@ export default function EditarPropostaPage() {
                   </motion.div>
                 )}
 
-                {condicao === '40-20-20-20' && valorFinal > 0 && (
-                  <motion.div key="40-20-20-20" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
-                    {[{ label: 'Aprovação', pct: 40 }, { label: 'Material', pct: 20 }, { label: 'Instalação', pct: 20 }, { label: 'Ativação', pct: 20 }].map(({ label, pct }) => (
-                      <div key={label} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{pct}% — {label}</span>
-                        <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-
-                {condicao === '40-40-20' && valorFinal > 0 && (
-                  <motion.div key="40-40-20" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
-                    {[{ label: 'Aprovação', pct: 40 }, { label: 'Instalação', pct: 40 }, { label: 'Ativação', pct: 20 }].map(({ label, pct }) => (
+                {milestones && valorFinal > 0 && (
+                  <motion.div key={condicao} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
+                    {milestones.map(({ label, pct }) => (
                       <div key={label} className="flex justify-between text-xs">
                         <span className="text-muted-foreground">{pct}% — {label}</span>
                         <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
@@ -416,6 +399,32 @@ export default function EditarPropostaPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Garantia da Instalação</Label>
+                <Select value={garantiaEstendida ? 'estendida' : 'padrao'} onValueChange={v => setGarantiaEstendida(v === 'estendida')}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="padrao">Garantia padrão (1 ano)</SelectItem>
+                    <SelectItem value="estendida">Garantia estendida (+{EXTENDED_WARRANTY_YEARS} anos, +8%)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {garantiaEstendida ? EXTENDED_WARRANTY_DESCRIPTION : STANDARD_WARRANTY_DESCRIPTION}
+                </p>
+                {garantiaEstendida && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Serviço adicional de garantia</span>
+                      <span className="font-medium">{formatCurrency(garantiaValor)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">Total geral</span>
+                      <span className="font-bold text-primary">{formatCurrency(totalGeral)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -502,7 +511,7 @@ export default function EditarPropostaPage() {
                     proposal.economiaMensal = economiaMensal;
                     proposal.economiaAnual = economiaAnual;
                     proposal.paybackAnos = paybackExato;
-                    proposal.condicaoPagamento = condicao || 'A definir';
+                    proposal.condicaoPagamento = getCondicaoLabel(condicao);
                     proposal.desconto = desconto;
                     persistProposals();
                     toast.success('Proposta salva como rascunho!');
@@ -521,7 +530,7 @@ export default function EditarPropostaPage() {
                     proposal.status = 'aceita';
                     persistProposals();
                   }
-                  const condicaoLabel = condicao === 'avista' ? 'À vista' : condicao === '40-20-20-20' ? '40%/20%/20%/20%' : condicao === '40-40-20' ? '40%+40%+20%' : condicao === 'entrada-saldo' ? 'Entrada + saldo' : condicao === 'entrada-parcelas' ? 'Entrada + parcelas' : 'Personalizada';
+                  const condicaoLabel = getCondicaoLabel(condicao);
                   const { error } = await supabase.from('contracts').insert({
                     proposal_id: id || '',
                     client_id: client.id,
@@ -536,6 +545,8 @@ export default function EditarPropostaPage() {
                     potencia_kwp: potencia,
                     valor: valorFinal,
                     condicao_pagamento: condicaoLabel,
+                    garantia_estendida: garantiaEstendida,
+                    garantia_estendida_valor: garantiaValor,
                     status: 'rascunho',
                   });
                   if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
@@ -571,7 +582,7 @@ export default function EditarPropostaPage() {
         paybackExato={paybackExato}
         paybackAno={paybackAno}
         economiaTotal30={proj[proj.length - 1]?.acumulado || 0}
-        payment={{ condicao, entradaValor, numParcelas, valorParcela, saldoAposEntrada, etapasPersonalizadas }}
+        payment={{ condicao, entradaValor, numParcelas, valorParcela, saldoAposEntrada, etapasPersonalizadas, garantiaEstendida, garantiaValor }}
       />
 
       <ProposalPDF
@@ -596,7 +607,7 @@ export default function EditarPropostaPage() {
         economiaAnual={economiaAnual}
         paybackExato={paybackExato}
         economiaTotal20={proj[proj.length - 1]?.acumulado || 0}
-        payment={{ condicao, entradaValor, numParcelas, valorParcela, saldoAposEntrada, etapasPersonalizadas }}
+        payment={{ condicao, entradaValor, numParcelas, valorParcela, saldoAposEntrada, etapasPersonalizadas, garantiaEstendida, garantiaValor }}
       />
     </div>
   );
