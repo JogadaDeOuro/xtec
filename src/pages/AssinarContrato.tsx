@@ -66,19 +66,14 @@ export default function AssinarContrato() {
   useEffect(() => {
     if (!token) { setNotFound(true); setLoadingContract(false); return; }
     const fetchContract = async () => {
-      const { data, error } = await supabase
-        .from('contracts')
-        .select('id, client_name, client_document, system_type, potencia_kwp, valor, condicao_pagamento, signing_token, status, contract_signatures(signer_type)')
-        .eq('signing_token', token)
-        .single();
-      if (error || !data) {
+      const { data, error } = await supabase.rpc('get_contract_for_signing', { _token: token });
+      const result = data as unknown as ContractData | null;
+      if (error || !result) {
         setNotFound(true);
       } else {
-        setContract({
-          ...data,
-          signatures: (data as any).contract_signatures || [],
-        });
+        setContract({ ...result, signatures: result.signatures || [] });
       }
+
       setLoadingContract(false);
     };
     fetchContract();
