@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_PROPOSAL_CONFIG, mergeConfig, type ProposalDocConfig } from '@/lib/proposal-config';
+import { PROPOSAL_THEMES } from '@/lib/proposal-themes';
 
 const db = supabase as unknown as {
   from: (t: string) => any;
@@ -104,51 +105,36 @@ export async function deleteTemplate(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Cria os modelos iniciais se ainda não existirem. */
+/** Cria (ou completa) os modelos padrão, um para cada tema visual. */
 export async function seedDefaultTemplates(base: ProposalDocConfig): Promise<ProposalTemplate[]> {
   const existing = await fetchTemplates();
-  if (existing.length) return existing;
-  const presets: { name: string; description: string; config: ProposalDocConfig }[] = [
-    {
-      name: 'INFORSOL Clássico',
-      description: 'Documento completo, equilibrado entre técnico e comercial.',
-      config: base,
-    },
-    {
-      name: 'INFORSOL Executivo',
-      description: 'Versão enxuta: capa, resumo, investimento e garantias.',
-      config: {
-        ...base,
-        sections: base.sections.map(s => ({
-          ...s,
-          enabled: ['capa', 'apresentacao', 'resumo_executivo', 'dimensionamento', 'retorno', 'pagamento', 'garantias', 'validade'].includes(s.key),
-        })),
-      },
-    },
-    {
-      name: 'INFORSOL Técnico',
-      description: 'Ênfase em dimensionamento, equipamentos, geração e escopo.',
-      config: {
-        ...base,
-        sections: base.sections.map(s => ({
-          ...s,
-          enabled: !['aceite', 'assinaturas'].includes(s.key),
-        })),
-      },
-    },
-    {
-      name: 'Personalizado',
-      description: 'Ponto de partida livre para novos modelos.',
-      config: base,
-    },
-  ];
-  const created: ProposalTemplate[] = [];
-  for (const p of presets) {
-    try { created.push(await createTemplate(p.name, p.config, p.description)); } catch { /* sem permissão */ }
+  const byName = new Map(existing.map(t => [t.name, t]));
+  const created: ProposalTemplate[] = [...existing];
+  for (const theme of PROPOSAL_THEMES) {
+    if (byName.has(theme.name)) continue;
+    try {
+      created.push(await createTemplate(theme.name, theme.apply(base), theme.description));
+    } catch { /* sem permissão */ }
   }
-  if (created[0]) { try { await setDefaultTemplate(created[0].id); } catch { /* noop */ } }
+  if (!existing.length && created[0]) { try { await setDefaultTemplate(created[0].id); } catch { /* noop */ } }
   return created;
 }
+
+/** Recria/atualiza os modelos padrão a partir da configuração atual, mantendo os personalizados. */
+export async function refreshDefaultTemplates(base: ProposalDocConfig): Promise<ProposalTemplate[]> {
+  const existing = await fetchTemplates();
+  const byName = new Map(existing.map(t => [t.name, t]));
+  for (const theme of PROPOSAL_THEMES) {
+    const config = theme.apply(base);
+    const found = byName.get(theme.name);
+    try {
+      if (found) await updateTemplate(found.id, { config, description: theme.description });
+      else await createTemplate(theme.name, config, theme.description);
+    } catch { /* sem permissão */ }
+  }
+  return fetchTemplates();
+}
+
 
 /* ---------- Equipamentos ---------- */
 

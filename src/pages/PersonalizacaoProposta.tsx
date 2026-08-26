@@ -24,9 +24,10 @@ import {
 } from '@/lib/proposal-config';
 import {
   createTemplate, deleteEquipment, deleteTemplate, fetchEquipment, fetchProposalSettings,
-  fetchTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates, setDefaultTemplate,
-  updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
+  refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
+  setDefaultTemplate, updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
 } from '@/lib/proposal-settings';
+import { applyTemplateConfig } from '@/lib/proposal-themes';
 import { ProposalDocument, type ProposalDocData } from '@/components/proposal/ProposalDocument';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -149,12 +150,10 @@ export default function PersonalizacaoProposta() {
   useEffect(() => {
     (async () => {
       try {
-        const [cfg, tpls, eqs] = await Promise.all([
-          fetchProposalSettings(), fetchTemplates(), fetchEquipment(),
-        ]);
+        const [cfg, eqs] = await Promise.all([fetchProposalSettings(), fetchEquipment()]);
         setConfig(cfg);
         setEquipment(eqs);
-        setTemplates(tpls.length ? tpls : await seedDefaultTemplates(cfg));
+        setTemplates(await seedDefaultTemplates(cfg));
       } catch {
         toast.error('Não foi possível carregar a personalização');
       } finally { setLoading(false); }
@@ -707,7 +706,23 @@ export default function PersonalizacaoProposta() {
 
           {/* MODELOS */}
           <TabsContent value="modelos" className="space-y-3">
-            <div className="flex justify-end gap-2">
+            <p className="text-xs text-muted-foreground">
+              Ao aplicar um modelo, apenas o estilo e a disposição das seções mudam. Logotipos, imagem de capa,
+              galeria, textos e dados da empresa são sempre preservados — e a mudança é salva automaticamente.
+            </p>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
+                try {
+                  const cfg = await fetchProposalSettings();
+                  setConfig(cfg); toast.success('Configuração recarregada do servidor');
+                } catch { toast.error('Não foi possível recarregar'); }
+              }}>Recarregar do servidor</Button>
+              <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
+                try {
+                  setTemplates(await refreshDefaultTemplates(config));
+                  toast.success('Modelos padrão atualizados');
+                } catch { toast.error('Sem permissão para atualizar modelos'); }
+              }}>Restaurar modelos padrão</Button>
               <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
                 try {
                   const t = await createTemplate(`Modelo ${templates.length + 1}`, config, 'Criado a partir da configuração atual');
@@ -728,7 +743,13 @@ export default function PersonalizacaoProposta() {
                     <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" onClick={() => { setConfig(t.config); toast.success(`Modelo "${t.name}" carregado no editor`); }}>Usar / visualizar</Button>
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      const merged = applyTemplateConfig(config, t.config);
+                      setConfig(merged);
+                      try { await saveProposalSettings(merged); toast.success(`Modelo "${t.name}" aplicado e salvo`); }
+                      catch { toast.warning(`Modelo "${t.name}" aplicado (salve para persistir)`); }
+                    }}>Usar / visualizar</Button>
+
                     <Button size="sm" variant="outline" onClick={async () => {
                       try { await updateTemplate(t.id, { name: t.name, config }); toast.success('Modelo atualizado'); }
                       catch { toast.error('Sem permissão'); }
