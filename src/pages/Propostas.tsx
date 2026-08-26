@@ -51,6 +51,27 @@ export default function Propostas() {
     }
   };
 
+  const handleCopyLink = async (token: string) => {
+    const url = `${window.location.origin}/proposta/${token}`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const el = document.createElement('textarea');
+        el.value = url;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      toast.success('Link da proposta copiado!', { description: url });
+    } catch {
+      toast.error('Não foi possível copiar', { description: url });
+    }
+  };
+
   // Sort by newest first
   const sorted = [...proposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
@@ -150,7 +171,13 @@ export default function Propostas() {
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <Send className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Copiar link da proposta"
+                      onClick={() => handleCopyLink(p.publicToken)}
+                    >
                       <Copy className="h-4 w-4" />
                     </Button>
                     {isAdmin && (

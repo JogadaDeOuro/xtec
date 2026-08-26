@@ -343,6 +343,7 @@ export type Database = {
           payback_anos: number
           potencia_kwp: number
           producao_estimada: number
+          public_token: string
           status: string
           system_type: string
           updated_at: string
@@ -369,6 +370,7 @@ export type Database = {
           payback_anos?: number
           potencia_kwp?: number
           producao_estimada?: number
+          public_token?: string
           status?: string
           system_type?: string
           updated_at?: string
@@ -395,6 +397,7 @@ export type Database = {
           payback_anos?: number
           potencia_kwp?: number
           producao_estimada?: number
+          public_token?: string
           status?: string
           system_type?: string
           updated_at?: string
@@ -527,6 +530,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_proposal: {
+        Args: { _token: string }
+        Returns: {
+          accepted_at: string | null
+          client_id: string | null
+          client_name: string
+          comissao: number
+          condicao_pagamento: string | null
+          consumo_medio: number
+          created_at: string
+          desconto: number
+          economia_anual: number
+          economia_mensal: number
+          garantia_estendida: boolean
+          garantia_estendida_valor: number
+          id: string
+          margem: number
+          numero: string | null
+          payback_anos: number
+          potencia_kwp: number
+          producao_estimada: number
+          public_token: string
+          status: string
+          system_type: string
+          updated_at: string
+          user_id: string | null
+          valor_sistema: number
+          viewed_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "proposals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

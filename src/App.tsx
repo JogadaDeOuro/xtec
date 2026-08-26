@@ -29,6 +29,7 @@ const Login = lazy(() => import("./pages/Login"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AcompanhamentoPublico = lazy(() => import("./pages/AcompanhamentoPublico"));
+const PropostaPublica = lazy(() => import("./pages/PropostaPublica"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
                 <Route path="/whatsapp-admin" element={<ProtectedPage pageKey="configuracoes"><WhatsAppAdmin /></ProtectedPage>} />
                 <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
                 <Route path="/assinar/:token" element={<AssinarContrato />} />
+                <Route path="/proposta/:token" element={<PropostaPublica />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
