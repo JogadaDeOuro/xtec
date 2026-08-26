@@ -234,8 +234,14 @@ export default function NovaPropostaPage() {
   const paybackAno = proj.find(p => p.acumulado >= valorFinal)?.ano || null;
 
   // Payment breakdown calculations
+  const milestones = getMilestones(condicao);
   const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
+
+  // Garantia estendida (serviço adicional de 8% sobre o valor do contrato)
+  const garantiaValor = garantiaEstendida ? calcExtendedWarranty(valorFinal) : 0;
+  const totalGeral = valorFinal + garantiaValor;
+
 
   const totalEtapas = etapasPersonalizadas.reduce((s, e) => s + (e.valor || 0), 0);
   const restantePersonalizada = valorFinal - totalEtapas;
