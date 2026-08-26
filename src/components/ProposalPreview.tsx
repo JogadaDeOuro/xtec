@@ -204,7 +204,28 @@ export function ProposalPreview({
             </>
           )}
 
+          {payment.garantiaEstendida && (
+            <>
+              <Separator />
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.27 }}>
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-primary" /> Garantia Estendida ({EXTENDED_WARRANTY_YEARS} anos)
+                </h3>
+                <p className="text-xs text-muted-foreground mb-2">{EXTENDED_WARRANTY_DESCRIPTION}</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Serviço adicional (8% do contrato)</span>
+                  <span className="font-semibold text-primary">{formatCurrency(payment.garantiaValor || 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="font-medium">Total geral</span>
+                  <span className="font-bold text-primary">{formatCurrency(valorFinal + (payment.garantiaValor || 0))}</span>
+                </div>
+              </motion.div>
+            </>
+          )}
+
           <Separator />
+
 
           {/* Economy */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
