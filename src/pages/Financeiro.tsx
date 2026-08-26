@@ -66,19 +66,25 @@ export default function Financeiro() {
     ? (customFrom && customTo ? { from: customFrom, to: customTo } : null)
     : getDateRange(periodo);
 
-  const [contracts, setContracts] = useState<{ valor: number; status: string; created_at: string; client_id: string | null }[]>([]);
+  const [contracts, setContracts] = useState<{ valor: number; status: string; created_at: string; client_id: string | null; proposal_id: string | null }[]>([]);
   const [clientTypes, setClientTypes] = useState<Record<string, string>>({});
+  const [proposals, setProposals] = useState<{ id: string; numero: string | null; client_name: string; valor: number; status: string; created_at: string }[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: c }, { data: cl }] = await Promise.all([
-        supabase.from('contracts').select('valor, status, created_at, client_id'),
+      const [{ data: c }, { data: cl }, { data: p }] = await Promise.all([
+        supabase.from('contracts').select('valor, status, created_at, client_id, proposal_id'),
         supabase.from('clients').select('id, client_type'),
+        supabase.from('proposals').select('id, numero, client_name, valor_sistema, status, created_at'),
       ]);
       setContracts((c || []).map(r => ({ ...r, valor: Number(r.valor) || 0 })));
       const map: Record<string, string> = {};
       (cl || []).forEach(x => { map[x.id] = x.client_type; });
       setClientTypes(map);
+      setProposals((p || []).map(r => ({
+        id: r.id, numero: r.numero, client_name: r.client_name,
+        valor: Number(r.valor_sistema) || 0, status: r.status, created_at: r.created_at,
+      })));
     };
     load();
   }, []);
@@ -95,6 +101,29 @@ export default function Financeiro() {
   const faturamentoPrevisto = periodContracts.reduce((s2, c) => s2 + c.valor, 0);
   const ticketMedio = assinados.length > 0 ? faturamentoFechado / assinados.length : 0;
   const contratosAtivos = periodContracts.filter(c => c.status !== 'cancelado').length;
+
+  // Propostas que ainda não viraram contrato
+  const contratadasIds = useMemo(
+    () => new Set(contracts.map(c => c.proposal_id).filter(Boolean) as string[]),
+    [contracts],
+  );
+
+  const propostasEmAberto = useMemo(
+    () => proposals
+      .filter(p => inRange(p.created_at))
+      .filter(p => !contratadasIds.has(p.id))
+      .filter(p => !['perdida', 'recusada', 'cancelada'].includes(p.status))
+      .sort((a, b) => b.valor - a.valor),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [proposals, contratadasIds, dateRange],
+  );
+
+  const valorEmAberto = propostasEmAberto.reduce((s2, p) => s2 + p.valor, 0);
+
+  const statusLabels: Record<string, string> = {
+    rascunho: 'Rascunho', enviada: 'Enviada', visualizada: 'Visualizada', aceita: 'Aceita',
+  };
+
 
   const allMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
