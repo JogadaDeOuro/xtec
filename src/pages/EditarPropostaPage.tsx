@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { mockProposals, formatCurrency, formatNumber, type SystemType, persistProposals } from '@/lib/mock-data';
+import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
+import { fetchProposal, updateProposal, updateProposalStatus, type ProposalInput, type ProposalRecord } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -67,7 +68,8 @@ interface SupaClient {
 export default function EditarPropostaPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const proposal = mockProposals.find(p => p.id === id);
+  const [proposal, setProposal] = useState<ProposalRecord | null>(null);
+  const [loadingProposal, setLoadingProposal] = useState(true);
 
   const [clients, setClients] = useState<SupaClient[]>([]);
   const [clientId, setClientId] = useState(proposal?.clientId || '');
