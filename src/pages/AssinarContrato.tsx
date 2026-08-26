@@ -138,39 +138,36 @@ export default function AssinarContrato() {
     const rawData = `${contract.id}-${name}-${document}-${email}-${ip}-${now.toISOString()}`;
     const generatedHash = btoa(rawData).slice(0, 20).toUpperCase();
 
-    // Insert signature into DB
-    const { error: sigError } = await supabase.from('contract_signatures').insert({
-      contract_id: contract.id,
-      signer_type: 'cliente',
-      name: name.trim(),
-      document: document.trim(),
-      email: email.trim(),
-      signed_at: now.toISOString(),
-      ip: ip || 'Não identificado',
-      location: location || 'Não disponível',
-      user_agent: userAgent,
-      hash: generatedHash,
-      signature_font: signFont,
+    // Register signature server-side (token validated in the database)
+    const { data: signResult, error: sigError } = await supabase.rpc('sign_contract_public', {
+      _token: token as string,
+      _name: name.trim(),
+      _document: document.trim(),
+      _email: email.trim(),
+      _ip: ip || 'Não identificado',
+      _location: location || 'Não disponível',
+      _user_agent: userAgent,
+      _hash: generatedHash,
+      _signature_font: signFont,
     });
 
-    if (sigError) {
+    if (sigError || !signResult) {
       setSigningInProgress(false);
-      if (sigError.code === '23505') {
+      const msg = sigError?.message || '';
+      if (msg.includes('already_signed')) {
         toast.error('Este contrato já foi assinado pelo cliente');
+      } else if (msg.includes('contract_not_found') || msg.includes('invalid_token')) {
+        toast.error('Link de assinatura inválido ou expirado');
+      } else if (msg.includes('invalid_')) {
+        toast.error('Dados inválidos. Verifique nome, CPF/CNPJ e e-mail');
       } else {
         toast.error('Erro ao registrar assinatura');
       }
       return;
     }
 
-    // Update contract status
-    const hasEmpresa = contract.signatures.some(s => s.signer_type === 'empresa');
-    const newStatus = hasEmpresa ? 'assinado' : 'enviado';
+    const newStatus = (signResult as { status: string }).status;
 
-    await supabase.from('contracts').update({
-      status: newStatus,
-      ...(newStatus === 'assinado' ? { signed_at: now.toISOString() } : {}),
-    }).eq('id', contract.id);
 
     setSigningInProgress(false);
     setSigningData({
