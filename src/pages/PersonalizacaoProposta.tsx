@@ -241,6 +241,7 @@ export default function PersonalizacaoProposta() {
             <TabsTrigger value="capa">Capa</TabsTrigger>
             <TabsTrigger value="estrutura">Estrutura</TabsTrigger>
             <TabsTrigger value="textos">Textos padrão</TabsTrigger>
+            <TabsTrigger value="galeria">Galeria</TabsTrigger>
             <TabsTrigger value="equipamentos">Equipamentos</TabsTrigger>
             <TabsTrigger value="premissas">Premissas</TabsTrigger>
             <TabsTrigger value="rodape">Rodapé e contato</TabsTrigger>
