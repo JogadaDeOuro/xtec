@@ -24,7 +24,7 @@ import {
 } from '@/lib/proposal-config';
 import {
   createTemplate, deleteEquipment, deleteTemplate, fetchEquipment, fetchProposalSettings,
-  fetchTemplates, refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
+  refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
   setDefaultTemplate, updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
 } from '@/lib/proposal-settings';
 import { applyTemplateConfig } from '@/lib/proposal-themes';
