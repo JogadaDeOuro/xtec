@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/StatCard';
-import { dashboardStats, formatCurrency } from '@/lib/mock-data';
+import { formatCurrency } from '@/lib/mock-data';
+import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -25,13 +26,6 @@ const comparativoData = [
   { ano: 'Ano 20', semSolar: 88370, comSolar: 1200 },
   { ano: 'Ano 25', semSolar: 142340, comSolar: 1200 },
   { ano: 'Ano 30', semSolar: 229230, comSolar: 1200 },
-];
-
-const faturamentoPorTipo = [
-  { name: 'Residencial', value: 680000 },
-  { name: 'Comercial', value: 850000 },
-  { name: 'Industrial', value: 290000 },
-  { name: 'Rural', value: 385000 },
 ];
 
 type PeriodoKey = '24h' | '7d' | '30d' | '2m' | '3m' | 'ultimo_ano' | 'este_ano' | 'todo' | 'personalizado';
@@ -72,16 +66,64 @@ export default function Financeiro() {
     ? (customFrom && customTo ? { from: customFrom, to: customTo } : null)
     : getDateRange(periodo);
 
-  // Filter vendasMensais based on period (mock: by month index approximation)
-  const allMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const filteredVendas = dashboardStats.vendasMensais.filter((v) => {
+  const [contracts, setContracts] = useState<{ valor: number; status: string; created_at: string; client_id: string | null }[]>([]);
+  const [clientTypes, setClientTypes] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const load = async () => {
+      const [{ data: c }, { data: cl }] = await Promise.all([
+        supabase.from('contracts').select('valor, status, created_at, client_id'),
+        supabase.from('clients').select('id, client_type'),
+      ]);
+      setContracts((c || []).map(r => ({ ...r, valor: Number(r.valor) || 0 })));
+      const map: Record<string, string> = {};
+      (cl || []).forEach(x => { map[x.id] = x.client_type; });
+      setClientTypes(map);
+    };
+    load();
+  }, []);
+
+  const inRange = (iso: string) => {
     if (!dateRange) return true;
-    const mesIdx = allMeses.indexOf(v.mes);
-    if (mesIdx === -1) return true;
-    const now = new Date();
-    const itemDate = new Date(now.getFullYear(), mesIdx, 1);
-    return itemDate >= dateRange.from && itemDate <= dateRange.to;
-  });
+    const d = new Date(iso);
+    return d >= dateRange.from && d <= dateRange.to;
+  };
+
+  const periodContracts = contracts.filter(c => inRange(c.created_at));
+  const assinados = periodContracts.filter(c => c.status === 'assinado');
+  const faturamentoFechado = assinados.reduce((s2, c) => s2 + c.valor, 0);
+  const faturamentoPrevisto = periodContracts.reduce((s2, c) => s2 + c.valor, 0);
+  const ticketMedio = assinados.length > 0 ? faturamentoFechado / assinados.length : 0;
+  const contratosAtivos = periodContracts.filter(c => c.status !== 'cancelado').length;
+
+  const allMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  const filteredVendas = useMemo(() => {
+    const buckets: Record<string, { mes: string; valor: number; propostas: number }> = {};
+    periodContracts.forEach(c => {
+      const d = new Date(c.created_at);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (!buckets[key]) buckets[key] = { mes: allMeses[d.getMonth()], valor: 0, propostas: 0 };
+      buckets[key].valor += c.valor;
+      buckets[key].propostas += 1;
+    });
+    return Object.entries(buckets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, v]) => v);
+  }, [periodContracts]);
+
+  const tipoLabels: Record<string, string> = {
+    residencial: 'Residencial', comercial: 'Comercial', industrial: 'Industrial', rural: 'Rural',
+  };
+
+  const faturamentoPorTipo = useMemo(() => {
+    const map: Record<string, number> = {};
+    periodContracts.forEach(c => {
+      const tipo = tipoLabels[clientTypes[c.client_id || ''] || ''] || 'Outros';
+      map[tipo] = (map[tipo] || 0) + c.valor;
+    });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [periodContracts, clientTypes]);
 
   const periodoLabel = dateRange
     ? `${format(dateRange.from, 'dd/MM/yy')} — ${format(dateRange.to, 'dd/MM/yy')}`
@@ -138,10 +180,10 @@ export default function Financeiro() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Faturamento Fechado" value={formatCurrency(dashboardStats.faturamentoFechado)} icon={<DollarSign className="h-5 w-5" />} trend={{ value: 15, label: 'vs mês ant.' }} />
-        <StatCard title="Faturamento Previsto" value={formatCurrency(dashboardStats.faturamentoPrevisto)} icon={<TrendingUp className="h-5 w-5" />} />
-        <StatCard title="Ticket Médio" value={formatCurrency(dashboardStats.ticketMedio)} icon={<BarChart3 className="h-5 w-5" />} trend={{ value: 5, label: 'vs mês ant.' }} />
-        <StatCard title="Contratos Ativos" value={`${dashboardStats.contratosAndamento}`} icon={<Target className="h-5 w-5" />} />
+        <StatCard title="Faturamento Fechado" value={formatCurrency(faturamentoFechado)} icon={<DollarSign className="h-5 w-5" />} />
+        <StatCard title="Faturamento Previsto" value={formatCurrency(faturamentoPrevisto)} icon={<TrendingUp className="h-5 w-5" />} />
+        <StatCard title="Ticket Médio" value={formatCurrency(ticketMedio)} icon={<BarChart3 className="h-5 w-5" />} />
+        <StatCard title="Contratos Ativos" value={`${contratosAtivos}`} icon={<Target className="h-5 w-5" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -173,6 +215,9 @@ export default function Financeiro() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
+                {faturamentoPorTipo.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados no período</div>
+                ) : (
                 <PieChart>
                   <Pie data={faturamentoPorTipo} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                     {faturamentoPorTipo.map((_, i) => (
@@ -181,6 +226,7 @@ export default function Financeiro() {
                   </Pie>
                   <Tooltip formatter={(v: number) => formatCurrency(v)} />
                 </PieChart>
+                )}
               </ResponsiveContainer>
             </div>
           </CardContent>
