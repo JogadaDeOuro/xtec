@@ -38,7 +38,10 @@ export async function downloadProposalPdf(
   host.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_W_PX}px;background:#fff;z-index:-1;`;
   const style = document.createElement('style');
   style.textContent = `${PRINT_PAGE_RULE}${buildDocumentCss(config)}
-    .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important; }`;
+    .pdf-export { zoom:1 !important; transform:none !important; }
+    .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important;
+      width:${A4_W_PX}px !important; min-height:${A4_H_PX}px !important; }`;
+
   host.appendChild(style);
 
   const wrapper = document.createElement('div');
@@ -56,21 +59,28 @@ export async function downloadProposalPdf(
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
 
     for (let i = 0; i < targets.length; i++) {
-      const canvas = await html2canvas(targets[i], {
+      const el = targets[i];
+      // garante altura exata de A4 na captura (evita distorção no PDF)
+      const pageH = Math.max(A4_H_PX, Math.ceil(el.scrollHeight));
+      const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         windowWidth: A4_W_PX,
         width: A4_W_PX,
-        height: Math.max(A4_H_PX, targets[i].scrollHeight),
+        height: pageH,
       });
-      const img = canvas.toDataURL('image/jpeg', 0.92);
+      const img = canvas.toDataURL('image/jpeg', 0.95);
       if (i > 0) pdf.addPage();
-      // ajusta a altura mantendo a proporção; conteúdos maiores que A4 são reduzidos
+      // mantém a proporção exata da captura: sem esticar/achatar
       const ratio = canvas.height / canvas.width;
-      const h = Math.min(297, 210 * ratio);
-      pdf.addImage(img, 'JPEG', 0, 0, 210, h, undefined, 'FAST');
+      let w = 210;
+      let h = w * ratio;
+      if (h > 297) { h = 297; w = h / ratio; }
+      const x = (210 - w) / 2;
+      pdf.addImage(img, 'JPEG', x, 0, w, h, undefined, 'FAST');
     }
+
 
     pdf.save(fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`);
   } finally {
