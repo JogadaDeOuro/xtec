@@ -148,6 +148,10 @@ export default function EditarPropostaPage() {
   const valorBruto = Math.round(potencia * valorKwp);
   const descontoValor = descontoTipo === 'percent' ? Math.round(valorBruto * desconto / 100) : desconto;
   const valorFinal = Math.max(0, valorBruto - descontoValor);
+  const milestones = getMilestones(condicao);
+  const garantiaValor = garantiaEstendida ? calcExtendedWarranty(valorFinal) : 0;
+  const totalGeral = valorFinal + garantiaValor;
+
   const economiaMensal = Math.round(producao * tarifaKwh);
   const economiaAnual = economiaMensal * 12;
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
