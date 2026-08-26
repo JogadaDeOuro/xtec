@@ -207,7 +207,7 @@ export default function EditarPropostaPage() {
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
   const proj = projecaoAnos(economiaAnual, valorFinal, tarifaKwh);
   const paybackAno = proj.find(p => p.acumulado >= valorFinal)?.ano || null;
-  const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
+  const saldoAposEntrada = condicao === 'parcelado' ? valorFinal : Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
   const totalEtapas = etapasPersonalizadas.reduce((s, e) => s + (e.valor || 0), 0);
   const restantePersonalizada = valorFinal - totalEtapas;
@@ -395,6 +395,26 @@ export default function EditarPropostaPage() {
               </div>
 
               <AnimatePresence mode="wait">
+                {condicao === 'parcelado' && (
+                  <motion.div key="parcelado" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label className="text-xs">Nº de Parcelas (sem entrada)</Label>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">Sem juros</span>
+                    </div>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={numParcelas || ''}
+                      onChange={e => setNumParcelas(Math.min(120, +e.target.value.replace(/\D/g, '') || 0))}
+                      placeholder="Ex: 12"
+                    />
+                    <div className="flex justify-between text-xs font-bold text-primary">
+                      <span>{numParcelas || 0}x de</span>
+                      <span>{formatCurrency(valorParcela)}</span>
+                    </div>
+                  </motion.div>
+                )}
+
                 {condicao === 'entrada-parcelas' && (
                   <motion.div key="entrada-parcelas" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
                     <div className="grid grid-cols-2 gap-3">

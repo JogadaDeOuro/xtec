@@ -44,6 +44,7 @@ export const PAYMENT_CONDITIONS: PaymentConditionOption[] = [
       { label: 'Na ativação', pct: 20 },
     ],
   },
+  { value: 'parcelado', label: 'Parcelado 100% sem entrada (sem juros)', shortLabel: 'Parcelado sem juros' },
   { value: 'entrada-saldo', label: 'Entrada + saldo na entrega', shortLabel: 'Entrada + saldo' },
   { value: 'entrada-parcelas', label: 'Entrada + parcelamento', shortLabel: 'Entrada + parcelas' },
   { value: 'personalizada', label: 'Condição personalizada', shortLabel: 'Personalizada' },
@@ -63,6 +64,7 @@ export const mapCondicaoFromLabel = (label: string): string => {
   if (label.includes('vista')) return 'avista';
   if (label.includes('40% + 40% + 20%') || label.includes('40%+40%+20%')) return '40-40-20';
   if (label.includes('40%')) return '40-20-20-20';
+  if (label.toLowerCase().includes('sem juros')) return 'parcelado';
   if (label.includes('parcel')) return 'entrada-parcelas';
   if (label.includes('saldo')) return 'entrada-saldo';
   return '';

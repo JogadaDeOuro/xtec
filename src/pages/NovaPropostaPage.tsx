@@ -238,7 +238,8 @@ export default function NovaPropostaPage() {
 
   // Payment breakdown calculations
   const milestones = getMilestones(condicao);
-  const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
+  const semEntrada = condicao === 'parcelado';
+  const saldoAposEntrada = semEntrada ? valorFinal : Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
 
   // Garantia estendida (serviço adicional de 8% sobre o valor do contrato)
@@ -517,6 +518,41 @@ export default function NovaPropostaPage() {
                   </motion.div>
                 )}
 
+
+                {condicao === 'parcelado' && (
+                  <motion.div
+                    key="parcelado"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-3 rounded-lg border border-border bg-muted/30 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <Label className="text-xs">Nº de Parcelas (sem entrada)</Label>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                        Sem juros
+                      </span>
+                    </div>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={numParcelas || ''}
+                      onChange={e => setNumParcelas(Math.min(120, +e.target.value.replace(/\D/g, '') || 0))}
+                      placeholder="Ex: 12"
+                    />
+                    <Separator />
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total financiado (100%)</span>
+                        <span>{formatCurrency(valorFinal)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-primary">
+                        <span>{numParcelas || 0}x de</span>
+                        <span>{formatCurrency(valorParcela)}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {condicao === 'entrada-saldo' && (
                   <motion.div
@@ -852,6 +888,15 @@ export default function NovaPropostaPage() {
                         </div>
                       )}
 
+
+                      {condicao === 'parcelado' && (
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <div className="flex justify-between font-medium text-foreground">
+                            <span>{numParcelas}x de</span><span>{formatCurrency(valorParcela)}</span>
+                          </div>
+                          <div className="text-[11px] font-semibold text-primary">Sem entrada · sem juros</div>
+                        </div>
+                      )}
 
                       {condicao === 'entrada-saldo' && (
                         <div className="space-y-1 text-xs text-muted-foreground">

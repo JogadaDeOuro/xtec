@@ -7,6 +7,8 @@ import { DEFAULT_PROPOSAL_CONFIG, mergeConfig, type ProposalDocConfig } from '@/
 import { fetchEquipment, fetchProposalSettings, type EquipmentItem } from '@/lib/proposal-settings';
 import { buildDocumentCss, PRINT_PAGE_RULE } from '@/components/proposal/document-styles';
 import { ProposalDocument, type ProposalDocData, type ProposalPaymentInfo } from '@/components/proposal/ProposalDocument';
+import { downloadProposalPdf } from '@/lib/pdf-export';
+import { Download, Loader2 } from 'lucide-react';
 
 interface ProposalPDFProps {
   open: boolean;
@@ -48,6 +50,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
   const [equipamentos, setEquipamentos] = useState<EquipmentItem[]>([]);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -85,6 +88,21 @@ export function ProposalPDF(props: ProposalPDFProps) {
     equipamentos,
   };
 
+  const handleDownload = async () => {
+    const content = printRef.current;
+    if (!content || downloading) return;
+    setDownloading(true);
+    try {
+      const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
+      await downloadProposalPdf(content, config, nome);
+    } catch {
+      // fallback: impressão do navegador
+      handlePrint();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const handlePrint = () => {
     const content = printRef.current;
     if (!content) return;
@@ -95,18 +113,27 @@ export function ProposalPDF(props: ProposalPDFProps) {
       <style>${PRINT_PAGE_RULE}${buildDocumentCss(config)}</style></head>
       <body><div class="pdoc">${content.innerHTML}</div></body></html>`);
     win.document.close();
-    setTimeout(() => win.print(), 600);
+    const start = () => setTimeout(() => win.print(), 300);
+    const fonts = (win.document as Document & { fonts?: FontFaceSet }).fonts;
+    if (fonts?.ready) fonts.ready.then(start).catch(start);
+    else start();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto bg-muted/40">
+      <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-muted/40">
         <DialogHeader className="no-print">
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex flex-wrap items-center justify-between gap-2">
             <span>Pré-visualização A4</span>
-            <Button onClick={handlePrint} className="gap-2 mr-8">
-              <Printer className="h-4 w-4" /> Gerar PDF / Imprimir
-            </Button>
+            <div className="flex items-center gap-2 mr-8">
+              <Button onClick={handleDownload} disabled={downloading} className="gap-2">
+                {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {downloading ? 'Gerando PDF...' : 'Baixar PDF'}
+              </Button>
+              <Button variant="outline" onClick={handlePrint} className="gap-2">
+                <Printer className="h-4 w-4" /> Imprimir
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 

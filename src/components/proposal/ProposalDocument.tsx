@@ -165,6 +165,9 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
       if (milestones) {
         milestones.forEach(({ label, pct }) =>
           rows.push({ label: `${label} (${pct}%)`, value: formatCurrency((data.valorFinal * pct) / 100) }));
+      } else if (p.condicao === 'parcelado') {
+        rows.push({ label: 'Sem entrada · 100% parcelado', value: formatCurrency(data.valorFinal) });
+        rows.push({ label: `${p.numParcelas}x de (sem juros)`, value: formatCurrency(p.valorParcela), strong: true });
       } else if (p.condicao === 'entrada-saldo') {
         rows.push({ label: 'Entrada', value: formatCurrency(p.entradaValor) });
         rows.push({ label: 'Saldo na entrega', value: formatCurrency(p.saldoAposEntrada) });
