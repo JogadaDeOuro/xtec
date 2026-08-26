@@ -10,6 +10,7 @@ import {
 import { buildDocumentCss } from './document-styles';
 import {
   EXTENDED_WARRANTY_DESCRIPTION, EXTENDED_WARRANTY_YEARS, getMilestones,
+  getCondicaoLabel, mapCondicaoFromLabel,
 } from '@/lib/payment-options';
 
 export interface ProposalPaymentInfo {
@@ -19,6 +20,8 @@ export interface ProposalPaymentInfo {
   valorParcela: number;
   saldoAposEntrada: number;
   etapasPersonalizadas: { descricao: string; valor: number }[];
+  /** rótulos de condições alternativas oferecidas ao cliente (ele escolhe uma) */
+  alternativas?: string[];
   garantiaEstendida?: boolean;
   garantiaValor?: number;
 }
@@ -155,8 +158,8 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
     );
   };
 
-  const renderPaymentRows = () => {
-    const p = data.payment;
+  const renderPaymentRows = (condicaoOverride?: string) => {
+    const p = { ...data.payment, condicao: condicaoOverride ?? data.payment.condicao };
     const rows: { label: string; value: string; strong?: boolean }[] = [];
     if (p.condicao === 'avista') {
       rows.push({ label: 'À vista antecipado', value: formatCurrency(data.valorFinal), strong: true });
@@ -356,7 +359,26 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
           );
         case 'pagamento':
           return (<>
-            {renderPaymentRows()}
+            {(() => {
+              const alts = (data.payment.alternativas ?? []).filter(Boolean);
+              if (!alts.length) return renderPaymentRows();
+              const opcoes = [data.payment.condicao, ...alts.map(mapCondicaoFromLabel)].filter(Boolean);
+              const unicas = opcoes.filter((v, i) => opcoes.indexOf(v) === i);
+              return (
+                <div className="pdoc-options">
+                  {unicas.map((cond, i) => (
+                    <div key={cond + i} className="pdoc-option pdoc-keep">
+                      {i > 0 && <div className="ou">ou</div>}
+                      <div className="opt-title">Opção {i + 1} — {getCondicaoLabel(cond)}</div>
+                      {renderPaymentRows(cond)}
+                    </div>
+                  ))}
+                  <p className="muted" style={{ marginTop: '2.5mm' }}>
+                    O cliente poderá escolher uma das opções acima no momento do aceite da proposta.
+                  </p>
+                </div>
+              );
+            })()}
             {data.payment.garantiaEstendida && (
               <p className="muted" style={{ marginTop: '3mm' }}>
                 Garantia estendida contratada por {EXTENDED_WARRANTY_YEARS} anos: {formatCurrency(valorGarantia)} — {EXTENDED_WARRANTY_DESCRIPTION}
