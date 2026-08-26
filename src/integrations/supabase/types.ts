@@ -668,6 +668,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_contract_for_signing: { Args: { _token: string }; Returns: Json }
       get_public_proposal: {
         Args: { _token: string }
         Returns: {
@@ -711,12 +712,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_public_tracking: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      sign_contract_public: {
+        Args: {
+          _document: string
+          _email: string
+          _hash: string
+          _ip: string
+          _location: string
+          _name: string
+          _signature_font: string
+          _token: string
+          _user_agent: string
+        }
+        Returns: Json
       }
     }
     Enums: {

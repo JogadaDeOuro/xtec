@@ -57,30 +57,15 @@ export default function AcompanhamentoPublico() {
     async function load() {
       if (!token) { setNotFound(true); setLoading(false); return; }
 
-      const { data: ps } = await supabase
-        .from('project_stages')
-        .select('id, client_id')
-        .eq('tracking_token', token)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('get_public_tracking', { _token: token });
 
-      if (!ps) { setNotFound(true); setLoading(false); return; }
+      const result = data as { client_name?: string; items?: StageItem[] } | null;
+      if (error || !result) { setNotFound(true); setLoading(false); return; }
 
-      const { data: client } = await supabase
-        .from('clients')
-        .select('name')
-        .eq('id', ps.client_id)
-        .maybeSingle();
-
-      setClientName(client?.name || 'Projeto');
-
-      const { data: items } = await supabase
-        .from('stage_items')
-        .select('*')
-        .eq('project_stage_id', ps.id)
-        .order('position');
-
-      setStages((items as StageItem[]) || []);
+      setClientName(result.client_name || 'Projeto');
+      setStages((result.items as StageItem[]) || []);
       setLoading(false);
+
     }
     load();
   }, [token]);
