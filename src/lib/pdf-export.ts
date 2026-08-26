@@ -40,7 +40,10 @@ export async function downloadProposalPdf(
   style.textContent = `${PRINT_PAGE_RULE}${buildDocumentCss(config)}
     .pdf-export { zoom:1 !important; transform:none !important; }
     .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important;
-      width:${A4_W_PX}px !important; min-height:${A4_H_PX}px !important; }`;
+      width:${A4_W_PX}px !important; height:${A4_H_PX}px !important;
+      min-height:${A4_H_PX}px !important; max-height:${A4_H_PX}px !important;
+      overflow:hidden !important; }`;
+
 
   host.appendChild(style);
 
