@@ -1,3 +1,5 @@
+import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
+import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';

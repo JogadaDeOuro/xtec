@@ -1,3 +1,5 @@
+import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
+import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
