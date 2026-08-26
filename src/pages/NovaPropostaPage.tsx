@@ -21,7 +21,8 @@ import {
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from '@/components/ui/command';
-import { mockProposals, formatCurrency, formatNumber, type SystemType, type Proposal, persistProposals } from '@/lib/mock-data';
+import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
+import { createProposal, type ProposalInput } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -898,121 +899,65 @@ export default function NovaPropostaPage() {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full gap-2" onClick={() => {
+                <Button className="w-full gap-2" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
                   if (potencia <= 0) { toast.error('Configure o sistema'); return; }
-                  
-                  const newProposal: Proposal = {
-                    id: `P${String(mockProposals.length + 1).padStart(3, '0')}`,
-                    clientId: client.id,
-                    clientName: client.name,
-                    systemType,
-                    potenciaKwp: potencia,
-                    valorSistema: valorFinal,
-                    producaoEstimada: producao,
-                    economiaMensal,
-                    economiaAnual,
-                    paybackAnos: paybackExato,
-                    status: 'rascunho',
-                    condicaoPagamento: getCondicaoLabel(condicao),
-                    desconto,
-                    margem: 0,
-                    comissao: 0,
-                    createdAt: new Date().toISOString().split('T')[0],
-                  };
-                  mockProposals.push(newProposal);
-                  persistProposals();
-                  toast.success('Rascunho salvo com sucesso!');
-                  navigate('/propostas');
+                  try {
+                    await createProposal(buildProposalInput('rascunho'));
+                    toast.success('Rascunho salvo com sucesso!');
+                    navigate('/propostas');
+                  } catch (e) {
+                    toast.error('Erro ao salvar: ' + (e as Error).message);
+                  }
                 }}>
                   <Save className="h-4 w-4" /> Salvar Rascunho
                 </Button>
                 <Button variant="outline" className="w-full gap-2" onClick={() => setPreviewOpen(true)}>
                   <Eye className="h-4 w-4" /> Visualizar
                 </Button>
-                <Button variant="secondary" className="w-full gap-2" onClick={() => {
+                <Button variant="secondary" className="w-full gap-2" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
                   if (potencia <= 0) { toast.error('Configure o sistema'); return; }
-                  // Save proposal as 'enviada'
-                  const proposalId = `P${String(mockProposals.length + 1).padStart(3, '0')}`;
-                  const newProposal: Proposal = {
-                    id: proposalId,
-                    clientId: client.id,
-                    clientName: client.name,
-                    systemType,
-                    potenciaKwp: potencia,
-                    valorSistema: valorFinal,
-                    producaoEstimada: producao,
-                    economiaMensal,
-                    economiaAnual,
-                    paybackAnos: paybackExato,
-                    status: 'enviada',
-                    condicaoPagamento: getCondicaoLabel(condicao),
-                    desconto,
-                    margem: 0,
-                    comissao: 0,
-                    createdAt: new Date().toISOString().split('T')[0],
-                  };
-                  mockProposals.push(newProposal);
-                  persistProposals();
-                  setPdfOpen(true);
-                  toast.success('Proposta enviada!');
+                  try {
+                    await createProposal(buildProposalInput('enviada'));
+                    setPdfOpen(true);
+                    toast.success('Proposta enviada!');
+                  } catch (e) {
+                    toast.error('Erro ao salvar: ' + (e as Error).message);
+                  }
                 }}>
                   <Send className="h-4 w-4" /> Enviar ao Cliente
                 </Button>
                 <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
                   if (potencia <= 0) { toast.error('Configure o sistema'); return; }
-                  // Save proposal as 'aceita'
-                  const proposalId = `P${String(mockProposals.length + 1).padStart(3, '0')}`;
-                  const existingProposal = mockProposals.find(p => p.clientId === client.id && p.systemType === systemType && p.potenciaKwp === potencia);
-                  if (existingProposal) {
-                    existingProposal.status = 'aceita';
-                  } else {
-                    const newProposal: Proposal = {
-                      id: proposalId,
-                      clientId: client.id,
-                      clientName: client.name,
-                      systemType,
-                      potenciaKwp: potencia,
-                      valorSistema: valorFinal,
-                      producaoEstimada: producao,
-                      economiaMensal,
-                      economiaAnual,
-                      paybackAnos: paybackExato,
-                      status: 'aceita',
-                      condicaoPagamento: getCondicaoLabel(condicao),
-                      desconto,
-                      margem: 0,
-                      comissao: 0,
-                      createdAt: new Date().toISOString().split('T')[0],
-                    };
-                    mockProposals.push(newProposal);
+                  try {
+                    const saved = await createProposal(buildProposalInput('aceita'));
+                    const { error } = await supabase.from('contracts').insert({
+                      proposal_id: saved.id,
+                      client_id: client.id,
+                      client_name: client.name,
+                      client_document: client.document,
+                      client_email: client.email,
+                      client_phone: client.phone,
+                      client_address: client.address,
+                      client_city: client.city,
+                      client_state: client.state,
+                      system_type: systemType,
+                      potencia_kwp: potencia,
+                      valor: valorFinal,
+                      condicao_pagamento: getCondicaoLabel(condicao),
+                      garantia_estendida: garantiaEstendida,
+                      garantia_estendida_valor: garantiaValor,
+                      status: 'rascunho',
+                      user_id: user?.id ?? null,
+                    });
+                    if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
+                    toast.success('Proposta aceita e contrato criado!');
+                    navigate('/contratos');
+                  } catch (e) {
+                    toast.error('Erro ao salvar: ' + (e as Error).message);
                   }
-                  persistProposals();
-                  const condicaoLabel = getCondicaoLabel(condicao);
-                  const { error } = await supabase.from('contracts').insert({
-                    proposal_id: existingProposal?.id || proposalId,
-                    client_id: client.id,
-                    client_name: client.name,
-                    client_document: client.document,
-                    client_email: client.email,
-                    client_phone: client.phone,
-                    client_address: client.address,
-                    client_city: client.city,
-                    client_state: client.state,
-                    system_type: systemType,
-                    potencia_kwp: potencia,
-                    valor: valorFinal,
-                    condicao_pagamento: condicaoLabel,
-                    garantia_estendida: garantiaEstendida,
-                    garantia_estendida_valor: garantiaValor,
-                    status: 'rascunho',
-                    user_id: user?.id ?? null,
-                  });
-                  if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
-                  toast.success('Proposta aceita e contrato criado!');
-                  navigate('/contratos');
                 }}>
                   <FileSignature className="h-4 w-4" /> Criar Contrato
                 </Button>
