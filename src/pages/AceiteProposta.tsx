@@ -103,12 +103,21 @@ export default function AceiteProposta() {
     );
   }
 
-  const garantiaValor = garantia ? calcExtendedWarranty(proposal.valorSistema) : 0;
-  const totalGeral = proposal.valorSistema + garantiaValor;
-  const opcoesPagamento = [proposal.condicaoPagamento, ...(proposal.condicoesAlternativas ?? [])]
-    .filter(Boolean)
-    .filter((v, i, arr) => arr.indexOf(v) === i);
-  const milestones = getMilestones(mapCondicaoFromLabel(condicaoEscolhida || proposal.condicaoPagamento));
+  const baseValor = proposal.valorSistema;
+  const opcoesPagamento = [
+    {
+      raw: proposal.condicaoPagamento,
+      cond: mapCondicaoFromLabel(proposal.condicaoPagamento),
+      total: proposal.valorSistema,
+      rows: buildPaymentRows(mapCondicaoFromLabel(proposal.condicaoPagamento), { valorTotal: proposal.valorSistema }),
+    },
+    ...(proposal.condicoesAlternativas ?? []).filter(Boolean).map(raw => {
+      const alt = parseAlt(raw);
+      return { raw, cond: alt.value, total: altTotal(alt, proposal.valorSistema), rows: altRows(alt, proposal.valorSistema) };
+    }),
+  ].filter(o => o.cond);
+  const opcaoAtual = opcoesPagamento.find(o => o.raw === condicaoEscolhida) ?? opcoesPagamento[0];
+  const milestones = opcaoAtual?.rows ?? [];
   const docOk = isValidCpfCnpj(documento);
 
   if (result) {
@@ -178,7 +187,7 @@ export default function AceiteProposta() {
               </div>
             </section>
 
-            {(milestones || opcoesPagamento.length > 1) && (
+            {(milestones.length > 0 || opcoesPagamento.length > 1) && (
               <>
                 <Separator />
                 <section>
@@ -188,28 +197,31 @@ export default function AceiteProposta() {
                       <p className="text-xs text-muted-foreground">Escolha a forma de pagamento desejada:</p>
                       {opcoesPagamento.map(op => (
                         <label
-                          key={op}
+                          key={op.raw}
                           className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${
-                            condicaoEscolhida === op ? 'border-primary bg-primary/5' : 'border-border'
+                            condicaoEscolhida === op.raw ? 'border-primary bg-primary/5' : 'border-border'
                           }`}
                         >
                           <input
                             type="radio"
                             name="condicao"
                             className="accent-primary"
-                            checked={condicaoEscolhida === op}
-                            onChange={() => setCondicaoEscolhida(op)}
+                            checked={condicaoEscolhida === op.raw}
+                            onChange={() => setCondicaoEscolhida(op.raw)}
                           />
-                          <span>{op}</span>
+                          <span className="flex-1">
+                            <span className="font-medium">{getCondicaoLabel(op.cond)}</span>
+                            <span className="block text-xs text-muted-foreground">{formatCurrency(op.total)}</span>
+                          </span>
                         </label>
                       ))}
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    {(milestones ?? []).map(({ label, pct }) => (
-                      <div key={label} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{pct}% — {label}</span>
-                        <span className="font-medium">{formatCurrency(proposal.valorSistema * pct / 100)}</span>
+                    {milestones.map((r, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{r.label}</span>
+                        <span className={r.strong ? 'font-bold text-primary' : 'font-medium'}>{formatCurrency(r.value)}</span>
                       </div>
                     ))}
                   </div>
