@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format, subDays, subMonths, startOfYear, subYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DollarSign, TrendingUp, BarChart3, Target, CalendarIcon } from 'lucide-react';
+import { DollarSign, TrendingUp, BarChart3, Target, CalendarIcon, FileText } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie, Cell, Legend,
