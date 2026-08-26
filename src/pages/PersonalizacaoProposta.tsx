@@ -150,13 +150,10 @@ export default function PersonalizacaoProposta() {
   useEffect(() => {
     (async () => {
       try {
-        const [cfg, tpls, eqs] = await Promise.all([
-          fetchProposalSettings(), fetchTemplates(), fetchEquipment(),
-        ]);
+        const [cfg, eqs] = await Promise.all([fetchProposalSettings(), fetchEquipment()]);
         setConfig(cfg);
         setEquipment(eqs);
         setTemplates(await seedDefaultTemplates(cfg));
-        void tpls;
       } catch {
         toast.error('Não foi possível carregar a personalização');
       } finally { setLoading(false); }
