@@ -864,6 +864,24 @@ export default function NovaPropostaPage() {
                   </>
                 )}
 
+                {garantiaEstendida && (
+                  <>
+                    <Separator />
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Garantia estendida ({EXTENDED_WARRANTY_YEARS} anos)</span>
+                        <span className="font-medium">{formatCurrency(garantiaValor)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Total geral</span>
+                        <span className="text-base font-bold text-primary">{formatCurrency(totalGeral)}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+
+
                 <Separator />
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-success/10 p-3 text-center">
