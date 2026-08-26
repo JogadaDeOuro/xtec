@@ -169,6 +169,7 @@ export default function NovaPropostaPage() {
   const [desconto, setDesconto] = useState(0);
   const [descontoTipo, setDescontoTipo] = useState<'percent' | 'fixed'>('percent');
   const [condicao, setCondicao] = useState('');
+  const [garantiaEstendida, setGarantiaEstendida] = useState(false);
   const [tarifaKwh, setTarifaKwh] = useState(0.85);
   const [entradaValor, setEntradaValor] = useState(0);
   const [numParcelas, setNumParcelas] = useState(12);
