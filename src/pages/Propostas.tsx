@@ -61,8 +61,7 @@ export default function Propostas() {
     }
   };
 
-  const handleCopyLink = async (token: string) => {
-    const url = `${window.location.origin}/proposta/${token}`;
+  const copyUrl = async (url: string, label: string) => {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
