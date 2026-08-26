@@ -24,6 +24,8 @@ const Financeiro = lazy(() => import("./pages/Financeiro"));
 const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const PersonalizacaoProposta = lazy(() => import("./pages/PersonalizacaoProposta"));
+const ModeloContrato = lazy(() => import("./pages/ModeloContrato"));
+
 const WhatsApp = lazy(() => import("./pages/WhatsApp"));
 const WhatsAppAdmin = lazy(() => import("./pages/WhatsAppAdmin"));
 const Login = lazy(() => import("./pages/Login"));
