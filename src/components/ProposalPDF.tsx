@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { Printer, Download } from 'lucide-react';
+import { getMilestones, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
 interface PaymentInfo {
   condicao: string;
@@ -11,6 +12,8 @@ interface PaymentInfo {
   valorParcela: number;
   saldoAposEntrada: number;
   etapasPersonalizadas: { descricao: string; valor: number }[];
+  garantiaEstendida?: boolean;
+  garantiaValor?: number;
 }
 
 interface ProposalPDFProps {
@@ -106,17 +109,11 @@ export function ProposalPDF({
     const { condicao, entradaValor, numParcelas, valorParcela, saldoAposEntrada, etapasPersonalizadas } = payment;
     if (!condicao) return null;
     if (condicao === 'avista') return <div className="payment-row"><span>À vista antecipado</span><span style={{ fontWeight: 700 }}>{formatCurrency(valorFinal)}</span></div>;
-    if (condicao === '40-20-20-20') return (
+    const milestones = getMilestones(condicao);
+    if (milestones) return (
       <div>
-        {[{ l: 'Na aprovação (40%)', v: 0.4 }, { l: 'Material (20%)', v: 0.2 }, { l: 'Instalação (20%)', v: 0.2 }, { l: 'Ativação (20%)', v: 0.2 }].map(({ l, v }) => (
-          <div key={l} className="payment-row"><span>{l}</span><span style={{ fontWeight: 600 }}>{formatCurrency(valorFinal * v)}</span></div>
-        ))}
-      </div>
-    );
-    if (condicao === '40-40-20') return (
-      <div>
-        {[{ l: 'Aprovação (40%)', v: 0.4 }, { l: 'Instalação (40%)', v: 0.4 }, { l: 'Ativação (20%)', v: 0.2 }].map(({ l, v }) => (
-          <div key={l} className="payment-row"><span>{l}</span><span style={{ fontWeight: 600 }}>{formatCurrency(valorFinal * v)}</span></div>
+        {milestones.map(({ label, pct }) => (
+          <div key={label} className="payment-row"><span>{label} ({pct}%)</span><span style={{ fontWeight: 600 }}>{formatCurrency(valorFinal * pct / 100)}</span></div>
         ))}
       </div>
     );
@@ -216,6 +213,18 @@ export function ProposalPDF({
                 <div className="section">
                   <div className="section-title">Condição de Pagamento</div>
                   {renderPayment()}
+                </div>
+              </>
+            )}
+
+            {payment.garantiaEstendida && (
+              <>
+                <hr />
+                <div className="section">
+                  <div className="section-title">Garantia Estendida ({EXTENDED_WARRANTY_YEARS} anos)</div>
+                  <p style={{ fontSize: '12px', marginBottom: '6px' }}>{EXTENDED_WARRANTY_DESCRIPTION}</p>
+                  <div className="payment-row"><span>Serviço adicional (8% do contrato)</span><span style={{ fontWeight: 700 }}>{formatCurrency(payment.garantiaValor || 0)}</span></div>
+                  <div className="payment-row"><span>Total geral</span><span style={{ fontWeight: 700 }}>{formatCurrency(valorFinal + (payment.garantiaValor || 0))}</span></div>
                 </div>
               </>
             )}
