@@ -187,3 +187,46 @@ export const PROPOSAL_THEMES: ProposalTheme[] = [
 export function getTheme(id: string): ProposalTheme | undefined {
   return PROPOSAL_THEMES.find(t => t.id === id);
 }
+
+/**
+ * Combina a configuração de um modelo com os ativos já cadastrados,
+ * para que trocar de modelo nunca apague logos, imagens, galeria,
+ * dados da empresa ou textos personalizados.
+ */
+export function applyTemplateConfig(
+  current: ProposalDocConfig,
+  template: ProposalDocConfig,
+): ProposalDocConfig {
+  const contentById = new Map(current.sections.map(s => [s.id, s]));
+  return {
+    ...template,
+    branding: {
+      ...template.branding,
+      logoPrincipal: current.branding.logoPrincipal,
+      logoReduzido: current.branding.logoReduzido,
+      logoClaro: current.branding.logoClaro,
+      logoEscuro: current.branding.logoEscuro,
+      icone: current.branding.icone,
+      imagemCapa: current.branding.imagemCapa,
+      imagensInstitucionais: current.branding.imagensInstitucionais,
+      escalaLogoCapa: current.branding.escalaLogoCapa,
+      escalaLogoCabecalho: current.branding.escalaLogoCabecalho,
+      escalaLogoRodape: current.branding.escalaLogoRodape,
+    },
+    cover: {
+      ...template.cover,
+      titulo: current.cover.titulo,
+      subtitulo: current.cover.subtitulo,
+      imagemFundo: current.cover.imagemFundo,
+    },
+    company: current.company,
+    texts: current.texts,
+    assumptions: current.assumptions,
+    footer: { ...template.footer, texto: current.footer.texto },
+    gallery: { ...template.gallery, titulo: current.gallery.titulo, descricao: current.gallery.descricao, itens: current.gallery.itens },
+    sections: template.sections.map(s => {
+      const cur = contentById.get(s.id);
+      return cur ? { ...s, content: cur.content ?? s.content, imageUrl: cur.imageUrl ?? s.imageUrl } : s;
+    }),
+  };
+}
