@@ -447,6 +447,7 @@ export type Database = {
           client_name: string
           comissao: number
           condicao_pagamento: string | null
+          condicoes_alternativas: string[]
           consultor: string | null
           consumo_medio: number
           created_at: string
@@ -481,6 +482,7 @@ export type Database = {
           client_name: string
           comissao?: number
           condicao_pagamento?: string | null
+          condicoes_alternativas?: string[]
           consultor?: string | null
           consumo_medio?: number
           created_at?: string
@@ -515,6 +517,7 @@ export type Database = {
           client_name?: string
           comissao?: number
           condicao_pagamento?: string | null
+          condicoes_alternativas?: string[]
           consultor?: string | null
           consumo_medio?: number
           created_at?: string
@@ -668,10 +671,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_proposal_public: {
-        Args: { _document: string; _garantia: boolean; _token: string }
-        Returns: Json
-      }
+      accept_proposal_public:
+        | {
+            Args: { _document: string; _garantia: boolean; _token: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _condicao?: string
+              _document: string
+              _garantia: boolean
+              _token: string
+            }
+            Returns: Json
+          }
       get_client_portal: { Args: { _document: string }; Returns: Json }
       get_contract_for_signing: { Args: { _token: string }; Returns: Json }
       get_public_proposal: {
@@ -682,6 +695,7 @@ export type Database = {
           client_name: string
           comissao: number
           condicao_pagamento: string | null
+          condicoes_alternativas: string[]
           consultor: string | null
           consumo_medio: number
           created_at: string

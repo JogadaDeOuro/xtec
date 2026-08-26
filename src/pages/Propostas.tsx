@@ -1,3 +1,4 @@
+import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -279,7 +280,9 @@ export default function Propostas() {
           economiaTotal20={economiaTotal20(pdfProposal.economiaAnual)}
           docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
           payment={{
-            condicao: pdfProposal.condicaoPagamento,
+            condicao: mapCondicaoFromLabel(pdfProposal.condicaoPagamento),
+            alternativas: pdfProposal.condicoesAlternativas ?? [],
+
             entradaValor: 0,
             numParcelas: 0,
             valorParcela: 0,

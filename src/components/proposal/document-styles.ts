@@ -117,6 +117,15 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-invest .row.total { background:${headerBg}; color:#fff; font-size:14pt; font-weight:800; border-bottom:none; }
   .pdoc-invest .row.desc { color:var(--secundaria); }
 
+  /* opções de pagamento */
+  .pdoc-options { display:block; }
+  .pdoc-option { break-inside:avoid; page-break-inside:avoid; margin-bottom:3mm; }
+  .pdoc-option .opt-title { font-size:9.5pt; font-weight:800; color:var(--primaria);
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:1.8mm; }
+  .pdoc-option .ou { text-align:center; font-size:8.5pt; font-weight:800; letter-spacing:.2em;
+    text-transform:uppercase; color:#6b7a6e; margin:2.5mm 0; }
+
+
   /* barra de projeção */
   .pdoc-bars { display:flex; align-items:flex-end; gap:2mm; height:34mm; break-inside:avoid; }
   .pdoc-bars .bar { flex:1; background:${headerBg}; border-radius:3px 3px 0 0; position:relative; }

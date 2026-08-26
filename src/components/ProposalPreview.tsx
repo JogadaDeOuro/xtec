@@ -13,6 +13,8 @@ interface PaymentInfo {
   valorParcela: number;
   saldoAposEntrada: number;
   etapasPersonalizadas: { descricao: string; valor: number }[];
+  alternativas?: string[];
+
   garantiaEstendida?: boolean;
   garantiaValor?: number;
 }
