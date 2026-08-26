@@ -54,14 +54,10 @@ export function ProposalPreview({
 
     if (condicao === 'avista') return <p className="text-sm font-medium">À vista antecipado</p>;
 
-    if (condicao === '40-20-20-20') return (
+    const milestones = getMilestones(condicao);
+    if (milestones) return (
       <div className="space-y-1.5">
-        {[
-          { label: 'Na aprovação da proposta', pct: 40 },
-          { label: 'Na chegada do material', pct: 20 },
-          { label: 'Na instalação', pct: 20 },
-          { label: 'Na ativação do sistema', pct: 20 },
-        ].map(({ label, pct }) => (
+        {milestones.map(({ label, pct }) => (
           <div key={label} className="flex justify-between text-sm">
             <span className="text-muted-foreground">{pct}% — {label}</span>
             <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
@@ -70,20 +66,6 @@ export function ProposalPreview({
       </div>
     );
 
-    if (condicao === '40-40-20') return (
-      <div className="space-y-1.5">
-        {[
-          { label: 'Na aprovação', pct: 40 },
-          { label: 'Na instalação', pct: 40 },
-          { label: 'Na ativação', pct: 20 },
-        ].map(({ label, pct }) => (
-          <div key={label} className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{pct}% — {label}</span>
-            <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
-          </div>
-        ))}
-      </div>
-    );
 
     if (condicao === 'entrada-saldo') return (
       <div className="space-y-1.5">
