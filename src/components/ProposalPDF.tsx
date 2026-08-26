@@ -50,6 +50,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
   const [equipamentos, setEquipamentos] = useState<EquipmentItem[]>([]);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
