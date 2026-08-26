@@ -228,6 +228,60 @@ export type Database = {
           },
         ]
       }
+      equipment_catalog: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          datasheet_url: string | null
+          description: string | null
+          efficiency: number
+          id: string
+          image_url: string | null
+          manufacturer: string
+          model: string
+          notes: string | null
+          potencia_w: number
+          updated_at: string
+          warranty_defect_years: number
+          warranty_performance_years: number
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          datasheet_url?: string | null
+          description?: string | null
+          efficiency?: number
+          id?: string
+          image_url?: string | null
+          manufacturer?: string
+          model?: string
+          notes?: string | null
+          potencia_w?: number
+          updated_at?: string
+          warranty_defect_years?: number
+          warranty_performance_years?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          datasheet_url?: string | null
+          description?: string | null
+          efficiency?: number
+          id?: string
+          image_url?: string | null
+          manufacturer?: string
+          model?: string
+          notes?: string | null
+          potencia_w?: number
+          updated_at?: string
+          warranty_defect_years?: number
+          warranty_performance_years?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -323,6 +377,69 @@ export type Database = {
           },
         ]
       }
+      proposal_settings: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          scope: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          scope?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          scope?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      proposal_templates: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       proposals: {
         Row: {
           accepted_at: string | null
@@ -330,25 +447,32 @@ export type Database = {
           client_name: string
           comissao: number
           condicao_pagamento: string | null
+          consultor: string | null
           consumo_medio: number
           created_at: string
           desconto: number
+          doc_config: Json | null
           economia_anual: number
           economia_mensal: number
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
           margem: number
+          num_modulos: number
           numero: string | null
           payback_anos: number
           potencia_kwp: number
+          potencia_modulo_w: number
           producao_estimada: number
           public_token: string
           status: string
           system_type: string
+          tarifa_kwh: number
+          template_id: string | null
           updated_at: string
           user_id: string | null
           valor_sistema: number
+          versao: number
           viewed_at: string | null
         }
         Insert: {
@@ -357,25 +481,32 @@ export type Database = {
           client_name: string
           comissao?: number
           condicao_pagamento?: string | null
+          consultor?: string | null
           consumo_medio?: number
           created_at?: string
           desconto?: number
+          doc_config?: Json | null
           economia_anual?: number
           economia_mensal?: number
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
           margem?: number
+          num_modulos?: number
           numero?: string | null
           payback_anos?: number
           potencia_kwp?: number
+          potencia_modulo_w?: number
           producao_estimada?: number
           public_token?: string
           status?: string
           system_type?: string
+          tarifa_kwh?: number
+          template_id?: string | null
           updated_at?: string
           user_id?: string | null
           valor_sistema?: number
+          versao?: number
           viewed_at?: string | null
         }
         Update: {
@@ -384,25 +515,32 @@ export type Database = {
           client_name?: string
           comissao?: number
           condicao_pagamento?: string | null
+          consultor?: string | null
           consumo_medio?: number
           created_at?: string
           desconto?: number
+          doc_config?: Json | null
           economia_anual?: number
           economia_mensal?: number
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
           margem?: number
+          num_modulos?: number
           numero?: string | null
           payback_anos?: number
           potencia_kwp?: number
+          potencia_modulo_w?: number
           producao_estimada?: number
           public_token?: string
           status?: string
           system_type?: string
+          tarifa_kwh?: number
+          template_id?: string | null
           updated_at?: string
           user_id?: string | null
           valor_sistema?: number
+          versao?: number
           viewed_at?: string | null
         }
         Relationships: [
@@ -538,25 +676,32 @@ export type Database = {
           client_name: string
           comissao: number
           condicao_pagamento: string | null
+          consultor: string | null
           consumo_medio: number
           created_at: string
           desconto: number
+          doc_config: Json | null
           economia_anual: number
           economia_mensal: number
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
           margem: number
+          num_modulos: number
           numero: string | null
           payback_anos: number
           potencia_kwp: number
+          potencia_modulo_w: number
           producao_estimada: number
           public_token: string
           status: string
           system_type: string
+          tarifa_kwh: number
+          template_id: string | null
           updated_at: string
           user_id: string | null
           valor_sistema: number
+          versao: number
           viewed_at: string | null
         }[]
         SetofOptions: {
