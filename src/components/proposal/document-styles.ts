@@ -52,7 +52,8 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-cover .bg { position:absolute; inset:0; background-size:cover; background-position:center; }
   .pdoc-cover .mask { position:absolute; inset:0;
     background:linear-gradient(160deg, rgba(0,0,0,.15), ${b.corPrimaria}); }
-  .pdoc-cover .inner { position:relative; padding:22mm var(--margem); display:flex; flex-direction:column; gap:6mm; }
+  .pdoc-cover .topbar { position:relative; padding:16mm var(--margem) 0; }
+  .pdoc-cover .inner { position:relative; margin-top:auto; padding:0 var(--margem) 12mm; display:flex; flex-direction:column; gap:5mm; }
   .pdoc-cover .inner.centro { align-items:center; text-align:center; }
   .pdoc-cover img.logo { max-height:20mm; max-width:70mm; object-fit:contain; }
   .pdoc-cover h1 { font-size:32pt; line-height:1.06; font-weight:800; letter-spacing:-.5px; max-width:150mm; }

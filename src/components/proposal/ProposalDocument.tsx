@@ -432,10 +432,12 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
           <div className="pdoc-cover">
             {coverImg && <div className="bg" style={{ backgroundImage: `url(${coverImg})` }} />}
             {cv.mascara && <div className="mask" style={{ opacity: cv.mascaraIntensidade }} />}
-            <div className={`inner ${cv.alinhamento}`}>
-              {cv.mostrarLogo && (config.branding.logoEscuro || config.branding.logoPrincipal) && (
+            {cv.mostrarLogo && (config.branding.logoEscuro || config.branding.logoPrincipal) && (
+              <div className="topbar" style={cv.alinhamento === 'centro' ? { textAlign: 'center' } : undefined}>
                 <img className="logo" src={config.branding.logoEscuro || config.branding.logoPrincipal} alt="" />
-              )}
+              </div>
+            )}
+            <div className={`inner ${cv.alinhamento}`}>
               <h1>{cv.titulo}</h1>
               {cv.subtitulo && <div className="sub">{cv.subtitulo}</div>}
               {cv.mostrarCliente && data.clientName && (
