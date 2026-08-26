@@ -239,6 +239,10 @@ export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
     logoEscuro: '',
     icone: '',
     imagemCapa: '',
+    escalaLogoCabecalho: 1,
+    escalaLogoRodape: 1,
+    escalaLogoCapa: 1,
+
     imagensInstitucionais: [],
     corPrimaria: '#1B5E20',
     corSecundaria: '#2D7A4F',
