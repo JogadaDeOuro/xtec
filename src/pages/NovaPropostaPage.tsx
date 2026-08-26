@@ -1050,6 +1050,8 @@ export default function NovaPropostaPage() {
           valorParcela,
           saldoAposEntrada,
           etapasPersonalizadas,
+          garantiaEstendida,
+          garantiaValor,
         }}
       />
 
@@ -1082,6 +1084,8 @@ export default function NovaPropostaPage() {
           valorParcela,
           saldoAposEntrada,
           etapasPersonalizadas,
+          garantiaEstendida,
+          garantiaValor,
         }}
       />
 
