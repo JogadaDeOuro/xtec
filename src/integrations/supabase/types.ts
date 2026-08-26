@@ -668,6 +668,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_proposal_public: {
+        Args: { _document: string; _garantia: boolean; _token: string }
+        Returns: Json
+      }
+      get_client_portal: { Args: { _document: string }; Returns: Json }
       get_contract_for_signing: { Args: { _token: string }; Returns: Json }
       get_public_proposal: {
         Args: { _token: string }

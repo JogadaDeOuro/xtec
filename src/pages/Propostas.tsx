@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, FileText, Send, Copy, Trash2 } from 'lucide-react';
+import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { ProposalPDF } from '@/components/ProposalPDF';
+import type { ProposalDocConfig } from '@/lib/proposal-config';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -20,12 +22,20 @@ import {
 
 const ITEMS_PER_PAGE = 10;
 
+/** Economia acumulada em 20 anos com reajuste tarifário de 5% a.a. */
+function economiaTotal20(economiaAnual: number): number {
+  let acc = 0;
+  for (let ano = 1; ano <= 20; ano++) acc += economiaAnual * Math.pow(1.05, ano - 1);
+  return Math.round(acc);
+}
+
 export default function Propostas() {
   const [search, setSearch] = useState('');
   const [proposals, setProposals] = useState<ProposalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'all'>('all');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [pdfProposal, setPdfProposal] = useState<ProposalRecord | null>(null);
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
@@ -51,8 +61,7 @@ export default function Propostas() {
     }
   };
 
-  const handleCopyLink = async (token: string) => {
-    const url = `${window.location.origin}/proposta/${token}`;
+  const copyUrl = async (url: string, label: string) => {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
@@ -66,11 +75,17 @@ export default function Propostas() {
         document.execCommand('copy');
         document.body.removeChild(el);
       }
-      toast.success('Link da proposta copiado!', { description: url });
+      toast.success(`${label} copiado!`, { description: url });
     } catch {
       toast.error('Não foi possível copiar', { description: url });
     }
   };
+
+  const handleCopyLink = (token: string) =>
+    copyUrl(`${window.location.origin}/proposta/${token}`, 'Link da proposta');
+
+  const handleCopyAcceptLink = (token: string) =>
+    copyUrl(`${window.location.origin}/aceite/${token}`, 'Link de aceite');
 
   // Sort by newest first
   const sorted = [...proposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -168,8 +183,14 @@ export default function Propostas() {
                     <p className="text-xs text-muted-foreground">Economia: {formatCurrency(p.economiaMensal)}/mês</p>
                   </div>
                   <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Send className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Abrir PDF / imprimir"
+                      onClick={() => setPdfProposal(p)}
+                    >
+                      <Printer className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -179,6 +200,15 @@ export default function Propostas() {
                       onClick={() => handleCopyLink(p.publicToken)}
                     >
                       <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-primary"
+                      title="Copiar link de aceite (cliente confirma com CPF/CNPJ)"
+                      onClick={() => handleCopyAcceptLink(p.publicToken)}
+                    >
+                      <Link2 className="h-4 w-4" />
                     </Button>
                     {isAdmin && (
                       <AlertDialog>
@@ -225,6 +255,41 @@ export default function Propostas() {
           </div>
         )}
       </div>
+
+      {pdfProposal && (
+        <ProposalPDF
+          open={!!pdfProposal}
+          onOpenChange={(o) => { if (!o) setPdfProposal(null); }}
+          clientName={pdfProposal.clientName}
+          systemType={pdfProposal.systemType}
+          potencia={pdfProposal.potenciaKwp}
+          numPlacas={pdfProposal.numModulos}
+          potenciaModuloW={pdfProposal.potenciaModuloW}
+          producao={pdfProposal.producaoEstimada}
+          consumoMedio={pdfProposal.consumoMedio}
+          numero={pdfProposal.numero}
+          consultor={pdfProposal.consultor}
+          valorBruto={pdfProposal.valorSistema + pdfProposal.desconto}
+          valorFinal={pdfProposal.valorSistema}
+          desconto={pdfProposal.desconto}
+          tarifaKwh={pdfProposal.tarifaKwh}
+          economiaMensal={pdfProposal.economiaMensal}
+          economiaAnual={pdfProposal.economiaAnual}
+          paybackExato={pdfProposal.paybackAnos}
+          economiaTotal20={economiaTotal20(pdfProposal.economiaAnual)}
+          docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
+          payment={{
+            condicao: pdfProposal.condicaoPagamento,
+            entradaValor: 0,
+            numParcelas: 0,
+            valorParcela: 0,
+            saldoAposEntrada: 0,
+            etapasPersonalizadas: [],
+            garantiaEstendida: pdfProposal.garantiaEstendida,
+            garantiaValor: pdfProposal.garantiaEstendidaValor,
+          }}
+        />
+      )}
     </div>
   );
 }
