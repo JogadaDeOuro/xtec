@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Send, Copy, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  mockProposals, proposalStatusLabels, proposalStatusColors, formatCurrency, type Proposal, type ProposalStatus, persistProposals,
+  proposalStatusLabels, proposalStatusColors, formatCurrency, type ProposalStatus,
 } from '@/lib/mock-data';
+import { fetchProposals, deleteProposal, type ProposalRecord } from '@/lib/proposals';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,25 +22,40 @@ const ITEMS_PER_PAGE = 10;
 
 export default function Propostas() {
   const [search, setSearch] = useState('');
-  const [proposals, setProposals] = useState<Proposal[]>([...mockProposals]);
+  const [proposals, setProposals] = useState<ProposalRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'all'>('all');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
-  const handleDelete = (id: string) => {
-    const idx = mockProposals.findIndex(p => p.id === id);
-    if (idx !== -1) mockProposals.splice(idx, 1);
-    persistProposals();
-    setProposals(prev => prev.filter(p => p.id !== id));
-    toast.success('Proposta excluída');
+  const load = useCallback(async () => {
+    try {
+      setProposals(await fetchProposals());
+    } catch (e) {
+      toast.error('Erro ao carregar propostas');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProposal(id);
+      setProposals(prev => prev.filter(p => p.id !== id));
+      toast.success('Proposta excluída');
+    } catch (e) {
+      toast.error('Erro ao excluir proposta');
+    }
   };
 
   // Sort by newest first
   const sorted = [...proposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const filtered = sorted.filter(p => {
-    const matchSearch = p.clientName.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = p.clientName.toLowerCase().includes(search.toLowerCase()) || p.numero.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -99,7 +116,10 @@ export default function Propostas() {
       )}
 
       <div className="space-y-3">
-        {visible.map((p) => (
+        {loading && (
+          <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        )}
+        {!loading && visible.map((p) => (
           <Card key={p.id} className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
             onClick={() => navigate(`/propostas/${p.id}`)}
           >
@@ -117,7 +137,7 @@ export default function Propostas() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {p.id} · {p.systemType.toUpperCase()} · {p.potenciaKwp} kWp · {p.createdAt}
+                      {p.numero} · {p.systemType.toUpperCase()} · {p.potenciaKwp} kWp · {p.createdAt}
                     </p>
                   </div>
                 </div>
@@ -144,7 +164,7 @@ export default function Propostas() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Excluir proposta?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tem certeza que deseja excluir a proposta {p.id} de {p.clientName}?
+                              Tem certeza que deseja excluir a proposta {p.numero} de {p.clientName}?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -163,7 +183,7 @@ export default function Propostas() {
           </Card>
         ))}
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p>Nenhuma proposta encontrada</p>

@@ -323,6 +323,95 @@ export type Database = {
           },
         ]
       }
+      proposals: {
+        Row: {
+          accepted_at: string | null
+          client_id: string | null
+          client_name: string
+          comissao: number
+          condicao_pagamento: string | null
+          consumo_medio: number
+          created_at: string
+          desconto: number
+          economia_anual: number
+          economia_mensal: number
+          garantia_estendida: boolean
+          garantia_estendida_valor: number
+          id: string
+          margem: number
+          numero: string | null
+          payback_anos: number
+          potencia_kwp: number
+          producao_estimada: number
+          status: string
+          system_type: string
+          updated_at: string
+          user_id: string | null
+          valor_sistema: number
+          viewed_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id?: string | null
+          client_name: string
+          comissao?: number
+          condicao_pagamento?: string | null
+          consumo_medio?: number
+          created_at?: string
+          desconto?: number
+          economia_anual?: number
+          economia_mensal?: number
+          garantia_estendida?: boolean
+          garantia_estendida_valor?: number
+          id?: string
+          margem?: number
+          numero?: string | null
+          payback_anos?: number
+          potencia_kwp?: number
+          producao_estimada?: number
+          status?: string
+          system_type?: string
+          updated_at?: string
+          user_id?: string | null
+          valor_sistema?: number
+          viewed_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string | null
+          client_name?: string
+          comissao?: number
+          condicao_pagamento?: string | null
+          consumo_medio?: number
+          created_at?: string
+          desconto?: number
+          economia_anual?: number
+          economia_mensal?: number
+          garantia_estendida?: boolean
+          garantia_estendida_valor?: number
+          id?: string
+          margem?: number
+          numero?: string | null
+          payback_anos?: number
+          potencia_kwp?: number
+          producao_estimada?: number
+          status?: string
+          system_type?: string
+          updated_at?: string
+          user_id?: string | null
+          valor_sistema?: number
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stage_items: {
         Row: {
           created_at: string | null

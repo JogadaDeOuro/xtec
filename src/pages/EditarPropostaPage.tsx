@@ -10,13 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { mockProposals, formatCurrency, formatNumber, type SystemType, persistProposals } from '@/lib/mock-data';
+import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
+import { fetchProposal, updateProposal, updateProposalStatus, type ProposalInput, type ProposalRecord } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, ReferenceDot,
 } from 'recharts';
-import { ArrowLeft, Save, Send, Eye, Zap, TrendingUp, DollarSign, Clock, Plus, Trash2, FileSignature } from 'lucide-react';
+import { ArrowLeft, Save, Send, Eye, Zap, TrendingUp, DollarSign, Clock, Plus, Trash2, FileSignature, Loader2 } from 'lucide-react';
 import { ProposalPreview } from '@/components/ProposalPreview';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -67,7 +68,8 @@ interface SupaClient {
 export default function EditarPropostaPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const proposal = mockProposals.find(p => p.id === id);
+  const [proposal, setProposal] = useState<ProposalRecord | null>(null);
+  const [loadingProposal, setLoadingProposal] = useState(true);
 
   const [clients, setClients] = useState<SupaClient[]>([]);
   const [clientId, setClientId] = useState(proposal?.clientId || '');
@@ -116,6 +118,29 @@ export default function EditarPropostaPage() {
   const [pdfOpen, setPdfOpen] = useState(false);
   const [garantiaEstendida, setGarantiaEstendida] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    if (!id) { setLoadingProposal(false); return; }
+    fetchProposal(id)
+      .then(p => {
+        if (!active) return;
+        if (p) {
+          setProposal(p);
+          setClientId(p.clientId);
+          setSystemType(p.systemType);
+          setPotenciaKwp(p.potenciaKwp);
+          if (p.potenciaKwp > 0) setValorKwp(Math.round(p.valorSistema / p.potenciaKwp));
+          setDesconto(p.desconto);
+          setCondicao(mapCondicaoFromLabel(p.condicaoPagamento));
+          setGarantiaEstendida(p.garantiaEstendida);
+          if (p.consumoMedio > 0) setConsumoMensal(p.consumoMedio);
+        }
+      })
+      .catch(() => toast.error('Erro ao carregar proposta'))
+      .finally(() => { if (active) setLoadingProposal(false); });
+    return () => { active = false; };
+  }, [id]);
+
   function mapCondicao(label: string): string {
     return mapCondicaoFromLabel(label);
   }
@@ -152,6 +177,24 @@ export default function EditarPropostaPage() {
   const garantiaValor = garantiaEstendida ? calcExtendedWarranty(valorFinal) : 0;
   const totalGeral = valorFinal + garantiaValor;
 
+  const buildProposalInput = (status: 'rascunho' | 'enviada' | 'aceita'): ProposalInput => ({
+    clientId: client?.id || clientId,
+    clientName: client?.name || proposal?.clientName || '',
+    systemType,
+    potenciaKwp: potencia,
+    valorSistema: valorFinal,
+    producaoEstimada: producao,
+    economiaMensal,
+    economiaAnual,
+    paybackAnos: paybackExato,
+    status,
+    condicaoPagamento: getCondicaoLabel(condicao),
+    desconto,
+    consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
+    garantiaEstendida,
+    garantiaEstendidaValor: garantiaValor,
+  });
+
   const economiaMensal = Math.round(producao * tarifaKwh);
   const economiaAnual = economiaMensal * 12;
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
@@ -167,14 +210,27 @@ export default function EditarPropostaPage() {
   const updateEtapa = (i: number, field: keyof EtapaPersonalizada, value: string | number) =>
     setEtapasPersonalizadas(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
 
-  const handleSendPDF = () => {
-    if (proposal) {
-      proposal.status = 'enviada';
-      persistProposals();
+  const handleSendPDF = async () => {
+    if (id) {
+      try {
+        await updateProposal(id, buildProposalInput('enviada'));
+        setProposal(prev => prev ? { ...prev, status: 'enviada' } : prev);
+      } catch (e) {
+        toast.error('Erro ao salvar: ' + (e as Error).message);
+        return;
+      }
     }
     setPdfOpen(true);
     toast.success('Proposta enviada!');
   };
+
+  if (loadingProposal) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!proposal) {
     return (
@@ -505,21 +561,14 @@ export default function EditarPropostaPage() {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full gap-2" onClick={() => {
-                  if (proposal) {
-                    proposal.status = 'rascunho';
-                    proposal.systemType = systemType;
-                    proposal.potenciaKwp = potencia;
-                    proposal.valorSistema = valorFinal;
-                    proposal.producaoEstimada = producao;
-                    proposal.economiaMensal = economiaMensal;
-                    proposal.economiaAnual = economiaAnual;
-                    proposal.paybackAnos = paybackExato;
-                    proposal.condicaoPagamento = getCondicaoLabel(condicao);
-                    proposal.desconto = desconto;
-                    persistProposals();
-                    toast.success('Proposta salva como rascunho!');
+                <Button className="w-full gap-2" onClick={async () => {
+                  if (!id) return;
+                  try {
+                    await updateProposal(id, buildProposalInput(proposal?.status === 'aceita' ? 'aceita' : 'rascunho'));
+                    toast.success('Proposta salva!');
                     navigate('/propostas');
+                  } catch (e) {
+                    toast.error('Erro ao salvar: ' + (e as Error).message);
                   }
                 }}><Save className="h-4 w-4" /> Salvar</Button>
                 <Button variant="outline" className="w-full gap-2" onClick={() => setPreviewOpen(true)}>
@@ -530,9 +579,13 @@ export default function EditarPropostaPage() {
                 </Button>
                 <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
-                  if (proposal) {
-                    proposal.status = 'aceita';
-                    persistProposals();
+                  if (id) {
+                    try {
+                      await updateProposal(id, buildProposalInput('aceita'));
+                    } catch (e) {
+                      toast.error('Erro ao salvar: ' + (e as Error).message);
+                      return;
+                    }
                   }
                   const condicaoLabel = getCondicaoLabel(condicao);
                   const { error } = await supabase.from('contracts').insert({
