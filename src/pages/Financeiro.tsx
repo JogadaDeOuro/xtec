@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format, subDays, subMonths, startOfYear, subYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DollarSign, TrendingUp, BarChart3, Target, CalendarIcon } from 'lucide-react';
+import { DollarSign, TrendingUp, BarChart3, Target, CalendarIcon, FileText } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie, Cell, Legend,
@@ -66,19 +66,25 @@ export default function Financeiro() {
     ? (customFrom && customTo ? { from: customFrom, to: customTo } : null)
     : getDateRange(periodo);
 
-  const [contracts, setContracts] = useState<{ valor: number; status: string; created_at: string; client_id: string | null }[]>([]);
+  const [contracts, setContracts] = useState<{ valor: number; status: string; created_at: string; client_id: string | null; proposal_id: string | null }[]>([]);
   const [clientTypes, setClientTypes] = useState<Record<string, string>>({});
+  const [proposals, setProposals] = useState<{ id: string; numero: string | null; client_name: string; valor: number; status: string; created_at: string }[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: c }, { data: cl }] = await Promise.all([
-        supabase.from('contracts').select('valor, status, created_at, client_id'),
+      const [{ data: c }, { data: cl }, { data: p }] = await Promise.all([
+        supabase.from('contracts').select('valor, status, created_at, client_id, proposal_id'),
         supabase.from('clients').select('id, client_type'),
+        supabase.from('proposals').select('id, numero, client_name, valor_sistema, status, created_at'),
       ]);
       setContracts((c || []).map(r => ({ ...r, valor: Number(r.valor) || 0 })));
       const map: Record<string, string> = {};
       (cl || []).forEach(x => { map[x.id] = x.client_type; });
       setClientTypes(map);
+      setProposals((p || []).map(r => ({
+        id: r.id, numero: r.numero, client_name: r.client_name,
+        valor: Number(r.valor_sistema) || 0, status: r.status, created_at: r.created_at,
+      })));
     };
     load();
   }, []);
@@ -95,6 +101,29 @@ export default function Financeiro() {
   const faturamentoPrevisto = periodContracts.reduce((s2, c) => s2 + c.valor, 0);
   const ticketMedio = assinados.length > 0 ? faturamentoFechado / assinados.length : 0;
   const contratosAtivos = periodContracts.filter(c => c.status !== 'cancelado').length;
+
+  // Propostas que ainda não viraram contrato
+  const contratadasIds = useMemo(
+    () => new Set(contracts.map(c => c.proposal_id).filter(Boolean) as string[]),
+    [contracts],
+  );
+
+  const propostasEmAberto = useMemo(
+    () => proposals
+      .filter(p => inRange(p.created_at))
+      .filter(p => !contratadasIds.has(p.id))
+      .filter(p => !['perdida', 'recusada', 'cancelada'].includes(p.status))
+      .sort((a, b) => b.valor - a.valor),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [proposals, contratadasIds, dateRange],
+  );
+
+  const valorEmAberto = propostasEmAberto.reduce((s2, p) => s2 + p.valor, 0);
+
+  const statusLabels: Record<string, string> = {
+    rascunho: 'Rascunho', enviada: 'Enviada', visualizada: 'Visualizada', aceita: 'Aceita',
+  };
+
 
   const allMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -179,12 +208,49 @@ export default function Financeiro() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Faturamento Fechado" value={formatCurrency(faturamentoFechado)} icon={<DollarSign className="h-5 w-5" />} />
         <StatCard title="Faturamento Previsto" value={formatCurrency(faturamentoPrevisto)} icon={<TrendingUp className="h-5 w-5" />} />
+        <StatCard
+          title="Em propostas (sem contrato)"
+          value={formatCurrency(valorEmAberto)}
+          subtitle={`${propostasEmAberto.length} proposta${propostasEmAberto.length === 1 ? '' : 's'} em aberto`}
+          icon={<FileText className="h-5 w-5" />}
+        />
         <StatCard title="Ticket Médio" value={formatCurrency(ticketMedio)} icon={<BarChart3 className="h-5 w-5" />} />
         <StatCard title="Contratos Ativos" value={`${contratosAtivos}`} icon={<Target className="h-5 w-5" />} />
+
       </div>
+
+      <Card className="animate-fade-in">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium flex items-center justify-between">
+            <span>Propostas que ainda não viraram contrato</span>
+            <span className="text-sm font-semibold text-primary">{formatCurrency(valorEmAberto)}</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {propostasEmAberto.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Nenhuma proposta em aberto no período</p>
+          ) : (
+            <div className="divide-y">
+              {propostasEmAberto.slice(0, 12).map(p => (
+                <div key={p.id} className="flex items-center justify-between py-2 gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{p.client_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {p.numero || `P-${p.id.slice(0, 8).toUpperCase()}`} • {statusLabels[p.status] || p.status} • {format(new Date(p.created_at), "dd/MM/yy", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold whitespace-nowrap">{formatCurrency(p.valor)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="animate-fade-in">

@@ -24,6 +24,8 @@ const Financeiro = lazy(() => import("./pages/Financeiro"));
 const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const PersonalizacaoProposta = lazy(() => import("./pages/PersonalizacaoProposta"));
+const ModeloContrato = lazy(() => import("./pages/ModeloContrato"));
+
 const WhatsApp = lazy(() => import("./pages/WhatsApp"));
 const WhatsAppAdmin = lazy(() => import("./pages/WhatsAppAdmin"));
 const Login = lazy(() => import("./pages/Login"));
@@ -88,6 +90,8 @@ const App = () => (
                 <Route path="/whatsapp" element={<ProtectedPage pageKey="whatsapp"><WhatsApp /></ProtectedPage>} />
                 <Route path="/integracoes" element={<ProtectedPage pageKey="integracoes"><Integracoes /></ProtectedPage>} />
                 <Route path="/personalizacao-proposta" element={<ProtectedPage pageKey="configuracoes"><PersonalizacaoProposta /></ProtectedPage>} />
+                <Route path="/modelo-contrato" element={<ProtectedPage pageKey="contratos"><ModeloContrato /></ProtectedPage>} />
+
                 <Route path="/configuracoes" element={<ProtectedPage pageKey="configuracoes"><Configuracoes /></ProtectedPage>} />
                 <Route path="/whatsapp-admin" element={<ProtectedPage pageKey="configuracoes"><WhatsAppAdmin /></ProtectedPage>} />
                 <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
