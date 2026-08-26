@@ -6,12 +6,17 @@ import type { ProposalDocConfig } from '@/lib/proposal-config';
  */
 export function buildDocumentCss(c: ProposalDocConfig): string {
   const b = c.branding;
+  const clampScale = (v: number | undefined) => Math.min(4, Math.max(0.3, Number(v) || 1));
+  const escCabecalho = clampScale(b.escalaLogoCabecalho);
+  const escRodape = clampScale(b.escalaLogoRodape);
+  const escCapa = clampScale(b.escalaLogoCapa);
   const shadow = b.intensidadeSombra <= 0
     ? 'none'
     : `0 ${2 * b.intensidadeSombra}px ${8 * b.intensidadeSombra}px rgba(16,40,24,${0.05 * b.intensidadeSombra})`;
   const headerBg = b.usarDegrade
     ? `linear-gradient(135deg, ${b.corSecundaria} 0%, ${b.corPrimaria} 100%)`
     : b.corPrimaria;
+
 
   return `
   .pdoc { --primaria:${b.corPrimaria}; --secundaria:${b.corSecundaria}; --destaque:${b.corDestaque};
