@@ -44,6 +44,7 @@ export const PAYMENT_CONDITIONS: PaymentConditionOption[] = [
       { label: 'Na ativação', pct: 20 },
     ],
   },
+  { value: 'parcelado', label: 'Parcelado 100% sem entrada (sem juros)', shortLabel: 'Parcelado sem juros' },
   { value: 'entrada-saldo', label: 'Entrada + saldo na entrega', shortLabel: 'Entrada + saldo' },
   { value: 'entrada-parcelas', label: 'Entrada + parcelamento', shortLabel: 'Entrada + parcelas' },
   { value: 'personalizada', label: 'Condição personalizada', shortLabel: 'Personalizada' },
