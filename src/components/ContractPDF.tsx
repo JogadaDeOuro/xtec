@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import '@fontsource/dancing-script/400.css';
 import '@fontsource/great-vibes/400.css';
 import '@fontsource/pacifico/400.css';
@@ -11,6 +11,12 @@ import { Printer } from 'lucide-react';
 import { type Contract, formatCurrency } from '@/lib/mock-data';
 import logoImg from '@/assets/logo-inforsol.png';
 import { getMilestones, mapCondicaoFromLabel, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
+import { ContractDocument } from '@/components/ContractDocument';
+import {
+  DEFAULT_CONTRACT_TEMPLATE, buildContractVariables, ensureDefaultContractTemplate,
+  type ContractTemplateContent,
+} from '@/lib/contract-template';
+import { fetchProposalSettings } from '@/lib/proposal-settings';
 
 interface ContractPDFProps {
   open: boolean;
@@ -21,17 +27,52 @@ interface ContractPDFProps {
 
 export function ContractPDF({ open, onOpenChange, contract, showSignatures = false }: ContractPDFProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [template, setTemplate] = useState<ContractTemplateContent>(DEFAULT_CONTRACT_TEMPLATE);
+  const [company, setCompany] = useState<Record<string, string | undefined>>({});
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const [tpls, settings] = await Promise.all([
+          ensureDefaultContractTemplate(),
+          fetchProposalSettings().catch(() => null),
+        ]);
+        const def = tpls.find(t => t.isDefault && t.isActive) || tpls.find(t => t.isActive);
+        if (def) setTemplate(def.content);
+        if (settings) setCompany(settings.company as unknown as Record<string, string | undefined>);
+      } catch {
+        /* mantém o modelo padrão local */
+      }
+    })();
+  }, [open]);
 
   const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const systemLabel = contract.systemType === 'on-grid' ? 'On-Grid (Conectado à Rede)' :
-    contract.systemType === 'off-grid' ? 'Off-Grid (Isolado)' : 'Híbrido';
-
-  const milestones = getMilestones(mapCondicaoFromLabel(contract.condicaoPagamento || ''));
   const garantiaValor = contract.garantiaEstendidaValor || 0;
+
+  const vars = buildContractVariables({
+    clientName: contract.clientName,
+    clientDocument: contract.clientDocument,
+    clientEmail: contract.clientEmail,
+    clientPhone: contract.clientPhone,
+    clientAddress: contract.clientAddress,
+    clientCity: contract.clientCity,
+    clientState: contract.clientState,
+    systemType: contract.systemType,
+    potenciaKwp: contract.potenciaKwp,
+    valor: contract.valor,
+    condicaoPagamento: contract.condicaoPagamento,
+    garantiaEstendida: contract.garantiaEstendida,
+    garantiaEstendidaValor: garantiaValor,
+    proposalId: contract.proposalId,
+    contractId: contract.id,
+    company,
+  });
 
   const empresaSig = contract.signatures.find(s => s.signerType === 'empresa');
   const clienteSig = contract.signatures.find(s => s.signerType === 'cliente');
+
 
   const handlePrint = () => {
     if (!printRef.current) return;
