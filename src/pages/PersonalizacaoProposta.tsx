@@ -155,7 +155,8 @@ export default function PersonalizacaoProposta() {
         ]);
         setConfig(cfg);
         setEquipment(eqs);
-        setTemplates(tpls.length ? tpls : await seedDefaultTemplates(cfg));
+        setTemplates(await seedDefaultTemplates(cfg));
+        void tpls;
       } catch {
         toast.error('Não foi possível carregar a personalização');
       } finally { setLoading(false); }
