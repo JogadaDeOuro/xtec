@@ -193,6 +193,9 @@ export default function EditarPropostaPage() {
     consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
     garantiaEstendida,
     garantiaEstendidaValor: garantiaValor,
+    tarifaKwh,
+    numModulos: numPlacas,
+    potenciaModuloW: potenciaModuloW,
   });
 
   const economiaMensal = Math.round(producao * tarifaKwh);

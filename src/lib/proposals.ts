@@ -23,6 +23,13 @@ export interface ProposalRow {
   consumo_medio: number;
   garantia_estendida: boolean;
   garantia_estendida_valor: number;
+  tarifa_kwh: number;
+  num_modulos: number;
+  potencia_modulo_w: number;
+  consultor: string | null;
+  versao: number;
+  template_id: string | null;
+  doc_config: Record<string, unknown> | null;
   viewed_at: string | null;
   accepted_at: string | null;
   created_at: string;
@@ -35,6 +42,13 @@ export interface ProposalRecord extends Proposal {
   consumoMedio: number;
   garantiaEstendida: boolean;
   garantiaEstendidaValor: number;
+  tarifaKwh: number;
+  numModulos: number;
+  potenciaModuloW: number;
+  consultor: string;
+  versao: number;
+  templateId: string | null;
+  docConfig: Record<string, unknown> | null;
 }
 
 export function rowToProposal(row: ProposalRow): ProposalRecord {
@@ -59,6 +73,13 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     consumoMedio: Number(row.consumo_medio),
     garantiaEstendida: row.garantia_estendida,
     garantiaEstendidaValor: Number(row.garantia_estendida_valor),
+    tarifaKwh: row.tarifa_kwh != null ? Number(row.tarifa_kwh) : 0.85,
+    numModulos: Number(row.num_modulos ?? 0),
+    potenciaModuloW: Number(row.potencia_modulo_w ?? 700),
+    consultor: row.consultor ?? '',
+    versao: Number(row.versao ?? 1),
+    templateId: row.template_id ?? null,
+    docConfig: (row.doc_config as Record<string, unknown> | null) ?? null,
     createdAt: row.created_at.slice(0, 10),
     viewedAt: row.viewed_at ?? undefined,
     acceptedAt: row.accepted_at ?? undefined,
@@ -103,6 +124,12 @@ export interface ProposalInput {
   consumoMedio?: number;
   garantiaEstendida?: boolean;
   garantiaEstendidaValor?: number;
+  tarifaKwh?: number;
+  numModulos?: number;
+  potenciaModuloW?: number;
+  consultor?: string;
+  templateId?: string | null;
+  docConfig?: Record<string, unknown> | null;
 }
 
 function toRow(input: ProposalInput) {
@@ -122,6 +149,12 @@ function toRow(input: ProposalInput) {
     consumo_medio: input.consumoMedio ?? 0,
     garantia_estendida: input.garantiaEstendida ?? false,
     garantia_estendida_valor: input.garantiaEstendidaValor ?? 0,
+    tarifa_kwh: input.tarifaKwh ?? 0.85,
+    num_modulos: input.numModulos ?? 0,
+    potencia_modulo_w: input.potenciaModuloW ?? 700,
+    consultor: input.consultor ?? null,
+    template_id: input.templateId ?? null,
+    doc_config: (input.docConfig ?? null) as never,
   };
 }
 
