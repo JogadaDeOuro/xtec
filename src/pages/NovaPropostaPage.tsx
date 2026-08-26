@@ -454,33 +454,25 @@ export default function NovaPropostaPage() {
                 <Select value={condicao} onValueChange={setCondicao}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="avista">À vista antecipado</SelectItem>
-                    <SelectItem value="40-20-20-20">40% / 20% / 20% / 20%</SelectItem>
-                    <SelectItem value="40-40-20">40% + 40% + 20%</SelectItem>
-                    <SelectItem value="entrada-saldo">Entrada + saldo na entrega</SelectItem>
-                    <SelectItem value="entrada-parcelas">Entrada + parcelamento</SelectItem>
-                    <SelectItem value="personalizada">Condição personalizada</SelectItem>
+                    {PAYMENT_CONDITIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Dynamic payment fields */}
               <AnimatePresence mode="wait">
-                {condicao === '40-20-20-20' && valorFinal > 0 && (
+                {milestones && valorFinal > 0 && (
                   <motion.div
-                    key="40-20-20-20"
+                    key={condicao}
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-2 rounded-lg border border-border bg-muted/30 p-4"
                   >
                     <p className="text-xs font-medium text-foreground mb-2">Distribuição do pagamento:</p>
-                    {[
-                      { label: 'Aprovação da proposta', pct: 40 },
-                      { label: 'Chegada do material', pct: 20 },
-                      { label: 'Instalação', pct: 20 },
-                      { label: 'Ativação do sistema', pct: 20 },
-                    ].map(({ label, pct }) => (
+                    {milestones.map(({ label, pct }) => (
                       <div key={label} className="flex justify-between text-xs">
                         <span className="text-muted-foreground">{pct}% — {label}</span>
                         <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
@@ -489,27 +481,6 @@ export default function NovaPropostaPage() {
                   </motion.div>
                 )}
 
-                {condicao === '40-40-20' && valorFinal > 0 && (
-                  <motion.div
-                    key="40-40-20"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2 rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="text-xs font-medium text-foreground mb-2">Distribuição do pagamento:</p>
-                    {[
-                      { label: 'Na aprovação', pct: 40 },
-                      { label: 'Na instalação', pct: 40 },
-                      { label: 'Na ativação', pct: 20 },
-                    ].map(({ label, pct }) => (
-                      <div key={label} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{pct}% — {label}</span>
-                        <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
 
                 {condicao === 'entrada-saldo' && (
                   <motion.div
