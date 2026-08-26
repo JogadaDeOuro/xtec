@@ -24,9 +24,10 @@ import {
 } from '@/lib/proposal-config';
 import {
   createTemplate, deleteEquipment, deleteTemplate, fetchEquipment, fetchProposalSettings,
-  fetchTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates, setDefaultTemplate,
-  updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
+  fetchTemplates, refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
+  setDefaultTemplate, updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
 } from '@/lib/proposal-settings';
+import { applyTemplateConfig } from '@/lib/proposal-themes';
 import { ProposalDocument, type ProposalDocData } from '@/components/proposal/ProposalDocument';
 import { useAuth } from '@/hooks/useAuth';
 
