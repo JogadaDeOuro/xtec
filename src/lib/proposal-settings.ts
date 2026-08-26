@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_PROPOSAL_CONFIG, mergeConfig, type ProposalDocConfig } from '@/lib/proposal-config';
+import { PROPOSAL_THEMES } from '@/lib/proposal-themes';
 
 const db = supabase as unknown as {
   from: (t: string) => any;
