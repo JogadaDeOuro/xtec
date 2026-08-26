@@ -43,6 +43,7 @@ export default function AceiteProposta() {
   const [loading, setLoading] = useState(true);
   const [documento, setDocumento] = useState('');
   const [garantia, setGarantia] = useState(false);
+  const [condicaoEscolhida, setCondicaoEscolhida] = useState('');
   const [aceite, setAceite] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -55,7 +56,7 @@ export default function AceiteProposta() {
         const p = token ? await fetchPublicProposal(token) : null;
         if (active) {
           setProposal(p);
-          if (p) setGarantia(p.garantiaEstendida);
+          if (p) { setGarantia(p.garantiaEstendida); setCondicaoEscolhida(p.condicaoPagamento || ''); }
         }
       } catch {
         if (active) setProposal(null);
@@ -73,6 +74,7 @@ export default function AceiteProposta() {
       _token: token,
       _document: documento.replace(/\D/g, ''),
       _garantia: garantia,
+      _condicao: condicaoEscolhida || null,
     });
     setSaving(false);
     setConfirmOpen(false);
@@ -103,7 +105,10 @@ export default function AceiteProposta() {
 
   const garantiaValor = garantia ? calcExtendedWarranty(proposal.valorSistema) : 0;
   const totalGeral = proposal.valorSistema + garantiaValor;
-  const milestones = getMilestones(proposal.condicaoPagamento);
+  const opcoesPagamento = [proposal.condicaoPagamento, ...(proposal.condicoesAlternativas ?? [])]
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+  const milestones = getMilestones(mapCondicaoFromLabel(condicaoEscolhida || proposal.condicaoPagamento));
   const docOk = isValidCpfCnpj(documento);
 
   if (result) {
@@ -173,13 +178,35 @@ export default function AceiteProposta() {
               </div>
             </section>
 
-            {milestones && (
+            {(milestones || opcoesPagamento.length > 1) && (
               <>
                 <Separator />
                 <section>
                   <h2 className="text-sm font-semibold mb-3">Condição de pagamento</h2>
+                  {opcoesPagamento.length > 1 && (
+                    <div className="mb-3 space-y-2">
+                      <p className="text-xs text-muted-foreground">Escolha a forma de pagamento desejada:</p>
+                      {opcoesPagamento.map(op => (
+                        <label
+                          key={op}
+                          className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${
+                            condicaoEscolhida === op ? 'border-primary bg-primary/5' : 'border-border'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="condicao"
+                            className="accent-primary"
+                            checked={condicaoEscolhida === op}
+                            onChange={() => setCondicaoEscolhida(op)}
+                          />
+                          <span>{op}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                   <div className="space-y-1.5">
-                    {milestones.map(({ label, pct }) => (
+                    {(milestones ?? []).map(({ label, pct }) => (
                       <div key={label} className="flex justify-between text-sm">
                         <span className="text-muted-foreground">{pct}% — {label}</span>
                         <span className="font-medium">{formatCurrency(proposal.valorSistema * pct / 100)}</span>
