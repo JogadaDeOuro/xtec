@@ -17,6 +17,7 @@ export interface ProposalRow {
   payback_anos: number;
   status: string;
   condicao_pagamento: string | null;
+  condicoes_alternativas: string[] | null;
   desconto: number;
   margem: number;
   comissao: number;
@@ -37,6 +38,7 @@ export interface ProposalRow {
 }
 
 export interface ProposalRecord extends Proposal {
+  condicoesAlternativas: string[];
   numero: string;
   publicToken: string;
   consumoMedio: number;
@@ -67,6 +69,7 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     paybackAnos: Number(row.payback_anos),
     status: row.status as ProposalStatus,
     condicaoPagamento: row.condicao_pagamento || '',
+    condicoesAlternativas: row.condicoes_alternativas ?? [],
     desconto: Number(row.desconto),
     margem: Number(row.margem),
     comissao: Number(row.comissao),
@@ -120,6 +123,7 @@ export interface ProposalInput {
   paybackAnos: number;
   status: ProposalStatus;
   condicaoPagamento: string;
+  condicoesAlternativas?: string[];
   desconto: number;
   consumoMedio?: number;
   garantiaEstendida?: boolean;
@@ -145,6 +149,7 @@ function toRow(input: ProposalInput) {
     payback_anos: input.paybackAnos,
     status: input.status,
     condicao_pagamento: input.condicaoPagamento,
+    condicoes_alternativas: input.condicoesAlternativas ?? [],
     desconto: input.desconto,
     consumo_medio: input.consumoMedio ?? 0,
     garantia_estendida: input.garantiaEstendida ?? false,
