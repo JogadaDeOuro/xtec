@@ -85,6 +85,21 @@ export function ProposalPDF(props: ProposalPDFProps) {
     equipamentos,
   };
 
+  const handleDownload = async () => {
+    const content = printRef.current;
+    if (!content || downloading) return;
+    setDownloading(true);
+    try {
+      const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
+      await downloadProposalPdf(content, config, nome);
+    } catch {
+      // fallback: impressão do navegador
+      handlePrint();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const handlePrint = () => {
     const content = printRef.current;
     if (!content) return;
