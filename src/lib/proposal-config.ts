@@ -199,6 +199,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   escopo_incluso: 'Escopo incluso',
   nao_inclusos: 'Serviços não inclusos',
   pagamento: 'Condições de pagamento',
+  galeria: 'Galeria de projetos entregues',
   cronograma: 'Cronograma',
   garantias: 'Garantias',
   manutencao: 'Manutenção e pós-venda',
@@ -237,6 +238,7 @@ export const DEFAULT_SECTIONS: SectionConfig[] = [
   sec('retorno', { newPage: true, required: true }),
   sec('economia'),
   sec('pagamento', { required: true }),
+  sec('galeria'),
   sec('projecao', { enabled: false }),
   sec('impacto_ambiental', { enabled: false }),
   sec('garantias', { newPage: true }),
@@ -364,6 +366,13 @@ export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
     fatorCo2KgPorKwh: 0.0817,
     validadeDias: 15,
   },
+  gallery: {
+    titulo: 'Projetos entregues',
+    descricao: 'Alguns sistemas fotovoltaicos projetados e instalados pela nossa equipe.',
+    colunas: 3,
+    mostrarTitulos: true,
+    itens: [],
+  },
   sections: DEFAULT_SECTIONS,
 };
 
@@ -382,6 +391,18 @@ export function mergeConfig(partial?: unknown): ProposalDocConfig {
     footer: { ...base.footer, ...(p.footer ?? {}) },
     texts: { ...base.texts, ...(p.texts ?? {}) },
     assumptions: { ...base.assumptions, ...(p.assumptions ?? {}) },
+    gallery: {
+      ...base.gallery,
+      ...(p.gallery ?? {}),
+      itens: Array.isArray(p.gallery?.itens)
+        ? p.gallery.itens.map((it, i) => ({
+            id: it?.id ?? `img-${i}`,
+            url: it?.url ?? '',
+            titulo: it?.titulo ?? '',
+            descricao: it?.descricao ?? '',
+          }))
+        : [],
+    },
     sections,
   };
 }
