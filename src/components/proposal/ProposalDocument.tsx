@@ -10,7 +10,7 @@ import {
 import { buildDocumentCss } from './document-styles';
 import {
   EXTENDED_WARRANTY_DESCRIPTION, EXTENDED_WARRANTY_YEARS, getMilestones,
-  getCondicaoLabel, mapCondicaoFromLabel,
+  getCondicaoLabel, mapCondicaoFromLabel, parseAlt, altRows, type PaymentRow,
 } from '@/lib/payment-options';
 
 export interface ProposalPaymentInfo {
@@ -360,17 +360,30 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
         case 'pagamento':
           return (<>
             {(() => {
-              const alts = (data.payment.alternativas ?? []).filter(Boolean);
+              const alts = (data.payment.alternativas ?? []).filter(Boolean).map(parseAlt).filter(a => a.value);
               if (!alts.length) return renderPaymentRows();
-              const opcoes = [data.payment.condicao, ...alts.map(mapCondicaoFromLabel)].filter(Boolean);
-              const unicas = opcoes.filter((v, i) => opcoes.indexOf(v) === i);
+              const opcoes: { cond: string; rows?: PaymentRow[] }[] = [
+                { cond: data.payment.condicao },
+                ...alts.filter(a => a.value !== data.payment.condicao)
+                  .map(a => ({ cond: a.value, rows: altRows(a, data.valorFinal) })),
+              ];
               return (
                 <div className="pdoc-options">
-                  {unicas.map((cond, i) => (
-                    <div key={cond + i} className="pdoc-option pdoc-keep">
+                  {opcoes.map((op, i) => (
+                    <div key={op.cond + i} className="pdoc-option pdoc-keep">
                       {i > 0 && <div className="ou">ou</div>}
-                      <div className="opt-title">Opção {i + 1} — {getCondicaoLabel(cond)}</div>
-                      {renderPaymentRows(cond)}
+                      <div className="opt-title">Opção {i + 1} — {getCondicaoLabel(op.cond)}</div>
+                      {op.rows
+                        ? (
+                          <div className="pdoc-invest pdoc-keep">
+                            {op.rows.map((r, ri) => (
+                              <div key={ri} className="row" style={r.strong ? { fontWeight: 700 } : undefined}>
+                                <span>{r.label}</span><span>{formatCurrency(r.value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                        : renderPaymentRows(op.cond)}
                     </div>
                   ))}
                   <p className="muted" style={{ marginTop: '2.5mm' }}>
