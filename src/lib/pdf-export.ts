@@ -63,26 +63,23 @@ export async function downloadProposalPdf(
 
     for (let i = 0; i < targets.length; i++) {
       const el = targets[i];
-      // garante altura exata de A4 na captura (evita distorção no PDF)
-      const pageH = Math.max(A4_H_PX, Math.ceil(el.scrollHeight));
       const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         windowWidth: A4_W_PX,
+        windowHeight: A4_H_PX,
         width: A4_W_PX,
-        height: pageH,
+        height: A4_H_PX,
+        scrollX: 0,
+        scrollY: 0,
       });
       const img = canvas.toDataURL('image/jpeg', 0.95);
       if (i > 0) pdf.addPage();
-      // mantém a proporção exata da captura: sem esticar/achatar
-      const ratio = canvas.height / canvas.width;
-      let w = 210;
-      let h = w * ratio;
-      if (h > 297) { h = 297; w = h / ratio; }
-      const x = (210 - w) / 2;
-      pdf.addImage(img, 'JPEG', x, 0, w, h, undefined, 'FAST');
+      // cada página é exatamente A4: preenche a folha inteira sem deslocamento
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
     }
+
 
 
     pdf.save(fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`);
