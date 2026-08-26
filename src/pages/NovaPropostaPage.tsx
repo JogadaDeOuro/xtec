@@ -238,7 +238,8 @@ export default function NovaPropostaPage() {
 
   // Payment breakdown calculations
   const milestones = getMilestones(condicao);
-  const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
+  const semEntrada = condicao === 'parcelado';
+  const saldoAposEntrada = semEntrada ? valorFinal : Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
 
   // Garantia estendida (serviço adicional de 8% sobre o valor do contrato)
