@@ -1,3 +1,4 @@
+import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
