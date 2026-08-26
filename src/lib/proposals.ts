@@ -4,6 +4,7 @@ import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 export interface ProposalRow {
   id: string;
   numero: string | null;
+  public_token: string;
   user_id: string | null;
   client_id: string | null;
   client_name: string;
@@ -30,6 +31,7 @@ export interface ProposalRow {
 
 export interface ProposalRecord extends Proposal {
   numero: string;
+  publicToken: string;
   consumoMedio: number;
   garantiaEstendida: boolean;
   garantiaEstendidaValor: number;
@@ -39,6 +41,7 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
   return {
     id: row.id,
     numero: row.numero || `P-${row.id.slice(0, 6).toUpperCase()}`,
+    publicToken: row.public_token,
     clientId: row.client_id || '',
     clientName: row.client_name,
     systemType: row.system_type as SystemType,
@@ -69,6 +72,13 @@ export async function fetchProposals(): Promise<ProposalRecord[]> {
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data as unknown as ProposalRow[]).map(rowToProposal);
+}
+
+export async function fetchPublicProposal(token: string): Promise<ProposalRecord | null> {
+  const { data, error } = await (supabase as any).rpc('get_public_proposal', { _token: token });
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return row ? rowToProposal(row as ProposalRow) : null;
 }
 
 export async function fetchProposal(id: string): Promise<ProposalRecord | null> {
