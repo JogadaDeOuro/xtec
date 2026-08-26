@@ -115,12 +115,22 @@ function toRow(input: ProposalInput) {
   };
 }
 
+async function nextNumero(): Promise<string> {
+  const year = new Date().getFullYear();
+  const { count } = await supabase
+    .from('proposals')
+    .select('id', { count: 'exact', head: true });
+  return `PROP-${year}-${String((count ?? 0) + 1).padStart(4, '0')}`;
+}
+
 export async function createProposal(input: ProposalInput): Promise<ProposalRecord> {
   const { data: userData } = await supabase.auth.getUser();
+  const numero = await nextNumero();
   const { data, error } = await supabase
     .from('proposals')
     .insert({
       ...toRow(input),
+      numero,
       user_id: userData.user?.id ?? null,
       accepted_at: input.status === 'aceita' ? new Date().toISOString() : null,
     })
