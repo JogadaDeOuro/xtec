@@ -33,6 +33,11 @@ import { ProposalPreview } from '@/components/ProposalPreview';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatCpfCnpj } from '@/lib/utils';
+import {
+  PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel,
+  calcExtendedWarranty, EXTENDED_WARRANTY_YEARS,
+  EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION,
+} from '@/lib/payment-options';
 
 // Calculation helpers
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
@@ -164,6 +169,7 @@ export default function NovaPropostaPage() {
   const [desconto, setDesconto] = useState(0);
   const [descontoTipo, setDescontoTipo] = useState<'percent' | 'fixed'>('percent');
   const [condicao, setCondicao] = useState('');
+  const [garantiaEstendida, setGarantiaEstendida] = useState(false);
   const [tarifaKwh, setTarifaKwh] = useState(0.85);
   const [entradaValor, setEntradaValor] = useState(0);
   const [numParcelas, setNumParcelas] = useState(12);
@@ -228,8 +234,14 @@ export default function NovaPropostaPage() {
   const paybackAno = proj.find(p => p.acumulado >= valorFinal)?.ano || null;
 
   // Payment breakdown calculations
+  const milestones = getMilestones(condicao);
   const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
+
+  // Garantia estendida (serviço adicional de 8% sobre o valor do contrato)
+  const garantiaValor = garantiaEstendida ? calcExtendedWarranty(valorFinal) : 0;
+  const totalGeral = valorFinal + garantiaValor;
+
 
   const totalEtapas = etapasPersonalizadas.reduce((s, e) => s + (e.valor || 0), 0);
   const restantePersonalizada = valorFinal - totalEtapas;
@@ -454,33 +466,25 @@ export default function NovaPropostaPage() {
                 <Select value={condicao} onValueChange={setCondicao}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="avista">À vista antecipado</SelectItem>
-                    <SelectItem value="40-20-20-20">40% / 20% / 20% / 20%</SelectItem>
-                    <SelectItem value="40-40-20">40% + 40% + 20%</SelectItem>
-                    <SelectItem value="entrada-saldo">Entrada + saldo na entrega</SelectItem>
-                    <SelectItem value="entrada-parcelas">Entrada + parcelamento</SelectItem>
-                    <SelectItem value="personalizada">Condição personalizada</SelectItem>
+                    {PAYMENT_CONDITIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Dynamic payment fields */}
               <AnimatePresence mode="wait">
-                {condicao === '40-20-20-20' && valorFinal > 0 && (
+                {milestones && valorFinal > 0 && (
                   <motion.div
-                    key="40-20-20-20"
+                    key={condicao}
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-2 rounded-lg border border-border bg-muted/30 p-4"
                   >
                     <p className="text-xs font-medium text-foreground mb-2">Distribuição do pagamento:</p>
-                    {[
-                      { label: 'Aprovação da proposta', pct: 40 },
-                      { label: 'Chegada do material', pct: 20 },
-                      { label: 'Instalação', pct: 20 },
-                      { label: 'Ativação do sistema', pct: 20 },
-                    ].map(({ label, pct }) => (
+                    {milestones.map(({ label, pct }) => (
                       <div key={label} className="flex justify-between text-xs">
                         <span className="text-muted-foreground">{pct}% — {label}</span>
                         <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
@@ -489,27 +493,6 @@ export default function NovaPropostaPage() {
                   </motion.div>
                 )}
 
-                {condicao === '40-40-20' && valorFinal > 0 && (
-                  <motion.div
-                    key="40-40-20"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2 rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="text-xs font-medium text-foreground mb-2">Distribuição do pagamento:</p>
-                    {[
-                      { label: 'Na aprovação', pct: 40 },
-                      { label: 'Na instalação', pct: 40 },
-                      { label: 'Na ativação', pct: 20 },
-                    ].map(({ label, pct }) => (
-                      <div key={label} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{pct}% — {label}</span>
-                        <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
 
                 {condicao === 'entrada-saldo' && (
                   <motion.div
@@ -643,6 +626,38 @@ export default function NovaPropostaPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <Separator />
+
+              <div>
+                <Label className="text-xs">Garantia da Instalação</Label>
+                <Select value={garantiaEstendida ? 'estendida' : 'padrao'} onValueChange={v => setGarantiaEstendida(v === 'estendida')}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="padrao">Sem garantia estendida (1 ano padrão)</SelectItem>
+                    <SelectItem value="estendida">Com garantia estendida (+{EXTENDED_WARRANTY_YEARS} anos, +8%)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {garantiaEstendida ? EXTENDED_WARRANTY_DESCRIPTION : STANDARD_WARRANTY_DESCRIPTION}
+                </p>
+                {garantiaEstendida && valorFinal > 0 && (
+                  <div className="mt-2 space-y-1 rounded-lg border border-border bg-muted/30 p-3 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cobertura estendida ({EXTENDED_WARRANTY_YEARS} anos) — 8%</span>
+                      <span className="font-medium">{formatCurrency(garantiaValor)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-primary">
+                      <span>Total geral</span>
+                      <span>{formatCurrency(totalGeral)}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Cobrada à parte, como serviço adicional de garantia estendida, apoio ao funcionamento e manutenções preventivas.
+                    </p>
+                  </div>
+                )}
+              </div>
+
             </CardContent>
           </Card>
 
@@ -802,22 +817,17 @@ export default function NovaPropostaPage() {
                     <div className="space-y-1.5">
                       <p className="text-xs font-medium text-foreground">Condição de Pagamento</p>
 
-                      {condicao === '40-20-20-20' && (
+                      {milestones && (
                         <div className="space-y-1 text-xs text-muted-foreground">
-                          <div className="flex justify-between"><span>40% — Aprovação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>20% — Material</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                          <div className="flex justify-between"><span>20% — Instalação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                          <div className="flex justify-between"><span>20% — Ativação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
+                          {milestones.map(({ label, pct }) => (
+                            <div key={label} className="flex justify-between">
+                              <span>{pct}% — {label}</span>
+                              <span>{formatCurrency(valorFinal * pct / 100)}</span>
+                            </div>
+                          ))}
                         </div>
                       )}
 
-                      {condicao === '40-40-20' && (
-                        <div className="space-y-1 text-xs text-muted-foreground">
-                          <div className="flex justify-between"><span>40% — Aprovação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>40% — Instalação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>20% — Ativação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                        </div>
-                      )}
 
                       {condicao === 'entrada-saldo' && (
                         <div className="space-y-1 text-xs text-muted-foreground">
@@ -854,6 +864,24 @@ export default function NovaPropostaPage() {
                   </>
                 )}
 
+                {garantiaEstendida && (
+                  <>
+                    <Separator />
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Garantia estendida ({EXTENDED_WARRANTY_YEARS} anos)</span>
+                        <span className="font-medium">{formatCurrency(garantiaValor)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Total geral</span>
+                        <span className="text-base font-bold text-primary">{formatCurrency(totalGeral)}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+
+
                 <Separator />
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-success/10 p-3 text-center">
@@ -886,7 +914,7 @@ export default function NovaPropostaPage() {
                     economiaAnual,
                     paybackAnos: paybackExato,
                     status: 'rascunho',
-                    condicaoPagamento: condicao || 'A definir',
+                    condicaoPagamento: getCondicaoLabel(condicao),
                     desconto,
                     margem: 0,
                     comissao: 0,
@@ -919,7 +947,7 @@ export default function NovaPropostaPage() {
                     economiaAnual,
                     paybackAnos: paybackExato,
                     status: 'enviada',
-                    condicaoPagamento: condicao || 'A definir',
+                    condicaoPagamento: getCondicaoLabel(condicao),
                     desconto,
                     margem: 0,
                     comissao: 0,
@@ -953,7 +981,7 @@ export default function NovaPropostaPage() {
                       economiaAnual,
                       paybackAnos: paybackExato,
                       status: 'aceita',
-                      condicaoPagamento: condicao || 'A definir',
+                      condicaoPagamento: getCondicaoLabel(condicao),
                       desconto,
                       margem: 0,
                       comissao: 0,
@@ -962,7 +990,7 @@ export default function NovaPropostaPage() {
                     mockProposals.push(newProposal);
                   }
                   persistProposals();
-                  const condicaoLabel = condicao === 'avista' ? 'À vista' : condicao === '40-20-20-20' ? '40%/20%/20%/20%' : condicao === '40-40-20' ? '40%+40%+20%' : condicao === 'entrada-saldo' ? 'Entrada + saldo' : condicao === 'entrada-parcelas' ? 'Entrada + parcelas' : 'Personalizada';
+                  const condicaoLabel = getCondicaoLabel(condicao);
                   const { error } = await supabase.from('contracts').insert({
                     proposal_id: existingProposal?.id || proposalId,
                     client_id: client.id,
@@ -977,6 +1005,8 @@ export default function NovaPropostaPage() {
                     potencia_kwp: potencia,
                     valor: valorFinal,
                     condicao_pagamento: condicaoLabel,
+                    garantia_estendida: garantiaEstendida,
+                    garantia_estendida_valor: garantiaValor,
                     status: 'rascunho',
                     user_id: user?.id ?? null,
                   });
@@ -1020,6 +1050,8 @@ export default function NovaPropostaPage() {
           valorParcela,
           saldoAposEntrada,
           etapasPersonalizadas,
+          garantiaEstendida,
+          garantiaValor,
         }}
       />
 
@@ -1052,6 +1084,8 @@ export default function NovaPropostaPage() {
           valorParcela,
           saldoAposEntrada,
           etapasPersonalizadas,
+          garantiaEstendida,
+          garantiaValor,
         }}
       />
 

@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { Zap, Sun, TrendingUp, DollarSign, Clock, Shield, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getMilestones, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
 interface PaymentInfo {
   condicao: string;
@@ -12,7 +13,10 @@ interface PaymentInfo {
   valorParcela: number;
   saldoAposEntrada: number;
   etapasPersonalizadas: { descricao: string; valor: number }[];
+  garantiaEstendida?: boolean;
+  garantiaValor?: number;
 }
+
 
 interface ProposalPreviewProps {
   open: boolean;
@@ -54,14 +58,10 @@ export function ProposalPreview({
 
     if (condicao === 'avista') return <p className="text-sm font-medium">À vista antecipado</p>;
 
-    if (condicao === '40-20-20-20') return (
+    const milestones = getMilestones(condicao);
+    if (milestones) return (
       <div className="space-y-1.5">
-        {[
-          { label: 'Na aprovação da proposta', pct: 40 },
-          { label: 'Na chegada do material', pct: 20 },
-          { label: 'Na instalação', pct: 20 },
-          { label: 'Na ativação do sistema', pct: 20 },
-        ].map(({ label, pct }) => (
+        {milestones.map(({ label, pct }) => (
           <div key={label} className="flex justify-between text-sm">
             <span className="text-muted-foreground">{pct}% — {label}</span>
             <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
@@ -70,20 +70,6 @@ export function ProposalPreview({
       </div>
     );
 
-    if (condicao === '40-40-20') return (
-      <div className="space-y-1.5">
-        {[
-          { label: 'Na aprovação', pct: 40 },
-          { label: 'Na instalação', pct: 40 },
-          { label: 'Na ativação', pct: 20 },
-        ].map(({ label, pct }) => (
-          <div key={label} className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{pct}% — {label}</span>
-            <span className="font-medium">{formatCurrency(valorFinal * pct / 100)}</span>
-          </div>
-        ))}
-      </div>
-    );
 
     if (condicao === 'entrada-saldo') return (
       <div className="space-y-1.5">
@@ -218,7 +204,28 @@ export function ProposalPreview({
             </>
           )}
 
+          {payment.garantiaEstendida && (
+            <>
+              <Separator />
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.27 }}>
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-primary" /> Garantia Estendida ({EXTENDED_WARRANTY_YEARS} anos)
+                </h3>
+                <p className="text-xs text-muted-foreground mb-2">{EXTENDED_WARRANTY_DESCRIPTION}</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Serviço adicional (8% do contrato)</span>
+                  <span className="font-semibold text-primary">{formatCurrency(payment.garantiaValor || 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="font-medium">Total geral</span>
+                  <span className="font-bold text-primary">{formatCurrency(valorFinal + (payment.garantiaValor || 0))}</span>
+                </div>
+              </motion.div>
+            </>
+          )}
+
           <Separator />
+
 
           {/* Economy */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>

@@ -157,6 +157,8 @@ export type Database = {
           client_state: string | null
           condicao_pagamento: string | null
           created_at: string
+          garantia_estendida: boolean
+          garantia_estendida_valor: number
           id: string
           potencia_kwp: number
           proposal_id: string | null
@@ -179,6 +181,8 @@ export type Database = {
           client_state?: string | null
           condicao_pagamento?: string | null
           created_at?: string
+          garantia_estendida?: boolean
+          garantia_estendida_valor?: number
           id?: string
           potencia_kwp?: number
           proposal_id?: string | null
@@ -201,6 +205,8 @@ export type Database = {
           client_state?: string | null
           condicao_pagamento?: string | null
           created_at?: string
+          garantia_estendida?: boolean
+          garantia_estendida_valor?: number
           id?: string
           potencia_kwp?: number
           proposal_id?: string | null

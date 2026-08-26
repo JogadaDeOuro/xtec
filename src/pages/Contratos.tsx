@@ -53,6 +53,8 @@ interface ContractDB {
   potencia_kwp: number;
   valor: number;
   condicao_pagamento: string | null;
+  garantia_estendida?: boolean | null;
+  garantia_estendida_valor?: number | null;
   status: string;
   signing_token: string | null;
   signed_at: string | null;
@@ -268,6 +270,8 @@ export default function Contratos() {
     potenciaKwp: c.potencia_kwp,
     valor: c.valor,
     condicaoPagamento: c.condicao_pagamento || '',
+    garantiaEstendida: c.garantia_estendida || false,
+    garantiaEstendidaValor: Number(c.garantia_estendida_valor || 0),
     status: c.status as any,
     createdAt: c.created_at,
     signedAt: c.signed_at || undefined,
