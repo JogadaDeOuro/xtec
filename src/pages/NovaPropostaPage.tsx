@@ -817,22 +817,17 @@ export default function NovaPropostaPage() {
                     <div className="space-y-1.5">
                       <p className="text-xs font-medium text-foreground">Condição de Pagamento</p>
 
-                      {condicao === '40-20-20-20' && (
+                      {milestones && (
                         <div className="space-y-1 text-xs text-muted-foreground">
-                          <div className="flex justify-between"><span>40% — Aprovação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>20% — Material</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                          <div className="flex justify-between"><span>20% — Instalação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                          <div className="flex justify-between"><span>20% — Ativação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
+                          {milestones.map(({ label, pct }) => (
+                            <div key={label} className="flex justify-between">
+                              <span>{pct}% — {label}</span>
+                              <span>{formatCurrency(valorFinal * pct / 100)}</span>
+                            </div>
+                          ))}
                         </div>
                       )}
 
-                      {condicao === '40-40-20' && (
-                        <div className="space-y-1 text-xs text-muted-foreground">
-                          <div className="flex justify-between"><span>40% — Aprovação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>40% — Instalação</span><span>{formatCurrency(valorFinal * 0.4)}</span></div>
-                          <div className="flex justify-between"><span>20% — Ativação</span><span>{formatCurrency(valorFinal * 0.2)}</span></div>
-                        </div>
-                      )}
 
                       {condicao === 'entrada-saldo' && (
                         <div className="space-y-1 text-xs text-muted-foreground">
