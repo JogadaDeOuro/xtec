@@ -19,7 +19,7 @@ import { fetchPublicProposal, type ProposalRecord } from '@/lib/proposals';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import {
-  getMilestones, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION,
+  getMilestones, mapCondicaoFromLabel, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION,
   STANDARD_WARRANTY_DESCRIPTION, calcExtendedWarranty,
 } from '@/lib/payment-options';
 
