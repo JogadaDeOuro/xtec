@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { type Contract, formatCurrency } from '@/lib/mock-data';
 import logoImg from '@/assets/logo-inforsol.png';
+import { getMilestones, mapCondicaoFromLabel, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
 interface ContractPDFProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  contract: Contract;
+  contract: Contract & { garantiaEstendida?: boolean; garantiaEstendidaValor?: number };
   showSignatures?: boolean;
 }
 
@@ -25,6 +26,9 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
 
   const systemLabel = contract.systemType === 'on-grid' ? 'On-Grid (Conectado à Rede)' :
     contract.systemType === 'off-grid' ? 'Off-Grid (Isolado)' : 'Híbrido';
+
+  const milestones = getMilestones(mapCondicaoFromLabel(contract.condicaoPagamento || ''));
+  const garantiaValor = contract.garantiaEstendidaValor || 0;
 
   const empresaSig = contract.signatures.find(s => s.signerType === 'empresa');
   const clienteSig = contract.signatures.find(s => s.signerType === 'cliente');
@@ -100,6 +104,19 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
             <div style={{ background: '#fff7ed', padding: '8px 12px', borderRadius: '6px', borderLeft: '3px solid #f97316', margin: '8px 0' }}>
               <p>Valor total do contrato: <strong>{formatCurrency(contract.valor)}</strong></p>
               <p>Condição de pagamento: <strong>{contract.condicaoPagamento}</strong></p>
+              {milestones && (
+                <ul style={{ paddingLeft: '18px', marginTop: '4px' }}>
+                  {milestones.map(m => (
+                    <li key={m.label}>{m.pct}% — {m.label}: <strong>{formatCurrency(contract.valor * m.pct / 100)}</strong></li>
+                  ))}
+                </ul>
+              )}
+              {contract.garantiaEstendida && (
+                <>
+                  <p style={{ marginTop: '4px' }}>Serviço adicional de garantia estendida: <strong>{formatCurrency(garantiaValor)}</strong></p>
+                  <p>Total geral (contrato + serviço adicional): <strong>{formatCurrency(contract.valor + garantiaValor)}</strong></p>
+                </>
+              )}
             </div>
             <p>O não pagamento nas datas acordadas acarretará juros de mora de 1% ao mês e multa de 2% sobre o valor em atraso.</p>
           </div>
@@ -118,6 +135,10 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
               <li>Mão de obra e instalação: <strong>5 anos</strong></li>
               <li>Monitoramento: <strong>1 ano</strong> de acompanhamento gratuito</li>
             </ul>
+            <p style={{ marginTop: '6px' }}>{STANDARD_WARRANTY_DESCRIPTION}</p>
+            {contract.garantiaEstendida && (
+              <p style={{ marginTop: '6px' }}><strong>Garantia Estendida ({EXTENDED_WARRANTY_YEARS} anos adicionais):</strong> {EXTENDED_WARRANTY_DESCRIPTION} Contratada como serviço adicional no valor de <strong>{formatCurrency(garantiaValor)}</strong>, cobrado à parte do valor do contrato.</p>
+            )}
           </div>
 
           <div style={{ marginBottom: '14px' }}>
