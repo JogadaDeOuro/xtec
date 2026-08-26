@@ -680,8 +680,8 @@ export default function PersonalizacaoProposta() {
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.min(1, +(z + 0.05).toFixed(2)))}>+</Button>
               </div>
             </CardHeader>
-            <CardContent className="max-h-[75vh] overflow-auto bg-muted/40 p-3">
-              <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: `${100 / zoom}%` }}>
+            <CardContent className="max-h-[75vh] overflow-y-auto overflow-x-hidden bg-muted/40 p-3">
+              <div className="mx-auto w-fit" style={{ zoom }}>
                 {preview}
               </div>
             </CardContent>
