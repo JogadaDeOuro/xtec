@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatCard } from '@/components/StatCard';
-import { formatCurrency, formatNumber, mockProposals } from '@/lib/mock-data';
+import { formatCurrency, formatNumber } from '@/lib/mock-data';
+import { fetchProposals, type ProposalRecord } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import {
@@ -33,15 +34,18 @@ export default function Dashboard() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [stageItems, setStageItems] = useState<StageItemRow[]>([]);
   const [contracts, setContracts] = useState<ContractRow[]>([]);
+  const [proposalsData, setProposalsData] = useState<ProposalRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      const [clientsRes, stagesRes, contractsRes] = await Promise.all([
+      const [clientsRes, stagesRes, contractsRes, proposalsRes] = await Promise.all([
         supabase.from('clients').select('*'),
         supabase.from('stage_items').select('*, project_stages(client_id)'),
         supabase.from('contracts').select('*'),
+        fetchProposals().catch(() => [] as ProposalRecord[]),
       ]);
+      setProposalsData(proposalsRes);
       if (clientsRes.data) setClients(clientsRes.data as ClientRow[]);
       if (stagesRes.data) setStageItems(stagesRes.data as unknown as StageItemRow[]);
       if (contractsRes.data) setContracts(contractsRes.data as ContractRow[]);
@@ -53,8 +57,7 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const totalLeads = clients.length;
     
-    // Proposals from localStorage
-    const proposals = mockProposals;
+    const proposals = proposalsData;
     const proposalsEnviadas = proposals.filter(p => p.status !== 'rascunho').length;
     const proposalsAceitas = proposals.filter(p => p.status === 'aceita').length;
     const taxaConversao = proposalsEnviadas > 0 ? ((proposalsAceitas / proposalsEnviadas) * 100) : 0;
@@ -163,7 +166,7 @@ export default function Dashboard() {
       contratosAssinados,
       totalContracts: contracts.length,
     };
-  }, [clients, stageItems, contracts]);
+  }, [clients, stageItems, contracts, proposalsData]);
 
   if (loading) {
     return (
@@ -316,7 +319,7 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Clientes</p>
               </div>
               <div className="rounded-lg bg-muted p-4 text-center">
-                <p className="text-2xl font-bold font-display">{mockProposals.length}</p>
+                <p className="text-2xl font-bold font-display">{proposalsData.length}</p>
                 <p className="text-xs text-muted-foreground">Propostas</p>
               </div>
               <div className="rounded-lg bg-muted p-4 text-center">
