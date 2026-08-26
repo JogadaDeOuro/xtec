@@ -206,14 +206,48 @@ export async function deleteEquipment(id: string): Promise<void> {
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
+/** Formatos que os navegadores renderizam nativamente e podem ser enviados sem conversão. */
+const NATIVE_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif'];
+const NATIVE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'jfif', 'webp', 'gif', 'svg', 'avif'];
+
+/** Converte formatos menos comuns (heic, bmp, tiff, ico...) em PNG usando o próprio navegador. */
+async function normalizeImage(file: File): Promise<{ blob: Blob; ext: string; contentType: string }> {
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const type = (file.type || '').toLowerCase();
+
+  if (NATIVE_IMAGE_TYPES.includes(type) || NATIVE_EXTENSIONS.includes(ext)) {
+    return { blob: file, ext: ext || 'png', contentType: type || `image/${ext === 'jpg' ? 'jpeg' : ext}` };
+  }
+
+  // tenta decodificar com o navegador e reexportar como PNG
+  try {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas');
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('convert');
+    return { blob, ext: 'png', contentType: 'image/png' };
+  } catch {
+    throw new Error('unsupported_image');
+  }
+}
+
 export async function uploadBrandingFile(file: File, prefix = 'branding'): Promise<string> {
-  const ext = file.name.split('.').pop() || 'png';
+  const { blob, ext, contentType } = await normalizeImage(file);
   const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabase.storage.from('branding').upload(path, file, { upsert: true });
+  const { error } = await supabase.storage
+    .from('branding')
+    .upload(path, blob, { upsert: true, contentType, cacheControl: '3600' });
   if (error) throw error;
   const { data, error: signErr } = await supabase.storage.from('branding').createSignedUrl(path, TEN_YEARS);
   if (signErr) throw signErr;
   return data.signedUrl;
 }
+
 
 export { DEFAULT_PROPOSAL_CONFIG };

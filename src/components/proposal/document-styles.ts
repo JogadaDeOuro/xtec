@@ -6,12 +6,17 @@ import type { ProposalDocConfig } from '@/lib/proposal-config';
  */
 export function buildDocumentCss(c: ProposalDocConfig): string {
   const b = c.branding;
+  const clampScale = (v: number | undefined) => Math.min(4, Math.max(0.3, Number(v) || 1));
+  const escCabecalho = clampScale(b.escalaLogoCabecalho);
+  const escRodape = clampScale(b.escalaLogoRodape);
+  const escCapa = clampScale(b.escalaLogoCapa);
   const shadow = b.intensidadeSombra <= 0
     ? 'none'
     : `0 ${2 * b.intensidadeSombra}px ${8 * b.intensidadeSombra}px rgba(16,40,24,${0.05 * b.intensidadeSombra})`;
   const headerBg = b.usarDegrade
     ? `linear-gradient(135deg, ${b.corSecundaria} 0%, ${b.corPrimaria} 100%)`
     : b.corPrimaria;
+
 
   return `
   .pdoc { --primaria:${b.corPrimaria}; --secundaria:${b.corSecundaria}; --destaque:${b.corDestaque};
@@ -35,7 +40,7 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-header.oculto { display:none; }
   .pdoc-header .ttl { font-size:10pt; letter-spacing:.14em; text-transform:uppercase; font-weight:700; }
   .pdoc-header .meta { font-size:8.5pt; opacity:.85; text-align:right; }
-  .pdoc-header img { max-height:12mm; max-width:44mm; object-fit:contain; }
+  .pdoc-header img { max-height:${(12 * escCabecalho).toFixed(2)}mm; max-width:${(44 * escCabecalho).toFixed(2)}mm; object-fit:contain; }
 
   /* rodapé */
   .pdoc-footer { position:absolute; left:0; right:0; bottom:0; height:var(--rodape);
@@ -44,7 +49,7 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
     background:${c.footer.corFundo}; border-top:1px solid var(--linha); }
   .pdoc-footer.linha { background:transparent; }
   .pdoc-footer.oculto { display:none; }
-  .pdoc-footer img { max-height:7mm; max-width:26mm; object-fit:contain; }
+  .pdoc-footer img { max-height:${(7 * escRodape).toFixed(2)}mm; max-width:${(26 * escRodape).toFixed(2)}mm; object-fit:contain; }
 
   /* capa */
   .pdoc-cover { position:relative; width:100%; min-height:297mm; display:flex; flex-direction:column;
@@ -55,7 +60,7 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-cover .topbar { position:relative; padding:16mm var(--margem) 0; }
   .pdoc-cover .inner { position:relative; margin-top:auto; padding:0 var(--margem) 12mm; display:flex; flex-direction:column; gap:5mm; }
   .pdoc-cover .inner.centro { align-items:center; text-align:center; }
-  .pdoc-cover img.logo { max-height:20mm; max-width:70mm; object-fit:contain; }
+  .pdoc-cover img.logo { max-height:${(20 * escCapa).toFixed(2)}mm; max-width:${(70 * escCapa).toFixed(2)}mm; object-fit:contain; }
   .pdoc-cover h1 { font-size:32pt; line-height:1.06; font-weight:800; letter-spacing:-.5px; max-width:150mm; }
   .pdoc-cover .sub { font-size:12pt; opacity:.9; max-width:140mm; }
   .pdoc-cover .cliente { margin-top:6mm; font-size:9pt; letter-spacing:.18em; text-transform:uppercase; opacity:.8; }

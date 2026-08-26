@@ -74,15 +74,32 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
+const ACCEPTED_IMAGE_TYPES = [
+  'image/*',
+  '.png', '.jpg', '.jpeg', '.jfif', '.pjpeg', '.webp', '.gif', '.svg', '.avif',
+  '.bmp', '.dib', '.ico', '.cur', '.tif', '.tiff', '.heic', '.heif', '.apng', '.jxl', '.pnm', '.tga',
+].join(',');
+
 function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const upload = async (file?: File) => {
     if (!file) return;
     setBusy(true);
-    try { onChange(await uploadBrandingFile(file)); toast.success('Imagem enviada'); }
-    catch { toast.error('Falha no upload da imagem'); }
-    finally { setBusy(false); }
+    try {
+      onChange(await uploadBrandingFile(file));
+      toast.success('Imagem enviada');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      toast.error(
+        msg === 'unsupported_image'
+          ? 'Formato de imagem não suportado pelo navegador. Converta para PNG, JPG, WEBP ou SVG.'
+          : 'Falha no upload da imagem',
+      );
+    } finally {
+      setBusy(false);
+      if (ref.current) ref.current.value = '';
+    }
   };
   return (
     <div className="space-y-1.5">
@@ -95,12 +112,29 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
           {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
         </Button>
         {value && <Button type="button" variant="ghost" size="sm" onClick={() => onChange('')}>Remover</Button>}
-        <input ref={ref} type="file" accept="image/*" className="hidden"
+        <input ref={ref} type="file" accept={ACCEPTED_IMAGE_TYPES} className="hidden"
           onChange={e => upload(e.target.files?.[0])} />
       </div>
+      <p className="text-[10px] text-muted-foreground">
+        PNG, JPG, WEBP, SVG, GIF, AVIF, BMP, TIFF, ICO, HEIC — formatos incomuns são convertidos automaticamente.
+      </p>
     </div>
   );
 }
+
+function ScaleField({ label, value, onChange }: { label: string; value: number | undefined; onChange: (v: number) => void }) {
+  const v = Math.min(4, Math.max(0.3, Number(value) || 1));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">{label}</Label>
+        <span className="text-xs font-medium text-muted-foreground">{Math.round(v * 100)}%</span>
+      </div>
+      <Slider min={0.3} max={4} step={0.05} value={[v]} onValueChange={([n]) => onChange(n)} />
+    </div>
+  );
+}
+
 
 export default function PersonalizacaoProposta() {
   const { isAdmin } = useAuth();
@@ -225,6 +259,17 @@ export default function PersonalizacaoProposta() {
                 <ImageField label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
               </CardContent>
             </Card>
+            <Card><CardHeader><CardTitle className="text-base">Tamanho dos logotipos</CardTitle></CardHeader>
+              <CardContent className="grid gap-5 sm:grid-cols-3">
+                <ScaleField label="Logo da capa" value={config.branding.escalaLogoCapa}
+                  onChange={v => patch('branding', { escalaLogoCapa: v })} />
+                <ScaleField label="Logo do cabeçalho" value={config.branding.escalaLogoCabecalho}
+                  onChange={v => patch('branding', { escalaLogoCabecalho: v })} />
+                <ScaleField label="Logo do rodapé" value={config.branding.escalaLogoRodape}
+                  onChange={v => patch('branding', { escalaLogoRodape: v })} />
+              </CardContent>
+            </Card>
+
             <Card><CardHeader><CardTitle className="text-base">Cores</CardTitle></CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-3">
                 <ColorField label="Primária" value={config.branding.corPrimaria} onChange={v => patch('branding', { corPrimaria: v })} />
