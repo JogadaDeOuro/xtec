@@ -626,6 +626,38 @@ export default function NovaPropostaPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <Separator />
+
+              <div>
+                <Label className="text-xs">Garantia da Instalação</Label>
+                <Select value={garantiaEstendida ? 'estendida' : 'padrao'} onValueChange={v => setGarantiaEstendida(v === 'estendida')}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="padrao">Sem garantia estendida (1 ano padrão)</SelectItem>
+                    <SelectItem value="estendida">Com garantia estendida (+{EXTENDED_WARRANTY_YEARS} anos, +8%)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {garantiaEstendida ? EXTENDED_WARRANTY_DESCRIPTION : STANDARD_WARRANTY_DESCRIPTION}
+                </p>
+                {garantiaEstendida && valorFinal > 0 && (
+                  <div className="mt-2 space-y-1 rounded-lg border border-border bg-muted/30 p-3 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cobertura estendida ({EXTENDED_WARRANTY_YEARS} anos) — 8%</span>
+                      <span className="font-medium">{formatCurrency(garantiaValor)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-primary">
+                      <span>Total geral</span>
+                      <span>{formatCurrency(totalGeral)}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Cobrada à parte, como serviço adicional de garantia estendida, apoio ao funcionamento e manutenções preventivas.
+                    </p>
+                  </div>
+                )}
+              </div>
+
             </CardContent>
           </Card>
 
