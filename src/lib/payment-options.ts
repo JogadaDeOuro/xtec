@@ -82,3 +82,90 @@ export const STANDARD_WARRANTY_DESCRIPTION =
 
 export const calcExtendedWarranty = (valorFinal: number) =>
   Math.round(valorFinal * EXTENDED_WARRANTY_RATE);
+
+/* ---------------------------------------------------------------------------
+ * Condições alternativas (o cliente escolhe uma no link de aceite)
+ * Cada alternativa é serializada como JSON dentro de proposals.condicoes_alternativas.
+ * ------------------------------------------------------------------------- */
+
+export interface AltPaymentCondition {
+  value: string;
+  /** valor total desta opção (ex.: desconto no à vista). Se ausente usa o valor final da proposta. */
+  valorTotal?: number;
+  entradaValor?: number;
+  numParcelas?: number;
+  etapas?: { descricao: string; valor: number }[];
+}
+
+export const serializeAlt = (a: AltPaymentCondition): string => JSON.stringify(a);
+
+export const parseAlt = (raw: string): AltPaymentCondition => {
+  if (!raw) return { value: '' };
+  const s = raw.trim();
+  if (s.startsWith('{')) {
+    try {
+      const o = JSON.parse(s) as AltPaymentCondition;
+      if (o && typeof o.value === 'string') return o;
+    } catch { /* fallback abaixo */ }
+  }
+  return { value: mapCondicaoFromLabel(s) };
+};
+
+export interface PaymentRow { label: string; value: number; strong?: boolean }
+
+/** Linhas de pagamento de uma condição, já calculadas. */
+export const buildPaymentRows = (
+  cond: string,
+  o: {
+    valorTotal: number;
+    entradaValor?: number;
+    numParcelas?: number;
+    etapas?: { descricao: string; valor: number }[];
+  },
+): PaymentRow[] => {
+  const total = o.valorTotal || 0;
+  const entrada = o.entradaValor || 0;
+  const parcelas = o.numParcelas || 0;
+  const rows: PaymentRow[] = [];
+
+  if (cond === 'avista') {
+    rows.push({ label: 'À vista antecipado', value: total, strong: true });
+    return rows;
+  }
+  const ms = getMilestones(cond);
+  if (ms) {
+    ms.forEach(({ label, pct }) => rows.push({ label: `${label} (${pct}%)`, value: (total * pct) / 100 }));
+    return rows;
+  }
+  if (cond === 'parcelado') {
+    rows.push({ label: 'Sem entrada · 100% parcelado', value: total });
+    if (parcelas > 0) rows.push({ label: `${parcelas}x de (sem juros)`, value: total / parcelas, strong: true });
+    return rows;
+  }
+  if (cond === 'entrada-saldo') {
+    rows.push({ label: 'Entrada', value: entrada });
+    rows.push({ label: 'Saldo na entrega', value: Math.max(0, total - entrada), strong: true });
+    return rows;
+  }
+  if (cond === 'entrada-parcelas') {
+    rows.push({ label: 'Entrada', value: entrada });
+    if (parcelas > 0) rows.push({ label: `${parcelas}x de`, value: Math.max(0, total - entrada) / parcelas, strong: true });
+    return rows;
+  }
+  if (cond === 'personalizada') {
+    (o.etapas ?? []).filter(e => e.descricao).forEach(e => rows.push({ label: e.descricao, value: e.valor }));
+    return rows;
+  }
+  return rows;
+};
+
+export const altRows = (alt: AltPaymentCondition, fallbackTotal: number): PaymentRow[] =>
+  buildPaymentRows(alt.value, {
+    valorTotal: alt.valorTotal && alt.valorTotal > 0 ? alt.valorTotal : fallbackTotal,
+    entradaValor: alt.entradaValor,
+    numParcelas: alt.numParcelas,
+    etapas: alt.etapas,
+  });
+
+export const altTotal = (alt: AltPaymentCondition, fallbackTotal: number): number =>
+  alt.valorTotal && alt.valorTotal > 0 ? alt.valorTotal : fallbackTotal;
