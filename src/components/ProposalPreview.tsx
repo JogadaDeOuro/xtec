@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { Zap, Sun, TrendingUp, DollarSign, Clock, Shield, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getMilestones, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
 interface PaymentInfo {
   condicao: string;
@@ -12,7 +13,10 @@ interface PaymentInfo {
   valorParcela: number;
   saldoAposEntrada: number;
   etapasPersonalizadas: { descricao: string; valor: number }[];
+  garantiaEstendida?: boolean;
+  garantiaValor?: number;
 }
+
 
 interface ProposalPreviewProps {
   open: boolean;
