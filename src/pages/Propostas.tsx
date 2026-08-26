@@ -255,6 +255,41 @@ export default function Propostas() {
           </div>
         )}
       </div>
+
+      {pdfProposal && (
+        <ProposalPDF
+          open={!!pdfProposal}
+          onOpenChange={(o) => { if (!o) setPdfProposal(null); }}
+          clientName={pdfProposal.clientName}
+          systemType={pdfProposal.systemType}
+          potencia={pdfProposal.potenciaKwp}
+          numPlacas={pdfProposal.numModulos}
+          potenciaModuloW={pdfProposal.potenciaModuloW}
+          producao={pdfProposal.producaoEstimada}
+          consumoMedio={pdfProposal.consumoMedio}
+          numero={pdfProposal.numero}
+          consultor={pdfProposal.consultor}
+          valorBruto={pdfProposal.valorSistema + pdfProposal.desconto}
+          valorFinal={pdfProposal.valorSistema}
+          desconto={pdfProposal.desconto}
+          tarifaKwh={pdfProposal.tarifaKwh}
+          economiaMensal={pdfProposal.economiaMensal}
+          economiaAnual={pdfProposal.economiaAnual}
+          paybackExato={pdfProposal.paybackAnos}
+          economiaTotal20={economiaTotal20(pdfProposal.economiaAnual)}
+          docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
+          payment={{
+            condicao: pdfProposal.condicaoPagamento,
+            entradaValor: 0,
+            numParcelas: 0,
+            valorParcela: 0,
+            saldoAposEntrada: 0,
+            etapasPersonalizadas: [],
+            garantiaEstendida: pdfProposal.garantiaEstendida,
+            garantiaValor: pdfProposal.garantiaEstendidaValor,
+          }}
+        />
+      )}
     </div>
   );
 }
