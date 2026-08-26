@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, FileText, Send, Copy, Trash2 } from 'lucide-react';
+import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +13,21 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { ProposalPDF } from '@/components/ProposalPDF';
+import type { ProposalDocConfig } from '@/lib/proposal-config';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
 const ITEMS_PER_PAGE = 10;
+
+/** Economia acumulada em 20 anos com reajuste tarifário de 5% a.a. */
+function economiaTotal20(economiaAnual: number): number {
+  let acc = 0;
+  for (let ano = 1; ano <= 20; ano++) acc += economiaAnual * Math.pow(1.05, ano - 1);
+  return Math.round(acc);
+}
 
 export default function Propostas() {
   const [search, setSearch] = useState('');
