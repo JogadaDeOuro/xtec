@@ -208,11 +208,18 @@ export default function Financeiro() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Faturamento Fechado" value={formatCurrency(faturamentoFechado)} icon={<DollarSign className="h-5 w-5" />} />
         <StatCard title="Faturamento Previsto" value={formatCurrency(faturamentoPrevisto)} icon={<TrendingUp className="h-5 w-5" />} />
+        <StatCard
+          title="Em propostas (sem contrato)"
+          value={formatCurrency(valorEmAberto)}
+          subtitle={`${propostasEmAberto.length} proposta${propostasEmAberto.length === 1 ? '' : 's'} em aberto`}
+          icon={<FileText className="h-5 w-5" />}
+        />
         <StatCard title="Ticket Médio" value={formatCurrency(ticketMedio)} icon={<BarChart3 className="h-5 w-5" />} />
         <StatCard title="Contratos Ativos" value={`${contratosAtivos}`} icon={<Target className="h-5 w-5" />} />
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
