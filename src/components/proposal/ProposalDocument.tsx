@@ -359,6 +359,27 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
               </p>
             )}
           </>);
+        case 'galeria': {
+          const itens = (config.gallery?.itens ?? []).filter(i => i.url);
+          if (!itens.length) return null;
+          const cols = config.gallery?.colunas === 2 ? 2 : 3;
+          return (<>
+            {config.gallery?.descricao && <p className="muted">{t(config.gallery.descricao)}</p>}
+            <div className={`pdoc-gallery c${cols}`}>
+              {itens.map(item => (
+                <figure key={item.id} className="pdoc-gitem">
+                  <div className="ph"><img src={item.url} alt={item.titulo || 'Projeto entregue'} /></div>
+                  {config.gallery?.mostrarTitulos !== false && (item.titulo || item.descricao) && (
+                    <figcaption>
+                      {item.titulo && <span className="t">{item.titulo}</span>}
+                      {item.descricao && <span className="d">{item.descricao}</span>}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
+          </>);
+        }
         case 'cronograma':
           return (
             <table className="pdoc-table">

@@ -122,6 +122,18 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-bars .bar { flex:1; background:${headerBg}; border-radius:3px 3px 0 0; position:relative; }
   .pdoc-bars .bar span { position:absolute; bottom:-5mm; left:0; right:0; text-align:center; font-size:6.5pt; color:#6b7a6e; }
 
+  /* galeria de projetos */
+  .pdoc-gallery { display:grid; gap:3.5mm; margin-top:3mm; }
+  .pdoc-gallery.c2 { grid-template-columns:repeat(2,1fr); }
+  .pdoc-gallery.c3 { grid-template-columns:repeat(3,1fr); }
+  .pdoc-gitem { margin:0; background:var(--card); border:1px solid var(--linha); border-radius:var(--raio);
+    overflow:hidden; box-shadow:var(--sombra); break-inside:avoid; page-break-inside:avoid; }
+  .pdoc-gitem .ph { width:100%; aspect-ratio:4/3; background:var(--linha); }
+  .pdoc-gitem img { width:100%; height:100%; object-fit:cover; display:block; }
+  .pdoc-gitem figcaption { display:block; padding:2.6mm 3mm; }
+  .pdoc-gitem .t { display:block; font-size:9.5pt; font-weight:700; color:var(--primaria); }
+  .pdoc-gitem .d { display:block; font-size:8pt; color:#6b7a6e; margin-top:.8mm; }
+
   .pdoc-keep { break-inside:avoid; page-break-inside:avoid; }
   .pdoc-signatures { display:grid; grid-template-columns:1fr 1fr; gap:14mm; margin-top:14mm; }
   .pdoc-signatures .line { border-top:1px solid var(--texto); padding-top:2mm; font-size:9pt; text-align:center; }
