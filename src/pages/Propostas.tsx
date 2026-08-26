@@ -35,6 +35,7 @@ export default function Propostas() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'all'>('all');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [pdfProposal, setPdfProposal] = useState<ProposalRecord | null>(null);
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
