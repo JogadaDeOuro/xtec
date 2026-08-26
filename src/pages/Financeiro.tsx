@@ -222,6 +222,36 @@ export default function Financeiro() {
 
       </div>
 
+      <Card className="animate-fade-in">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium flex items-center justify-between">
+            <span>Propostas que ainda não viraram contrato</span>
+            <span className="text-sm font-semibold text-primary">{formatCurrency(valorEmAberto)}</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {propostasEmAberto.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Nenhuma proposta em aberto no período</p>
+          ) : (
+            <div className="divide-y">
+              {propostasEmAberto.slice(0, 12).map(p => (
+                <div key={p.id} className="flex items-center justify-between py-2 gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{p.client_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {p.numero || `P-${p.id.slice(0, 8).toUpperCase()}`} • {statusLabels[p.status] || p.status} • {format(new Date(p.created_at), "dd/MM/yy", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold whitespace-nowrap">{formatCurrency(p.valor)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="animate-fade-in">
           <CardHeader className="pb-2">
