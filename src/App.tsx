@@ -93,6 +93,8 @@ const App = () => (
                 <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
                 <Route path="/assinar/:token" element={<AssinarContrato />} />
                 <Route path="/proposta/:token" element={<PropostaPublica />} />
+                <Route path="/aceite/:token" element={<AceiteProposta />} />
+                <Route path="/cliente" element={<PortalCliente />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
