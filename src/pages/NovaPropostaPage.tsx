@@ -33,6 +33,11 @@ import { ProposalPreview } from '@/components/ProposalPreview';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatCpfCnpj } from '@/lib/utils';
+import {
+  PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel,
+  calcExtendedWarranty, EXTENDED_WARRANTY_YEARS,
+  EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION,
+} from '@/lib/payment-options';
 
 // Calculation helpers
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
