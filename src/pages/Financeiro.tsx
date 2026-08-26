@@ -214,10 +214,10 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
+              {faturamentoPorTipo.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados no período</div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
-                {faturamentoPorTipo.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados no período</div>
-                ) : (
                 <PieChart>
                   <Pie data={faturamentoPorTipo} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                     {faturamentoPorTipo.map((_, i) => (
@@ -226,8 +226,8 @@ export default function Financeiro() {
                   </Pie>
                   <Tooltip formatter={(v: number) => formatCurrency(v)} />
                 </PieChart>
-                )}
               </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
