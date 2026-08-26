@@ -110,7 +110,8 @@ export default function EditarPropostaPage() {
   const [desconto, setDesconto] = useState(proposal?.desconto || 0);
   const [descontoTipo, setDescontoTipo] = useState<'percent' | 'fixed'>('percent');
   const [condicao, setCondicao] = useState(proposal?.condicaoPagamento ? mapCondicao(proposal.condicaoPagamento) : '');
-  const [tarifaKwh, setTarifaKwh] = useState(0.85);
+  const [tarifaKwh, setTarifaKwh] = useState(proposal?.tarifaKwh ?? 0.85);
+  const [potenciaModuloW, setPotenciaModuloW] = useState(650);
   const [entradaValor, setEntradaValor] = useState(0);
   const [numParcelas, setNumParcelas] = useState(12);
   const [etapasPersonalizadas, setEtapasPersonalizadas] = useState<EtapaPersonalizada[]>([{ descricao: '', valor: 0 }]);
@@ -134,6 +135,8 @@ export default function EditarPropostaPage() {
           setCondicao(mapCondicaoFromLabel(p.condicaoPagamento));
           setGarantiaEstendida(p.garantiaEstendida);
           if (p.consumoMedio > 0) setConsumoMensal(p.consumoMedio);
+          if (p.tarifaKwh > 0) setTarifaKwh(p.tarifaKwh);
+          if (p.potenciaModuloW > 0) setPotenciaModuloW(p.potenciaModuloW);
         }
       })
       .catch(() => toast.error('Erro ao carregar proposta'))
@@ -164,8 +167,9 @@ export default function EditarPropostaPage() {
   };
 
   const potencia = typeof potenciaKwp === 'number' ? potenciaKwp : 0;
-  const numPlacasRaw = potencia > 0 ? Math.ceil((potencia * 1000) / 650) : 0;
+  const numPlacasRaw = potencia > 0 ? Math.ceil((potencia * 1000) / potenciaModuloW) : 0;
   const numPlacas = numPlacasRaw % 2 === 0 ? numPlacasRaw : numPlacasRaw + 1;
+  const potenciaExata = +((numPlacas * potenciaModuloW) / 1000).toFixed(2);
   const potenciaMin = numPlacas > 0 ? +((numPlacas * 0.6).toFixed(2)) : 0;
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
   const client = clients.find(c => c.id === clientId);
@@ -193,6 +197,9 @@ export default function EditarPropostaPage() {
     consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
     garantiaEstendida,
     garantiaEstendidaValor: garantiaValor,
+    tarifaKwh,
+    numModulos: numPlacas,
+    potenciaModuloW: potenciaModuloW,
   });
 
   const economiaMensal = Math.round(producao * tarifaKwh);
@@ -651,11 +658,12 @@ export default function EditarPropostaPage() {
         clientEmail={client?.email}
         clientPhone={client?.phone}
         systemType={systemType}
-        potencia={potencia}
+        potencia={potenciaExata}
         numPlacas={numPlacas}
-        potenciaMin={potenciaMin}
-        potenciaMax={potenciaMax}
+        potenciaModuloW={potenciaModuloW}
         producao={producao}
+        consumoMedio={typeof consumoMensal === 'number' ? consumoMensal : 0}
+        numero={proposal?.numero ?? ""}
         valorBruto={valorBruto}
         valorFinal={valorFinal}
         desconto={desconto}

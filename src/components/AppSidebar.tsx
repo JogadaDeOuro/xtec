@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, FileText, FileSignature, Clock, BarChart3,
-  Settings, Plug, Sun, Moon, LogOut, ChevronLeft, MessageSquare,
+  Settings, Plug, Sun, Moon, LogOut, ChevronLeft, MessageSquare, Palette,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -28,6 +28,7 @@ const mainItems = [
 
 const secondaryItems = [
   { title: 'WhatsApp Gestão', url: '/whatsapp-admin', icon: MessageSquare },
+  { title: 'Personalização da Proposta', url: '/personalizacao-proposta', icon: Palette },
   { title: 'Integrações', url: '/integracoes', icon: Plug },
   { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
