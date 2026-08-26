@@ -134,6 +134,8 @@ export default function EditarPropostaPage() {
           if (p.potenciaKwp > 0) setValorKwp(Math.round(p.valorSistema / p.potenciaKwp));
           setDesconto(p.desconto);
           setCondicao(mapCondicaoFromLabel(p.condicaoPagamento));
+          setCondicoesAlt((p.condicoesAlternativas ?? []).map(mapCondicaoFromLabel).filter(Boolean));
+
           setGarantiaEstendida(p.garantiaEstendida);
           if (p.consumoMedio > 0) setConsumoMensal(p.consumoMedio);
           if (p.tarifaKwh > 0) setTarifaKwh(p.tarifaKwh);
