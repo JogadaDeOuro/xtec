@@ -1,3 +1,5 @@
+import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
+import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -169,7 +171,7 @@ export default function NovaPropostaPage() {
   };
   const [desconto, setDesconto] = useState(0);
   const [descontoTipo, setDescontoTipo] = useState<'percent' | 'fixed'>('percent');
-  const [condicoesAlt, setCondicoesAlt] = useState<string[]>([]);
+  const [condicoesAlt, setCondicoesAlt] = useState<AltPaymentCondition[]>([]);
   const [condicao, setCondicao] = useState('');
   const [garantiaEstendida, setGarantiaEstendida] = useState(false);
   const [tarifaKwh, setTarifaKwh] = useState(0.85);
@@ -259,7 +261,7 @@ export default function NovaPropostaPage() {
     paybackAnos: paybackExato,
     status,
     condicaoPagamento: getCondicaoLabel(condicao),
-    condicoesAlternativas: condicoesAlt.map(getCondicaoLabel),
+    condicoesAlternativas: condicoesAlt.map(serializeAlt),
     desconto,
     consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
     garantiaEstendida,
@@ -499,27 +501,12 @@ export default function NovaPropostaPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="rounded-lg border border-border p-3">
-                <Label className="text-xs">Outras condições que o cliente pode escolher (opcional)</Label>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Marque outras condições para oferecer alternativas. O cliente escolhe uma no link de aceite.
-                </p>
-                <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
-                  {PAYMENT_CONDITIONS.filter(o => o.value !== condicao).map(opt => (
-                    <label key={opt.value} className="flex cursor-pointer items-center gap-2 text-xs">
-                      <input
-                        type="checkbox"
-                        className="h-3.5 w-3.5 accent-primary"
-                        checked={condicoesAlt.includes(opt.value)}
-                        onChange={e => setCondicoesAlt(prev =>
-                          e.target.checked ? [...prev, opt.value] : prev.filter(v => v !== opt.value))}
-                      />
-                      <span>{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              <AltConditionsEditor
+                condicaoPrincipal={condicao}
+                valorFinal={valorFinal}
+                value={condicoesAlt}
+                onChange={setCondicoesAlt}
+              />
 
               {/* Dynamic payment fields */}
               <AnimatePresence mode="wait">
@@ -1081,7 +1068,7 @@ export default function NovaPropostaPage() {
         economiaTotal30={proj[proj.length - 1]?.acumulado || 0}
         payment={{
           condicao,
-          alternativas: condicoesAlt.map(getCondicaoLabel),
+          alternativas: condicoesAlt.map(serializeAlt),
           entradaValor,
           numParcelas,
           valorParcela,
@@ -1117,7 +1104,7 @@ export default function NovaPropostaPage() {
         economiaTotal20={proj[proj.length - 1]?.acumulado || 0}
         payment={{
           condicao,
-          alternativas: condicoesAlt.map(getCondicaoLabel),
+          alternativas: condicoesAlt.map(serializeAlt),
           entradaValor,
           numParcelas,
           valorParcela,
