@@ -19,6 +19,7 @@ export type SectionKey =
   | 'escopo_incluso'
   | 'nao_inclusos'
   | 'pagamento'
+  | 'galeria'
   | 'cronograma'
   | 'garantias'
   | 'manutencao'
@@ -156,6 +157,21 @@ export interface AssumptionsConfig {
   validadeDias: number;
 }
 
+export interface GalleryItem {
+  id: string;
+  url: string;
+  titulo: string;
+  descricao?: string;
+}
+
+export interface GalleryConfig {
+  titulo: string;
+  descricao: string;
+  colunas: 2 | 3;
+  mostrarTitulos: boolean;
+  itens: GalleryItem[];
+}
+
 export interface ProposalDocConfig {
   branding: BrandingConfig;
   cover: CoverConfig;
@@ -163,6 +179,7 @@ export interface ProposalDocConfig {
   footer: FooterConfig;
   texts: TextsConfig;
   assumptions: AssumptionsConfig;
+  gallery: GalleryConfig;
   sections: SectionConfig[];
 }
 
