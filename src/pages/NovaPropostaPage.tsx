@@ -914,7 +914,7 @@ export default function NovaPropostaPage() {
                     economiaAnual,
                     paybackAnos: paybackExato,
                     status: 'rascunho',
-                    condicaoPagamento: condicao || 'A definir',
+                    condicaoPagamento: getCondicaoLabel(condicao),
                     desconto,
                     margem: 0,
                     comissao: 0,
@@ -947,7 +947,7 @@ export default function NovaPropostaPage() {
                     economiaAnual,
                     paybackAnos: paybackExato,
                     status: 'enviada',
-                    condicaoPagamento: condicao || 'A definir',
+                    condicaoPagamento: getCondicaoLabel(condicao),
                     desconto,
                     margem: 0,
                     comissao: 0,
@@ -981,7 +981,7 @@ export default function NovaPropostaPage() {
                       economiaAnual,
                       paybackAnos: paybackExato,
                       status: 'aceita',
-                      condicaoPagamento: condicao || 'A definir',
+                      condicaoPagamento: getCondicaoLabel(condicao),
                       desconto,
                       margem: 0,
                       comissao: 0,
@@ -990,7 +990,7 @@ export default function NovaPropostaPage() {
                     mockProposals.push(newProposal);
                   }
                   persistProposals();
-                  const condicaoLabel = condicao === 'avista' ? 'À vista' : condicao === '40-20-20-20' ? '40%/20%/20%/20%' : condicao === '40-40-20' ? '40%+40%+20%' : condicao === 'entrada-saldo' ? 'Entrada + saldo' : condicao === 'entrada-parcelas' ? 'Entrada + parcelas' : 'Personalizada';
+                  const condicaoLabel = getCondicaoLabel(condicao);
                   const { error } = await supabase.from('contracts').insert({
                     proposal_id: existingProposal?.id || proposalId,
                     client_id: client.id,
@@ -1005,6 +1005,8 @@ export default function NovaPropostaPage() {
                     potencia_kwp: potencia,
                     valor: valorFinal,
                     condicao_pagamento: condicaoLabel,
+                    garantia_estendida: garantiaEstendida,
+                    garantia_estendida_valor: garantiaValor,
                     status: 'rascunho',
                     user_id: user?.id ?? null,
                   });
