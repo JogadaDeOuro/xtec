@@ -38,7 +38,10 @@ export async function downloadProposalPdf(
   host.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_W_PX}px;background:#fff;z-index:-1;`;
   const style = document.createElement('style');
   style.textContent = `${PRINT_PAGE_RULE}${buildDocumentCss(config)}
-    .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important; }`;
+    .pdf-export { zoom:1 !important; transform:none !important; }
+    .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important;
+      width:${A4_W_PX}px !important; min-height:${A4_H_PX}px !important; }`;
+
   host.appendChild(style);
 
   const wrapper = document.createElement('div');
