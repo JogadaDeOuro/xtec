@@ -207,7 +207,7 @@ export default function EditarPropostaPage() {
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
   const proj = projecaoAnos(economiaAnual, valorFinal, tarifaKwh);
   const paybackAno = proj.find(p => p.acumulado >= valorFinal)?.ano || null;
-  const saldoAposEntrada = Math.max(0, valorFinal - entradaValor);
+  const saldoAposEntrada = condicao === 'parcelado' ? valorFinal : Math.max(0, valorFinal - entradaValor);
   const valorParcela = numParcelas > 0 ? Math.round(saldoAposEntrada / numParcelas) : 0;
   const totalEtapas = etapasPersonalizadas.reduce((s, e) => s + (e.valor || 0), 0);
   const restantePersonalizada = valorFinal - totalEtapas;
