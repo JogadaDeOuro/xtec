@@ -75,11 +75,17 @@ export default function Propostas() {
         document.execCommand('copy');
         document.body.removeChild(el);
       }
-      toast.success('Link da proposta copiado!', { description: url });
+      toast.success(`${label} copiado!`, { description: url });
     } catch {
       toast.error('Não foi possível copiar', { description: url });
     }
   };
+
+  const handleCopyLink = (token: string) =>
+    copyUrl(`${window.location.origin}/proposta/${token}`, 'Link da proposta');
+
+  const handleCopyAcceptLink = (token: string) =>
+    copyUrl(`${window.location.origin}/aceite/${token}`, 'Link de aceite');
 
   // Sort by newest first
   const sorted = [...proposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
