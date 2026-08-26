@@ -169,6 +169,7 @@ export default function EditarPropostaPage() {
   const potencia = typeof potenciaKwp === 'number' ? potenciaKwp : 0;
   const numPlacasRaw = potencia > 0 ? Math.ceil((potencia * 1000) / potenciaModuloW) : 0;
   const numPlacas = numPlacasRaw % 2 === 0 ? numPlacasRaw : numPlacasRaw + 1;
+  const potenciaExata = +((numPlacas * potenciaModuloW) / 1000).toFixed(2);
   const potenciaMin = numPlacas > 0 ? +((numPlacas * 0.6).toFixed(2)) : 0;
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
   const client = clients.find(c => c.id === clientId);
@@ -657,11 +658,12 @@ export default function EditarPropostaPage() {
         clientEmail={client?.email}
         clientPhone={client?.phone}
         systemType={systemType}
-        potencia={potencia}
+        potencia={potenciaExata}
         numPlacas={numPlacas}
-        potenciaMin={potenciaMin}
-        potenciaMax={potenciaMax}
+        potenciaModuloW={potenciaModuloW}
         producao={producao}
+        consumoMedio={typeof consumoMensal === 'number' ? consumoMensal : 0}
+        numero={proposal?.numero ?? ""}
         valorBruto={valorBruto}
         valorFinal={valorFinal}
         desconto={desconto}
