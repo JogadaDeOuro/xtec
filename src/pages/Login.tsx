@@ -115,11 +115,14 @@ export default function Login() {
         </div>
 
         <div className="relative space-y-6 max-w-md">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground/80">
+            <Sun className="h-3.5 w-3.5" /> Plataforma comercial solar
+          </p>
           <h1 className="font-display text-4xl font-bold leading-tight">
-            Propostas e contratos solares, com a velocidade do sol.
+            Do primeiro orçamento ao contrato assinado.
           </h1>
           <p className="text-primary-foreground/80 text-sm leading-relaxed">
-            Pipeline comercial, dimensionamento técnico, contratos com assinatura digital e acompanhamento do projeto — em uma única plataforma.
+            Dimensione o sistema, gere a proposta, feche o contrato com assinatura digital e acompanhe a obra — tudo num só lugar.
           </p>
           <div className="grid grid-cols-1 gap-3 pt-2">
             {[
