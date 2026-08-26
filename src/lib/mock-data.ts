@@ -100,40 +100,12 @@ export interface ProjectStage {
   }[];
 }
 
-export const mockClients: Client[] = [];
+// Dados reais vêm do banco (Lovable Cloud). Nada é persistido no navegador.
+try {
+  localStorage.removeItem('inforsol_proposals');
+  localStorage.removeItem('inforsol_contracts');
+} catch { /* ignore */ }
 
-const defaultProposals: Proposal[] = [];
-
-const defaultContracts: Contract[] = [];
-
-// LocalStorage persistence helpers
-
-function loadFromStorage<T>(key: string, defaults: T[]): T[] {
-  try {
-    const stored = localStorage.getItem(key);
-    if (stored) return JSON.parse(stored);
-  } catch { /* ignore */ }
-  return [...defaults];
-}
-
-function saveToStorage<T>(key: string, data: T[]) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch { /* ignore */ }
-}
-
-export const mockProposals: Proposal[] = loadFromStorage<Proposal>('inforsol_proposals', defaultProposals);
-export const mockContracts: Contract[] = loadFromStorage<Contract>('inforsol_contracts', defaultContracts);
-
-export function persistProposals() {
-  saveToStorage('inforsol_proposals', mockProposals);
-}
-
-export function persistContracts() {
-  saveToStorage('inforsol_contracts', mockContracts);
-}
-
-export const mockProjectStages: ProjectStage[] = [];
 
 export const dashboardStats = {
   totalLeads: 127,
