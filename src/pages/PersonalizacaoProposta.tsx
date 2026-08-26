@@ -259,6 +259,17 @@ export default function PersonalizacaoProposta() {
                 <ImageField label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
               </CardContent>
             </Card>
+            <Card><CardHeader><CardTitle className="text-base">Tamanho dos logotipos</CardTitle></CardHeader>
+              <CardContent className="grid gap-5 sm:grid-cols-3">
+                <ScaleField label="Logo da capa" value={config.branding.escalaLogoCapa}
+                  onChange={v => patch('branding', { escalaLogoCapa: v })} />
+                <ScaleField label="Logo do cabeçalho" value={config.branding.escalaLogoCabecalho}
+                  onChange={v => patch('branding', { escalaLogoCabecalho: v })} />
+                <ScaleField label="Logo do rodapé" value={config.branding.escalaLogoRodape}
+                  onChange={v => patch('branding', { escalaLogoRodape: v })} />
+              </CardContent>
+            </Card>
+
             <Card><CardHeader><CardTitle className="text-base">Cores</CardTitle></CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-3">
                 <ColorField label="Primária" value={config.branding.corPrimaria} onChange={v => patch('branding', { corPrimaria: v })} />
