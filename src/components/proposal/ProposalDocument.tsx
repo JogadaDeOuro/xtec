@@ -201,6 +201,13 @@ export function ProposalDocument({
     );
   };
 
+  const wrapSection = (s: SectionConfig, body: ReactNode, title?: string | null) => (
+    <section className={`pdoc-section ${s.background === 'colorido' ? 'colorido' : ''} ${s.columns === 2 ? 'cols2' : ''}`}>
+      {title !== null && <h2 className="pdoc-title">{title ?? s.title}</h2>}
+      <div className="body">{body}</div>
+    </section>
+  );
+
   const eq = data.equipamentos ?? [];
   const modulos = eq.filter(e => e.category === 'modulo');
   const inversores = eq.filter(e => e.category === 'inversor' || e.category === 'microinversor');
