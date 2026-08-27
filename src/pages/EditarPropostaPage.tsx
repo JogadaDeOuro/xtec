@@ -407,6 +407,7 @@ export default function EditarPropostaPage() {
                     <div className="flex flex-col gap-1 mt-1.5">
                       <Badge variant="secondary" className="text-[10px] font-normal w-fit">{numPlacas} placas de 600–700 Wp</Badge>
                       <span className="text-[10px] text-muted-foreground">Potência: {potenciaMin} a {potenciaMax} kWp</span>
+                      <span className="text-[10px] text-muted-foreground">Área necessária estimada: {formatNumber(areaEstimada)} m²</span>
                     </div>
                   )}
                 </div>

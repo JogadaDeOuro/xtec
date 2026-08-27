@@ -482,6 +482,9 @@ export default function NovaPropostaPage() {
                       <span className="text-[10px] text-muted-foreground">
                         Potência do sistema: {potenciaMin} a {potenciaMax} kWp
                       </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Área necessária estimada: {formatNumber(areaEstimada)} m²
+                      </span>
                     </div>
                   )}
                   <p className="text-[10px] text-muted-foreground mt-1">Editável — ajuste se necessário</p>
