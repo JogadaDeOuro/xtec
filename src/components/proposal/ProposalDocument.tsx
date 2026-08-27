@@ -12,6 +12,9 @@ import {
   EXTENDED_WARRANTY_DESCRIPTION, EXTENDED_WARRANTY_YEARS, getMilestones,
   getCondicaoLabel, mapCondicaoFromLabel, parseAlt, altRows, type PaymentRow,
 } from '@/lib/payment-options';
+import {
+  projecaoGanhos, roiTotal, rentabilidadeAnual, valorCheioMensal, type Finalidade,
+} from '@/lib/investment';
 
 export interface ProposalPaymentInfo {
   condicao: string;
@@ -53,6 +56,10 @@ export interface ProposalDocData {
   economiaTotal: number;
   payment: ProposalPaymentInfo;
   equipamentos?: EquipmentItem[];
+  /** consumo (padrão) ou usina de investimento */
+  finalidade?: Finalidade;
+  /** deságio aplicado na venda da energia (usina de investimento) */
+  desagioPct?: number;
 }
 
 const dateBR = (d: Date) =>
@@ -109,6 +116,16 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
   const co2 = reducaoCo2Anual(data.producaoMensal * 12, config.assumptions);
   const proj = projecao(data.producaoMensal, data.valorFinal, config.assumptions);
   const valorGarantia = data.payment.garantiaValor || 0;
+  const isInv = data.finalidade === 'investimento';
+  const desagio = data.desagioPct ?? 0;
+  const ganhoMensal = data.economiaMensal;
+  const ganhoAnual = data.economiaAnual;
+  const ganhos = projecaoGanhos(ganhoAnual, data.valorFinal, config.assumptions.horizonteAnos);
+  const ganhoAcumulado = ganhos.length ? ganhos[ganhos.length - 1].acumulado : 0;
+  const roi = roiTotal(ganhoAcumulado, data.valorFinal);
+  const rentab = rentabilidadeAnual(ganhoAnual, data.valorFinal);
+  const lblGanhoMes = isInv ? 'Ganho mensal' : 'Economia mensal';
+  const lblGanhoAno = isInv ? 'Receita anual estimada' : 'Economia anual estimada';
 
   const Footer = ({ page }: { page: number }) => {
     const f = config.footer;
@@ -229,9 +246,9 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
               <div className="pdoc-card hi"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
               <div className="pdoc-card"><div className="k">Geração média</div><div className="v">{formatNumber(data.producaoMensal)} kWh/mês</div></div>
               <div className="pdoc-card"><div className="k">Investimento</div><div className="v">{formatCurrency(data.valorFinal)}</div></div>
-              <div className="pdoc-card"><div className="k">Economia mensal</div><div className="v">{formatCurrency(data.economiaMensal)}</div></div>
+              <div className="pdoc-card"><div className="k">{lblGanhoMes}</div><div className="v">{formatCurrency(ganhoMensal)}</div></div>
               <div className="pdoc-card"><div className="k">Payback estimado</div><div className="v">{paybackLabel(data.paybackAnos)}</div></div>
-              <div className="pdoc-card"><div className="k">Modalidade</div><div className="v">{data.systemType.toUpperCase()}</div></div>
+              <div className="pdoc-card"><div className="k">Modalidade</div><div className="v">{isInv ? 'USINA DE INVESTIMENTO' : data.systemType.toUpperCase()}</div></div>
             </div>
           );
         case 'consumo_atual':
@@ -239,7 +256,9 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
             <div className="pdoc-grid g3">
               <div className="pdoc-card"><div className="k">Consumo médio</div><div className="v">{formatNumber(data.consumoMedio)} kWh/mês</div></div>
               <div className="pdoc-card"><div className="k">Tarifa considerada</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
-              <div className="pdoc-card"><div className="k">Compensação estimada</div><div className="v">{percentualCompensacao(data.producaoMensal, data.consumoMedio)}%</div></div>
+              {isInv
+                ? <div className="pdoc-card"><div className="k">Deságio na venda</div><div className="v">{desagio}%</div></div>
+                : <div className="pdoc-card"><div className="k">Compensação estimada</div><div className="v">{percentualCompensacao(data.producaoMensal, data.consumoMedio)}%</div></div>}
             </div>
           );
         case 'dimensionamento':
@@ -316,14 +335,19 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
               {data.payment.garantiaEstendida && valorGarantia > 0 && (
                 <div className="row"><span>Garantia estendida ({EXTENDED_WARRANTY_YEARS} anos)</span><span>{formatCurrency(valorGarantia)}</span></div>
               )}
+              {isInv && (
+                <div className="row"><span>Energia vendida com deságio de {desagio}%</span><span>{formatCurrency(valorCheioMensal(data.producaoMensal, data.tarifaKwh))}/mês na tarifa cheia</span></div>
+              )}
               <div className="row total">
-                <span>Economia anual estimada</span>
-                <span>{formatCurrency(data.economiaAnual)}</span>
+                <span>{lblGanhoAno}</span>
+                <span>{formatCurrency(ganhoAnual)}</span>
               </div>
             </div>
-            <div className="pdoc-grid g2" style={{ marginTop: '4mm' }}>
-              <div className="pdoc-card hi"><div className="k">Economia mensal</div><div className="v">{formatCurrency(data.economiaMensal)}</div></div>
+            <div className={`pdoc-grid ${isInv ? 'g4' : 'g2'}`} style={{ marginTop: '4mm' }}>
+              <div className="pdoc-card hi"><div className="k">{lblGanhoMes}</div><div className="v">{formatCurrency(ganhoMensal)}</div></div>
               <div className="pdoc-card hi"><div className="k">Payback simples</div><div className="v">{paybackLabel(data.paybackAnos)}</div></div>
+              {isInv && <div className="pdoc-card hi"><div className="k">Rentabilidade</div><div className="v">{rentab}% a.a.</div></div>}
+              {isInv && <div className="pdoc-card hi"><div className="k">ROI em {config.assumptions.horizonteAnos} anos</div><div className="v">{roi}%</div></div>}
             </div>
 
 
@@ -333,8 +357,23 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
             <div className="pdoc-grid g3">
               <div className="pdoc-card"><div className="k">Tarifa base</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
               <div className="pdoc-card"><div className="k">Reajuste considerado</div><div className="v">{config.assumptions.reajusteTarifarioPct}% a.a.</div></div>
-              <div className="pdoc-card"><div className="k">Economia em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(data.economiaTotal)}</div></div>
+              <div className="pdoc-card"><div className="k">{isInv ? 'Ganhos' : 'Economia'} em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(isInv ? ganhoAcumulado : data.economiaTotal)}</div></div>
             </div>
+            {isInv && (
+              <table className="pdoc-table" style={{ marginTop: '4mm' }}>
+                <thead><tr><th>Ano</th><th className="num">Ganho no ano</th><th className="num">Acumulado</th><th className="num">ROI</th></tr></thead>
+                <tbody>
+                  {ganhos.map(g => (
+                    <tr key={g.ano}>
+                      <td>{g.ano}º</td>
+                      <td className="num">{formatCurrency(g.receita)}</td>
+                      <td className="num">{formatCurrency(g.acumulado)}</td>
+                      <td className="num">{g.roiPct}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
             <p className="muted" style={{ marginTop: '3mm' }}>
               Valores estimados, não garantidos. Premissas: produtividade de {config.assumptions.produtividadeKwhKwpMes} kWh/kWp·mês,
               degradação de {config.assumptions.degradacaoAnualPct}% ao ano e horizonte de {config.assumptions.horizonteAnos} anos.
@@ -343,12 +382,15 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
         case 'projecao':
           return (<>
             <div className="pdoc-bars">
-              {proj.filter((_, i) => i % Math.max(1, Math.round(proj.length / 12)) === 0).map(p => {
-                const max = proj[proj.length - 1]?.acumulado || 1;
+              {(isInv
+                ? ganhos.map(g => ({ ano: g.ano, acumulado: g.acumulado }))
+                : proj).filter((_, i) => i % Math.max(1, Math.round(proj.length / 12)) === 0).map(p => {
+                const serie = isInv ? ganhos : proj;
+                const max = serie[serie.length - 1]?.acumulado || 1;
                 return <div key={p.ano} className="bar" style={{ height: `${Math.max(4, (p.acumulado / max) * 100)}%` }}><span>{p.ano}º</span></div>;
               })}
             </div>
-            <p className="muted" style={{ marginTop: '7mm' }}>Economia acumulada estimada ao longo de {config.assumptions.horizonteAnos} anos.</p>
+            <p className="muted" style={{ marginTop: '7mm' }}>{isInv ? 'Ganhos acumulados' : 'Economia acumulada'} estimados ao longo de {config.assumptions.horizonteAnos} anos.</p>
           </>);
         case 'impacto_ambiental':
           return (

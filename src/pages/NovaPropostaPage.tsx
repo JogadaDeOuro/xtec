@@ -1,5 +1,9 @@
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
+import {
+  DESAGIO_MIN, DESAGIO_MAX, DESAGIO_PADRAO, projecaoGanhos, roiTotal,
+  rentabilidadeAnual, valorCheioMensal, type Finalidade,
+} from '@/lib/investment';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -149,6 +153,8 @@ export default function NovaPropostaPage() {
     if (data) setClientId(data.id);
   };
 
+  const [finalidade, setFinalidade] = useState<Finalidade>('consumo');
+  const [desagioPct, setDesagioPct] = useState(DESAGIO_PADRAO);
   const [systemType, setSystemType] = useState<SystemType>('on-grid');
   const [consumoMensal, setConsumoMensal] = useState<number | ''>('');
   const [potenciaKwp, setPotenciaKwp] = useState<number | ''>('');
@@ -232,8 +238,16 @@ export default function NovaPropostaPage() {
   const valorBruto = Math.round(potencia * valorKwp);
   const descontoValor = descontoTipo === 'percent' ? Math.round(valorBruto * desconto / 100) : desconto;
   const valorFinal = Math.max(0, valorBruto - descontoValor);
-  const economiaMensal = Math.round(producao * tarifaKwh);
+  const isInv = finalidade === 'investimento';
+  const valorCheio = valorCheioMensal(producao, tarifaKwh);
+  const economiaMensal = isInv
+    ? Math.round(valorCheio * (1 - desagioPct / 100))
+    : valorCheio;
   const economiaAnual = economiaMensal * 12;
+  const ganhos = projecaoGanhos(economiaAnual, valorFinal, 20);
+  const ganhoAcumulado = ganhos.length ? ganhos[ganhos.length - 1].acumulado : 0;
+  const roi = roiTotal(ganhoAcumulado, valorFinal);
+  const rentab = rentabilidadeAnual(economiaAnual, valorFinal);
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
 
   const proj = projecaoAnos(economiaAnual, valorFinal, tarifaKwh);
@@ -269,6 +283,8 @@ export default function NovaPropostaPage() {
     tarifaKwh,
     numModulos: numPlacas,
     potenciaModuloW: potenciaModuloW,
+    finalidade,
+    desagioPct: isInv ? desagioPct : 0,
   });
 
 
@@ -352,6 +368,59 @@ export default function NovaPropostaPage() {
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">Sistema Fotovoltaico</CardTitle></CardHeader>
             <CardContent className="space-y-5">
+              <div>
+                <Label className="text-xs">Finalidade da Usina</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {([
+                    { v: 'consumo' as const, t: 'Usina para consumo', d: 'Foco em economia na conta de luz' },
+                    { v: 'investimento' as const, t: 'Usina para investimento', d: 'Foco em ganhos com a venda da energia' },
+                  ]).map(opt => (
+                    <motion.button
+                      key={opt.v}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setFinalidade(opt.v)}
+                      className={`rounded-lg border p-3 text-left transition-all ${
+                        finalidade === opt.v ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-accent'
+                      }`}
+                    >
+                      <span className="block text-xs font-semibold">{opt.t}</span>
+                      <span className="block text-[10px] text-muted-foreground mt-0.5">{opt.d}</span>
+                    </motion.button>
+                  ))}
+                </div>
+                {isInv && (
+                  <div className="mt-3 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                    <div className="flex justify-between">
+                      <Label className="text-xs">Deságio na venda da energia</Label>
+                      <span className="text-sm font-bold text-primary">{desagioPct}%</span>
+                    </div>
+                    <Slider
+                      value={[desagioPct]}
+                      onValueChange={([v]) => setDesagioPct(v)}
+                      min={DESAGIO_MIN}
+                      max={DESAGIO_MAX}
+                      step={1}
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>{DESAGIO_MIN}%</span><span>{DESAGIO_MAX}%</span>
+                    </div>
+                    {producao > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Energia gerada (tarifa cheia)</span>
+                          <span>{formatCurrency(valorCheio)}/mês</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-primary">
+                          <span>Ganho com deságio de {desagioPct}%</span>
+                          <span>{formatCurrency(economiaMensal)}/mês</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-xs">Tipo de Sistema</Label>
                 <div className="grid grid-cols-3 gap-2 mt-2">
@@ -734,7 +803,7 @@ export default function NovaPropostaPage() {
           {/* Financial Projection */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Projeção Financeira (20 anos)</CardTitle>
+              <CardTitle className="text-base">{isInv ? 'Projeção de Ganhos (20 anos)' : 'Projeção Financeira (20 anos)'}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[320px]">
@@ -826,7 +895,8 @@ export default function NovaPropostaPage() {
                 </ResponsiveContainer>
               </div>
               <p className="text-center text-xs text-muted-foreground mt-2">
-                Economia total em 20 anos: <strong className="text-foreground">{formatCurrency(proj[proj.length - 1]?.acumulado || 0)}</strong>
+                {isInv ? 'Ganhos totais em 20 anos: ' : 'Economia total em 20 anos: '}
+                <strong className="text-foreground">{formatCurrency(proj[proj.length - 1]?.acumulado || 0)}</strong>
                 {' '}(considerando reajuste anual de 5% na tarifa de energia)
               </p>
             </CardContent>
@@ -965,7 +1035,7 @@ export default function NovaPropostaPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-success/10 p-3 text-center">
                     <DollarSign className="h-4 w-4 mx-auto text-success mb-1" />
-                    <p className="text-xs text-muted-foreground">Economia/mês</p>
+                    <p className="text-xs text-muted-foreground">{isInv ? 'Ganho/mês' : 'Economia/mês'}</p>
                     <p className="text-sm font-bold">{formatCurrency(economiaMensal)}</p>
                   </div>
                   <div className="rounded-lg bg-info/10 p-3 text-center">
@@ -974,6 +1044,22 @@ export default function NovaPropostaPage() {
                     <p className="text-sm font-bold">{paybackExato > 0 ? `${paybackExato} anos` : '—'}</p>
                   </div>
                 </div>
+                {isInv && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-lg border border-border p-2 text-center">
+                      <p className="text-[10px] text-muted-foreground">Deságio</p>
+                      <p className="text-xs font-bold">{desagioPct}%</p>
+                    </div>
+                    <div className="rounded-lg border border-border p-2 text-center">
+                      <p className="text-[10px] text-muted-foreground">Rentab.</p>
+                      <p className="text-xs font-bold">{rentab}% a.a.</p>
+                    </div>
+                    <div className="rounded-lg border border-border p-2 text-center">
+                      <p className="text-[10px] text-muted-foreground">ROI 20a</p>
+                      <p className="text-xs font-bold text-primary">{roi}%</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -1077,6 +1163,8 @@ export default function NovaPropostaPage() {
           garantiaEstendida,
           garantiaValor,
         }}
+        finalidade={finalidade}
+        desagioPct={isInv ? desagioPct : 0}
       />
 
       <ProposalPDF
@@ -1113,6 +1201,8 @@ export default function NovaPropostaPage() {
           garantiaEstendida,
           garantiaValor,
         }}
+        finalidade={finalidade}
+        desagioPct={isInv ? desagioPct : 0}
       />
 
       {/* Quick Add Client Dialog */}

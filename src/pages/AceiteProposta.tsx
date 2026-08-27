@@ -180,7 +180,7 @@ export default function AceiteProposta() {
                 <p className="text-sm font-semibold">{formatNumber(proposal.producaoEstimada)} kWh/mês</p>
               </div>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground">Economia mensal</p>
+                <p className="text-xs text-muted-foreground">{proposal.finalidade === 'investimento' ? 'Ganho mensal' : 'Economia mensal'}</p>
                 <p className="text-sm font-semibold text-success">{formatCurrency(proposal.economiaMensal)}</p>
               </div>
               <div className="rounded-lg border border-border bg-muted/30 p-3">

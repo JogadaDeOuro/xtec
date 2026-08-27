@@ -8,6 +8,7 @@ import { fetchEquipment, fetchProposalSettings, type EquipmentItem } from '@/lib
 import { buildDocumentCss, PRINT_PAGE_RULE } from '@/components/proposal/document-styles';
 import { ProposalDocument, type ProposalDocData, type ProposalPaymentInfo } from '@/components/proposal/ProposalDocument';
 import { downloadProposalPdf } from '@/lib/pdf-export';
+import type { Finalidade } from '@/lib/investment';
 import { Download, Loader2 } from 'lucide-react';
 
 interface ProposalPDFProps {
@@ -41,6 +42,8 @@ interface ProposalPDFProps {
   payment: ProposalPaymentInfo;
   numero?: string;
   consultor?: string;
+  finalidade?: Finalidade;
+  desagioPct?: number;
   /** configuração específica da proposta (snapshot); se ausente usa a global */
   docConfig?: ProposalDocConfig | null;
 }
@@ -86,6 +89,8 @@ export function ProposalPDF(props: ProposalPDFProps) {
     economiaTotal: props.economiaTotal20,
     payment: props.payment,
     equipamentos,
+    finalidade: props.finalidade ?? 'consumo',
+    desagioPct: props.desagioPct ?? 0,
   };
 
   const handleDownload = async () => {

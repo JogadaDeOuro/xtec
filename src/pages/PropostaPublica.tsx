@@ -145,7 +145,7 @@ export default function PropostaPublica() {
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-lg bg-success/10 p-4 text-center">
                   <DollarSign className="h-5 w-5 mx-auto text-success mb-1" />
-                  <p className="text-xs text-muted-foreground">Economia/mês</p>
+                  <p className="text-xs text-muted-foreground">{proposal.finalidade === 'investimento' ? 'Ganho/mês' : 'Economia/mês'}</p>
                   <p className="text-base font-bold text-success">{formatCurrency(proposal.economiaMensal)}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-4 text-center">
@@ -155,7 +155,7 @@ export default function PropostaPublica() {
                 </div>
                 <div className="rounded-lg bg-accent p-4 text-center">
                   <TrendingUp className="h-5 w-5 mx-auto text-accent-foreground mb-1" />
-                  <p className="text-xs text-muted-foreground">Economia/ano</p>
+                  <p className="text-xs text-muted-foreground">{proposal.finalidade === 'investimento' ? 'Ganho/ano' : 'Economia/ano'}</p>
                   <p className="text-base font-bold">{formatCurrency(proposal.economiaAnual)}</p>
                 </div>
               </div>
