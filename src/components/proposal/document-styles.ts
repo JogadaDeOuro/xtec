@@ -50,10 +50,11 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-header img { max-height:${(12 * escCabecalho).toFixed(2)}mm; max-width:${(44 * escCabecalho).toFixed(2)}mm; object-fit:contain; }
 
   /* rodapé */
-  .pdoc-footer { position:absolute; left:0; right:0; bottom:0; height:var(--rodape);
+  .pdoc-footer { position:relative; height:var(--rodape); min-height:var(--rodape);
+    margin:0 calc(var(--margem)*-1) calc(var(--margem)*-1); width:auto;
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:0 var(--margem); font-size:7.8pt; color:${c.footer.corTexto};
-    background:${c.footer.corFundo}; border-top:1px solid var(--linha); }
+    background:${c.footer.corFundo}; border-top:1px solid var(--linha); overflow:hidden; }
   .pdoc-footer.linha { background:transparent; }
   .pdoc-footer.oculto { display:none; }
   .pdoc-footer img { max-height:${(7 * escRodape).toFixed(2)}mm; max-width:${(26 * escRodape).toFixed(2)}mm; object-fit:contain; }
