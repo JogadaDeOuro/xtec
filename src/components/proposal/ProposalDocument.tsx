@@ -551,7 +551,8 @@ export function ProposalDocument({
       const node = renderSection(s);
       if (node) blocks.push({ id: s.id, node });
     }
-    if (s.newPage && blocks.length > before) blocks[before].newPage = true;
+    // 'geracao' nunca força quebra: é um bloco curto que deve preencher a página anterior
+    if (s.newPage && s.key !== 'geracao' && blocks.length > before) blocks[before].newPage = true;
   }
 
   const measureRef = useRef<HTMLDivElement>(null);
