@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import {
   interpolate, type ProposalDocConfig, type SectionConfig, type TemplateVariables,
@@ -92,26 +92,16 @@ export function buildVariables(c: ProposalDocConfig, d: ProposalDocData): Templa
   };
 }
 
-interface PageGroup { sections: SectionConfig[] }
+interface DocBlock { id: string; node: ReactNode; newPage?: boolean }
+export interface DocLayoutInfo { totalPages: number; overflow: string[] }
 
-function groupIntoPages(sections: SectionConfig[]): PageGroup[] {
-  const pages: PageGroup[] = [];
-  let current: SectionConfig[] = [];
-  for (const s of sections) {
-    if (s.key === 'capa') continue;
-    if (s.newPage && current.length) { pages.push({ sections: current }); current = []; }
-    current.push(s);
-  }
-  if (current.length) pages.push({ sections: current });
-  return pages;
-}
-
-export function ProposalDocument({ config, data }: { config: ProposalDocConfig; data: ProposalDocData }) {
+export function ProposalDocument({
+  config, data, onLayout,
+}: { config: ProposalDocConfig; data: ProposalDocData; onLayout?: (info: DocLayoutInfo) => void }) {
   const vars = useMemo(() => buildVariables(config, data), [config, data]);
   const enabled = config.sections.filter(s => s.enabled);
   const cover = enabled.find(s => s.key === 'capa');
-  const pages = groupIntoPages(enabled);
-  const totalPages = pages.length + (cover ? 1 : 0);
+
   const t = (text: string) => interpolate(text, vars);
   const co2 = reducaoCo2Anual(data.producaoMensal * 12, config.assumptions);
   const proj = projecao(data.producaoMensal, data.valorFinal, config.assumptions);
@@ -211,9 +201,47 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
     );
   };
 
+  const wrapSection = (s: SectionConfig, body: ReactNode, title?: string | null) => (
+    <section className={`pdoc-section ${s.background === 'colorido' ? 'colorido' : ''} ${s.columns === 2 ? 'cols2' : ''}`}>
+      {title !== null && <h2 className="pdoc-title">{title ?? s.title}</h2>}
+      <div className="body">{body}</div>
+    </section>
+  );
+
   const eq = data.equipamentos ?? [];
   const modulos = eq.filter(e => e.category === 'modulo');
   const inversores = eq.filter(e => e.category === 'inversor' || e.category === 'microinversor');
+
+  /* blocos reutilizáveis da seção de economia/ganhos (permitem divisão da tabela em páginas) */
+  const economiaCards = (
+    <div className="pdoc-grid g3">
+      <div className="pdoc-card"><div className="k">Tarifa base</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
+      <div className="pdoc-card"><div className="k">Reajuste considerado</div><div className="v">{config.assumptions.reajusteTarifarioPct}% a.a.</div></div>
+      <div className="pdoc-card"><div className="k">{isInv ? 'Ganhos' : 'Economia'} em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(isInv ? ganhoAcumulado : data.economiaTotal)}</div></div>
+    </div>
+  );
+  const economiaTable = (rows: typeof ganhos) => (
+    <table className="pdoc-table" style={{ marginTop: '4mm' }}>
+      <thead><tr><th>Ano</th><th className="num">Ganho no ano</th><th className="num">Acumulado</th><th className="num">ROI</th></tr></thead>
+      <tbody>
+        {rows.map(g => (
+          <tr key={g.ano}>
+            <td>{g.ano}º</td>
+            <td className="num">{formatCurrency(g.receita)}</td>
+            <td className="num">{formatCurrency(g.acumulado)}</td>
+            <td className="num">{g.roiPct}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+  const economiaNota = (
+    <p className="muted" style={{ marginTop: '3mm' }}>
+      Valores estimados, não garantidos. Premissas: produtividade de {config.assumptions.produtividadeKwhKwpMes} kWh/kWp·mês,
+      degradação de {config.assumptions.degradacaoAnualPct}% ao ano e horizonte de {config.assumptions.horizonteAnos} anos.
+    </p>
+  );
+
 
   const renderSection = (s: SectionConfig) => {
     const body = (() => {
@@ -343,7 +371,7 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
                 <span>{formatCurrency(ganhoAnual)}</span>
               </div>
             </div>
-            <div className={`pdoc-grid ${isInv ? 'g4' : 'g2'}`} style={{ marginTop: '4mm' }}>
+            <div className="pdoc-grid g2" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card hi"><div className="k">{lblGanhoMes}</div><div className="v">{formatCurrency(ganhoMensal)}</div></div>
               <div className="pdoc-card hi"><div className="k">Payback simples</div><div className="v">{paybackLabel(data.paybackAnos)}</div></div>
               {isInv && <div className="pdoc-card hi"><div className="k">Rentabilidade</div><div className="v">{rentab}% a.a.</div></div>}
@@ -354,30 +382,9 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
           </>);
         case 'economia':
           return (<>
-            <div className="pdoc-grid g3">
-              <div className="pdoc-card"><div className="k">Tarifa base</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
-              <div className="pdoc-card"><div className="k">Reajuste considerado</div><div className="v">{config.assumptions.reajusteTarifarioPct}% a.a.</div></div>
-              <div className="pdoc-card"><div className="k">{isInv ? 'Ganhos' : 'Economia'} em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(isInv ? ganhoAcumulado : data.economiaTotal)}</div></div>
-            </div>
-            {isInv && (
-              <table className="pdoc-table" style={{ marginTop: '4mm' }}>
-                <thead><tr><th>Ano</th><th className="num">Ganho no ano</th><th className="num">Acumulado</th><th className="num">ROI</th></tr></thead>
-                <tbody>
-                  {ganhos.map(g => (
-                    <tr key={g.ano}>
-                      <td>{g.ano}º</td>
-                      <td className="num">{formatCurrency(g.receita)}</td>
-                      <td className="num">{formatCurrency(g.acumulado)}</td>
-                      <td className="num">{g.roiPct}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <p className="muted" style={{ marginTop: '3mm' }}>
-              Valores estimados, não garantidos. Premissas: produtividade de {config.assumptions.produtividadeKwhKwpMes} kWh/kWp·mês,
-              degradação de {config.assumptions.degradacaoAnualPct}% ao ano e horizonte de {config.assumptions.horizonteAnos} anos.
-            </p>
+            {economiaCards}
+            {isInv && economiaTable(ganhos)}
+            {economiaNota}
           </>);
         case 'projecao':
           return (<>
@@ -514,16 +521,78 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
     })();
 
     if (!body) return null;
-    return (
-      <section key={s.id} className={`pdoc-section ${s.background === 'colorido' ? 'colorido' : ''} ${s.columns === 2 ? 'cols2' : ''}`}>
-        <h2 className="pdoc-title">{s.title}</h2>
-        <div className="body">{body}</div>
-      </section>
-    );
+    return wrapSection(s, body);
   };
+
+  /* ---------- composição determinística de páginas ---------- */
+  const blocks: DocBlock[] = [];
+  for (const s of enabled) {
+    if (s.key === 'capa') continue;
+    const before = blocks.length;
+    if (s.key === 'economia' && isInv && ganhos.length > 8) {
+      const size = 10;
+      blocks.push({ id: `${s.id}-cards`, node: wrapSection(s, economiaCards) });
+      for (let i = 0; i < ganhos.length; i += size) {
+        blocks.push({
+          id: `${s.id}-t${i}`,
+          node: wrapSection(s, economiaTable(ganhos.slice(i, i + size)),
+            i === 0 ? `${s.title} — projeção ano a ano` : `${s.title} — projeção (continuação)`),
+        });
+      }
+      blocks.push({ id: `${s.id}-nota`, node: wrapSection(s, economiaNota, null) });
+    } else {
+      const node = renderSection(s);
+      if (node) blocks.push({ id: s.id, node });
+    }
+    if (s.newPage && blocks.length > before) blocks[before].newPage = true;
+  }
+
+  const measureRef = useRef<HTMLDivElement>(null);
+  const lastRef = useRef('');
+  const [layout, setLayout] = useState<{ pages: number[][]; over: number[] }>({ pages: [], over: [] });
+
+  useLayoutEffect(() => {
+    const host = measureRef.current;
+    if (!host) return;
+    const probe = host.querySelector<HTMLElement>('.mm-probe');
+    const mm = probe ? probe.getBoundingClientRect().height / 100 : 96 / 25.4;
+    if (!mm) return;
+    const headerEl = host.querySelector<HTMLElement>('.pdoc-header');
+    const headerH = headerEl ? headerEl.getBoundingClientRect().height + 6 * mm : 0;
+    const margem = config.branding.margemMm;
+    const rodapeMm = config.branding.estiloRodape === 'oculto' ? 0 : config.footer.alturaMm;
+    const avail = (297 - margem * 2 - rodapeMm - 2) * mm - headerH;
+    const els = Array.from(host.querySelectorAll<HTMLElement>(':scope > .pdoc-mblock'));
+    const hs = els.map(e => e.getBoundingClientRect().height);
+    if (hs.length !== blocks.length || avail <= 0) return;
+
+    const pages: number[][] = [];
+    let cur: number[] = [];
+    let used = 0;
+    hs.forEach((h, i) => {
+      if (cur.length && (blocks[i].newPage || used + h > avail)) { pages.push(cur); cur = []; used = 0; }
+      cur.push(i);
+      used += h;
+    });
+    if (cur.length) pages.push(cur);
+    const over = hs.map((h, i) => (h > avail ? i : -1)).filter(i => i >= 0);
+
+    const key = JSON.stringify({ pages, over });
+    if (key !== lastRef.current) { lastRef.current = key; setLayout({ pages, over }); }
+  });
+
+  const pages = layout.pages;
+  const totalPages = pages.length + (cover ? 1 : 0);
+  const overflowIds = layout.over.map(i => blocks[i]?.id).filter(Boolean) as string[];
+
+  useEffect(() => {
+    onLayout?.({ totalPages, overflow: overflowIds });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPages, overflowIds.join('|')]);
 
   const cv = config.cover;
   const coverImg = cv.imagemFundo || config.branding.imagemCapa;
+
 
   return (
     <div className="pdoc">
@@ -569,10 +638,26 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
       {pages.map((page, idx) => (
         <div className="pdoc-page" key={idx}>
           <Header />
-          {page.sections.map(renderSection)}
+          <div className="pdoc-page-content">
+            {page.map(i => <div key={blocks[i].id}>{blocks[i].node}</div>)}
+          </div>
           <Footer page={idx + (cover ? 2 : 1)} />
         </div>
       ))}
+
+      {/* container de medição (offscreen) — define a paginação real */}
+      <div
+        ref={measureRef}
+        className="pdoc-measure"
+        aria-hidden
+        style={{ width: `calc(210mm - ${config.branding.margemMm * 2}mm)` }}
+      >
+        <div className="mm-probe" style={{ height: '100mm' }} />
+        <Header />
+        {blocks.map(b => (
+          <div key={b.id} className="pdoc-mblock" style={{ display: 'flow-root' }}>{b.node}</div>
+        ))}
+      </div>
     </div>
   );
 }

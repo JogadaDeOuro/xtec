@@ -39,6 +39,7 @@ export async function downloadProposalPdf(
   const style = document.createElement('style');
   style.textContent = `${PRINT_PAGE_RULE}${buildDocumentCss(config)}
     .pdf-export { zoom:1 !important; transform:none !important; }
+    .pdf-export .pdoc-measure { display:none !important; }
     .pdf-export .pdoc-page { box-shadow:none !important; margin:0 !important;
       width:${A4_W_PX}px !important; height:${A4_H_PX}px !important;
       min-height:${A4_H_PX}px !important; max-height:${A4_H_PX}px !important;
@@ -51,6 +52,7 @@ export async function downloadProposalPdf(
   wrapper.className = 'pdoc pdf-export';
   wrapper.style.width = `${A4_W_PX}px`;
   wrapper.innerHTML = source.innerHTML;
+  wrapper.querySelectorAll('.pdoc-measure').forEach(n => n.remove());
   host.appendChild(wrapper);
   document.body.appendChild(host);
 

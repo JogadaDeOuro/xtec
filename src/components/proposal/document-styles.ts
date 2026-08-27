@@ -26,11 +26,18 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
     -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   .pdoc *, .pdoc *::before, .pdoc *::after { box-sizing:border-box; }
   .pdoc h1,.pdoc h2,.pdoc h3 { font-family:${b.fonteTitulos}; margin:0; }
-  .pdoc-page { width:210mm; min-height:297mm; background:var(--fundo); position:relative;
-    padding:var(--margem); padding-bottom:calc(var(--rodape) + 8mm); margin:0 auto 10mm;
+  .pdoc-page { width:210mm; min-width:210mm; max-width:210mm;
+    height:297mm; min-height:297mm; max-height:297mm;
+    background:var(--fundo); position:relative;
+    display:grid; grid-template-rows:auto minmax(0,1fr) auto;
+    padding:var(--margem); margin:0 auto 10mm; box-sizing:border-box;
     box-shadow:0 4px 24px rgba(0,0,0,.12); overflow:hidden; break-after:page; page-break-after:always; }
   .pdoc-page:last-child { break-after:auto; page-break-after:auto; margin-bottom:0; }
-  .pdoc-page.cover { padding:0; }
+  .pdoc-page.cover { padding:0; display:block; }
+  .pdoc-page-content { min-height:0; overflow:hidden; }
+  .pdoc-measure { position:fixed !important; left:-10000px !important; top:0 !important;
+    visibility:hidden !important; pointer-events:none !important; }
+
 
   /* cabeçalho */
   .pdoc-header { display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -43,10 +50,11 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-header img { max-height:${(12 * escCabecalho).toFixed(2)}mm; max-width:${(44 * escCabecalho).toFixed(2)}mm; object-fit:contain; }
 
   /* rodapé */
-  .pdoc-footer { position:absolute; left:0; right:0; bottom:0; height:var(--rodape);
+  .pdoc-footer { position:relative; height:var(--rodape); min-height:var(--rodape);
+    margin:0 calc(var(--margem)*-1) calc(var(--margem)*-1); width:auto;
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:0 var(--margem); font-size:7.8pt; color:${c.footer.corTexto};
-    background:${c.footer.corFundo}; border-top:1px solid var(--linha); }
+    background:${c.footer.corFundo}; border-top:1px solid var(--linha); overflow:hidden; }
   .pdoc-footer.linha { background:transparent; }
   .pdoc-footer.oculto { display:none; }
   .pdoc-footer img { max-height:${(7 * escRodape).toFixed(2)}mm; max-width:${(26 * escRodape).toFixed(2)}mm; object-fit:contain; }
@@ -90,9 +98,13 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-grid.g3 { grid-template-columns:repeat(3,1fr); }
   .pdoc-grid.g4 { grid-template-columns:repeat(4,1fr); }
   .pdoc-card { background:var(--card); border:1px solid var(--linha); border-radius:var(--raio);
-    padding:3.5mm 4mm; box-shadow:var(--sombra); break-inside:avoid; page-break-inside:avoid; }
-  .pdoc-card .k { font-size:8pt; color:#6b7a6e; text-transform:uppercase; letter-spacing:.08em; }
-  .pdoc-card .v { font-size:13pt; font-weight:700; margin-top:1mm; }
+    padding:3.5mm 4mm; box-shadow:var(--sombra); break-inside:avoid; page-break-inside:avoid;
+    height:auto; min-height:16mm; display:flex; flex-direction:column; justify-content:center;
+    overflow:visible; min-width:0; }
+  .pdoc-card .k { font-size:8pt; color:#6b7a6e; text-transform:uppercase; letter-spacing:.08em;
+    line-height:1.25; overflow-wrap:anywhere; }
+  .pdoc-card .v { font-size:13pt; font-weight:700; margin-top:1mm;
+    line-height:1.2; overflow-wrap:anywhere; word-break:normal; hyphens:none; }
   .pdoc-card.hi { background:${headerBg}; color:#fff; border-color:transparent; }
   .pdoc-card.hi .k { color:rgba(255,255,255,.78); }
 
@@ -148,7 +160,10 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-signatures .line { border-top:1px solid var(--texto); padding-top:2mm; font-size:9pt; text-align:center; }
 
   @media print {
-    .pdoc-page { box-shadow:none; margin:0; width:auto; min-height:auto; }
+    .pdoc-page { box-shadow:none !important; margin:0 !important;
+      width:210mm !important; height:297mm !important;
+      min-height:297mm !important; max-height:297mm !important; }
+    .pdoc-measure { display:none !important; }
     .no-print { display:none !important; }
   }
   `;
