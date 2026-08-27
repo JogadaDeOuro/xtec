@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
+import type { Finalidade } from '@/lib/investment';
 
 export interface ProposalRow {
   id: string;
@@ -27,6 +28,8 @@ export interface ProposalRow {
   tarifa_kwh: number;
   num_modulos: number;
   potencia_modulo_w: number;
+  finalidade: string | null;
+  desagio_pct: number | null;
   consultor: string | null;
   versao: number;
   template_id: string | null;
@@ -47,6 +50,8 @@ export interface ProposalRecord extends Proposal {
   tarifaKwh: number;
   numModulos: number;
   potenciaModuloW: number;
+  finalidade: Finalidade;
+  desagioPct: number;
   consultor: string;
   versao: number;
   templateId: string | null;
@@ -79,6 +84,8 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     tarifaKwh: row.tarifa_kwh != null ? Number(row.tarifa_kwh) : 0.85,
     numModulos: Number(row.num_modulos ?? 0),
     potenciaModuloW: Number(row.potencia_modulo_w ?? 700),
+    finalidade: (row.finalidade === 'investimento' ? 'investimento' : 'consumo') as Finalidade,
+    desagioPct: Number(row.desagio_pct ?? 0),
     consultor: row.consultor ?? '',
     versao: Number(row.versao ?? 1),
     templateId: row.template_id ?? null,
@@ -131,6 +138,8 @@ export interface ProposalInput {
   tarifaKwh?: number;
   numModulos?: number;
   potenciaModuloW?: number;
+  finalidade?: Finalidade;
+  desagioPct?: number;
   consultor?: string;
   templateId?: string | null;
   docConfig?: Record<string, unknown> | null;
@@ -157,6 +166,8 @@ function toRow(input: ProposalInput) {
     tarifa_kwh: input.tarifaKwh ?? 0.85,
     num_modulos: input.numModulos ?? 0,
     potencia_modulo_w: input.potenciaModuloW ?? 700,
+    finalidade: input.finalidade ?? 'consumo',
+    desagio_pct: input.desagioPct ?? 0,
     consultor: input.consultor ?? null,
     template_id: input.templateId ?? null,
     doc_config: (input.docConfig ?? null) as never,
