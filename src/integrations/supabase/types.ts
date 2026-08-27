@@ -487,10 +487,12 @@ export type Database = {
           consultor: string | null
           consumo_medio: number
           created_at: string
+          desagio_pct: number
           desconto: number
           doc_config: Json | null
           economia_anual: number
           economia_mensal: number
+          finalidade: string
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
@@ -522,10 +524,12 @@ export type Database = {
           consultor?: string | null
           consumo_medio?: number
           created_at?: string
+          desagio_pct?: number
           desconto?: number
           doc_config?: Json | null
           economia_anual?: number
           economia_mensal?: number
+          finalidade?: string
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
@@ -557,10 +561,12 @@ export type Database = {
           consultor?: string | null
           consumo_medio?: number
           created_at?: string
+          desagio_pct?: number
           desconto?: number
           doc_config?: Json | null
           economia_anual?: number
           economia_mensal?: number
+          finalidade?: string
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
@@ -735,10 +741,12 @@ export type Database = {
           consultor: string | null
           consumo_medio: number
           created_at: string
+          desagio_pct: number
           desconto: number
           doc_config: Json | null
           economia_anual: number
           economia_mensal: number
+          finalidade: string
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
