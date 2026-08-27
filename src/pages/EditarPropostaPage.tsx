@@ -187,6 +187,7 @@ export default function EditarPropostaPage() {
   const potenciaExata = +((numPlacas * potenciaModuloW) / 1000).toFixed(2);
   const potenciaMin = numPlacas > 0 ? +((numPlacas * 0.6).toFixed(2)) : 0;
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
+  const areaEstimada = Math.round(numPlacas * AREA_POR_PLACA_M2);
   const client = clients.find(c => c.id === clientId);
   const producao = calcProducao(potencia);
   const valorBruto = Math.round(potencia * valorKwp);
