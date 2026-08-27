@@ -551,8 +551,8 @@ export function ProposalDocument({
       const node = renderSection(s);
       if (node) blocks.push({ id: s.id, node });
     }
-    // 'geracao' nunca força quebra: é um bloco curto que deve preencher a página anterior
-    if (s.newPage && s.key !== 'geracao' && blocks.length > before) blocks[before].newPage = true;
+    // 'geracao' e 'economia' nunca forçam quebra: blocos curtos que devem preencher a página anterior
+    if (s.newPage && s.key !== 'geracao' && s.key !== 'economia' && blocks.length > before) blocks[before].newPage = true;
   }
 
   const measureRef = useRef<HTMLDivElement>(null);
