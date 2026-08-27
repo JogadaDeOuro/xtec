@@ -92,26 +92,16 @@ export function buildVariables(c: ProposalDocConfig, d: ProposalDocData): Templa
   };
 }
 
-interface PageGroup { sections: SectionConfig[] }
+interface DocBlock { id: string; node: ReactNode; newPage?: boolean }
+export interface DocLayoutInfo { totalPages: number; overflow: string[] }
 
-function groupIntoPages(sections: SectionConfig[]): PageGroup[] {
-  const pages: PageGroup[] = [];
-  let current: SectionConfig[] = [];
-  for (const s of sections) {
-    if (s.key === 'capa') continue;
-    if (s.newPage && current.length) { pages.push({ sections: current }); current = []; }
-    current.push(s);
-  }
-  if (current.length) pages.push({ sections: current });
-  return pages;
-}
-
-export function ProposalDocument({ config, data }: { config: ProposalDocConfig; data: ProposalDocData }) {
+export function ProposalDocument({
+  config, data, onLayout,
+}: { config: ProposalDocConfig; data: ProposalDocData; onLayout?: (info: DocLayoutInfo) => void }) {
   const vars = useMemo(() => buildVariables(config, data), [config, data]);
   const enabled = config.sections.filter(s => s.enabled);
   const cover = enabled.find(s => s.key === 'capa');
-  const pages = groupIntoPages(enabled);
-  const totalPages = pages.length + (cover ? 1 : 0);
+
   const t = (text: string) => interpolate(text, vars);
   const co2 = reducaoCo2Anual(data.producaoMensal * 12, config.assumptions);
   const proj = projecao(data.producaoMensal, data.valorFinal, config.assumptions);
