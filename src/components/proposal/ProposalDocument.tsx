@@ -343,7 +343,7 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
                 <span>{formatCurrency(ganhoAnual)}</span>
               </div>
             </div>
-            <div className={`pdoc-grid ${isInv ? 'g4' : 'g2'}`} style={{ marginTop: '4mm' }}>
+            <div className="pdoc-grid g2" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card hi"><div className="k">{lblGanhoMes}</div><div className="v">{formatCurrency(ganhoMensal)}</div></div>
               <div className="pdoc-card hi"><div className="k">Payback simples</div><div className="v">{paybackLabel(data.paybackAnos)}</div></div>
               {isInv && <div className="pdoc-card hi"><div className="k">Rentabilidade</div><div className="v">{rentab}% a.a.</div></div>}
