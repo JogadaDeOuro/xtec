@@ -46,6 +46,9 @@ import {
   EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION,
 } from '@/lib/payment-options';
 
+const AREA_POR_PLACA_M2 = 3.1;
+
+
 // Calculation helpers
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
 
@@ -227,9 +230,9 @@ export default function NovaPropostaPage() {
   };
 
   const potencia = typeof potenciaKwp === 'number' ? potenciaKwp : 0;
-  // Sempre número par de placas, arredondado para cima
   const numPlacasRaw = potencia > 0 ? Math.ceil((potencia * 1000) / potenciaModuloW) : 0;
   const numPlacas = numPlacasRaw % 2 === 0 ? numPlacasRaw : numPlacasRaw + 1;
+  const areaEstimada = Math.round(numPlacas * AREA_POR_PLACA_M2);
   const potenciaExata = +((numPlacas * potenciaModuloW) / 1000).toFixed(2);
   const potenciaMin = numPlacas > 0 ? +((numPlacas * 0.6).toFixed(2)) : 0;
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
@@ -478,6 +481,9 @@ export default function NovaPropostaPage() {
                       </Badge>
                       <span className="text-[10px] text-muted-foreground">
                         Potência do sistema: {potenciaMin} a {potenciaMax} kWp
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Área necessária estimada: {formatNumber(areaEstimada)} m²
                       </span>
                     </div>
                   )}
