@@ -5,6 +5,7 @@ import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { Zap, Sun, TrendingUp, DollarSign, Clock, Shield, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getMilestones, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
+import { projecaoGanhos, roiTotal, rentabilidadeAnual, type Finalidade } from '@/lib/investment';
 
 interface PaymentInfo {
   condicao: string;
@@ -42,6 +43,8 @@ interface ProposalPreviewProps {
   paybackAno: number | null;
   economiaTotal30: number;
   payment: PaymentInfo;
+  finalidade?: Finalidade;
+  desagioPct?: number;
 }
 
 export function ProposalPreview({
@@ -50,8 +53,13 @@ export function ProposalPreview({
   systemType, potencia, numPlacas, potenciaMin, potenciaMax,
   producao, valorBruto, valorFinal, desconto, tarifaKwh,
   economiaMensal, economiaAnual, paybackExato, paybackAno, economiaTotal30,
-  payment,
+  payment, finalidade = 'consumo', desagioPct = 0,
 }: ProposalPreviewProps) {
+  const isInv = finalidade === 'investimento';
+  const ganhos = projecaoGanhos(economiaAnual, valorFinal, 20);
+  const ganhoAcumulado = ganhos.length ? ganhos[ganhos.length - 1].acumulado : 0;
+  const roi = roiTotal(ganhoAcumulado, valorFinal);
+  const rentab = rentabilidadeAnual(economiaAnual, valorFinal);
   const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const renderPayment = () => {
@@ -124,7 +132,7 @@ export function ProposalPreview({
           </div>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-primary-foreground">
-              Sistema Fotovoltaico {systemType.toUpperCase()}
+              {isInv ? 'Usina de Investimento' : `Sistema Fotovoltaico ${systemType.toUpperCase()}`}
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm opacity-80 mt-2">{today}</p>
@@ -232,12 +240,12 @@ export function ProposalPreview({
           {/* Economy */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-              <TrendingUp className="h-4 w-4 text-primary" /> Retorno do Investimento
+              <TrendingUp className="h-4 w-4 text-primary" /> {isInv ? 'Ganhos do Investimento' : 'Retorno do Investimento'}
             </h3>
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-lg bg-success/10 p-4 text-center">
                 <DollarSign className="h-5 w-5 mx-auto text-success mb-1" />
-                <p className="text-xs text-muted-foreground">Economia/mês</p>
+                <p className="text-xs text-muted-foreground">{isInv ? 'Ganho/mês' : 'Economia/mês'}</p>
                 <p className="text-lg font-bold text-success">{formatCurrency(economiaMensal)}</p>
               </div>
               <div className="rounded-lg bg-primary/10 p-4 text-center">
@@ -248,9 +256,42 @@ export function ProposalPreview({
               <div className="rounded-lg bg-accent p-4 text-center">
                 <TrendingUp className="h-5 w-5 mx-auto text-accent-foreground mb-1" />
                 <p className="text-xs text-muted-foreground">20 anos</p>
-                <p className="text-lg font-bold">{formatCurrency(economiaTotal30)}</p>
+                <p className="text-lg font-bold">{formatCurrency(isInv ? ganhoAcumulado : economiaTotal30)}</p>
               </div>
             </div>
+            {isInv && (
+              <div className="grid grid-cols-3 gap-3 mt-3">
+                <div className="rounded-lg border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Deságio aplicado</p>
+                  <p className="text-sm font-bold">{desagioPct}%</p>
+                </div>
+                <div className="rounded-lg border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Rentabilidade</p>
+                  <p className="text-sm font-bold">{rentab}% a.a.</p>
+                </div>
+                <div className="rounded-lg border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground">ROI 20 anos</p>
+                  <p className="text-sm font-bold text-primary">{roi}%</p>
+                </div>
+              </div>
+            )}
+            {isInv && (
+              <div className="mt-4 rounded-lg border border-border overflow-hidden">
+                <div className="grid grid-cols-4 bg-muted/50 px-3 py-1.5 text-[11px] font-medium">
+                  <span>Ano</span><span className="text-right">Ganho</span><span className="text-right">Acumulado</span><span className="text-right">ROI</span>
+                </div>
+                <div className="max-h-56 overflow-y-auto">
+                  {ganhos.map(g => (
+                    <div key={g.ano} className="grid grid-cols-4 px-3 py-1 text-[11px] border-t border-border">
+                      <span>{g.ano}º</span>
+                      <span className="text-right">{formatCurrency(g.receita)}</span>
+                      <span className="text-right">{formatCurrency(g.acumulado)}</span>
+                      <span className="text-right">{g.roiPct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
 
           <Separator />
