@@ -514,16 +514,78 @@ export function ProposalDocument({
     })();
 
     if (!body) return null;
-    return (
-      <section key={s.id} className={`pdoc-section ${s.background === 'colorido' ? 'colorido' : ''} ${s.columns === 2 ? 'cols2' : ''}`}>
-        <h2 className="pdoc-title">{s.title}</h2>
-        <div className="body">{body}</div>
-      </section>
-    );
+    return wrapSection(s, body);
   };
+
+  /* ---------- composição determinística de páginas ---------- */
+  const blocks: DocBlock[] = [];
+  for (const s of enabled) {
+    if (s.key === 'capa') continue;
+    const before = blocks.length;
+    if (s.key === 'economia' && isInv && ganhos.length > 8) {
+      const size = 10;
+      blocks.push({ id: `${s.id}-cards`, node: wrapSection(s, economiaCards) });
+      for (let i = 0; i < ganhos.length; i += size) {
+        blocks.push({
+          id: `${s.id}-t${i}`,
+          node: wrapSection(s, economiaTable(ganhos.slice(i, i + size)),
+            i === 0 ? `${s.title} — projeção ano a ano` : `${s.title} — projeção (continuação)`),
+        });
+      }
+      blocks.push({ id: `${s.id}-nota`, node: wrapSection(s, economiaNota, null) });
+    } else {
+      const node = renderSection(s);
+      if (node) blocks.push({ id: s.id, node });
+    }
+    if (s.newPage && blocks.length > before) blocks[before].newPage = true;
+  }
+
+  const measureRef = useRef<HTMLDivElement>(null);
+  const lastRef = useRef('');
+  const [layout, setLayout] = useState<{ pages: number[][]; over: number[] }>({ pages: [], over: [] });
+
+  useLayoutEffect(() => {
+    const host = measureRef.current;
+    if (!host) return;
+    const probe = host.querySelector<HTMLElement>('.mm-probe');
+    const mm = probe ? probe.getBoundingClientRect().height / 100 : 96 / 25.4;
+    if (!mm) return;
+    const headerEl = host.querySelector<HTMLElement>('.pdoc-header');
+    const headerH = headerEl ? headerEl.getBoundingClientRect().height + 6 * mm : 0;
+    const margem = config.branding.margemMm;
+    const rodapeMm = config.branding.estiloRodape === 'oculto' ? 0 : config.footer.alturaMm;
+    const avail = (297 - margem * 2 - rodapeMm - 2) * mm - headerH;
+    const els = Array.from(host.querySelectorAll<HTMLElement>(':scope > .pdoc-mblock'));
+    const hs = els.map(e => e.getBoundingClientRect().height);
+    if (hs.length !== blocks.length || avail <= 0) return;
+
+    const pages: number[][] = [];
+    let cur: number[] = [];
+    let used = 0;
+    hs.forEach((h, i) => {
+      if (cur.length && (blocks[i].newPage || used + h > avail)) { pages.push(cur); cur = []; used = 0; }
+      cur.push(i);
+      used += h;
+    });
+    if (cur.length) pages.push(cur);
+    const over = hs.map((h, i) => (h > avail ? i : -1)).filter(i => i >= 0);
+
+    const key = JSON.stringify({ pages, over });
+    if (key !== lastRef.current) { lastRef.current = key; setLayout({ pages, over }); }
+  });
+
+  const pages = layout.pages;
+  const totalPages = pages.length + (cover ? 1 : 0);
+  const overflowIds = layout.over.map(i => blocks[i]?.id).filter(Boolean) as string[];
+
+  useEffect(() => {
+    onLayout?.({ totalPages, overflow: overflowIds });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPages, overflowIds.join('|')]);
 
   const cv = config.cover;
   const coverImg = cv.imagemFundo || config.branding.imagemCapa;
+
 
   return (
     <div className="pdoc">
