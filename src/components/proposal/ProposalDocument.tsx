@@ -215,6 +215,37 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
   const modulos = eq.filter(e => e.category === 'modulo');
   const inversores = eq.filter(e => e.category === 'inversor' || e.category === 'microinversor');
 
+  /* blocos reutilizáveis da seção de economia/ganhos (permitem divisão da tabela em páginas) */
+  const economiaCards = (
+    <div className="pdoc-grid g3">
+      <div className="pdoc-card"><div className="k">Tarifa base</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
+      <div className="pdoc-card"><div className="k">Reajuste considerado</div><div className="v">{config.assumptions.reajusteTarifarioPct}% a.a.</div></div>
+      <div className="pdoc-card"><div className="k">{isInv ? 'Ganhos' : 'Economia'} em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(isInv ? ganhoAcumulado : data.economiaTotal)}</div></div>
+    </div>
+  );
+  const economiaTable = (rows: typeof ganhos) => (
+    <table className="pdoc-table" style={{ marginTop: '4mm' }}>
+      <thead><tr><th>Ano</th><th className="num">Ganho no ano</th><th className="num">Acumulado</th><th className="num">ROI</th></tr></thead>
+      <tbody>
+        {rows.map(g => (
+          <tr key={g.ano}>
+            <td>{g.ano}º</td>
+            <td className="num">{formatCurrency(g.receita)}</td>
+            <td className="num">{formatCurrency(g.acumulado)}</td>
+            <td className="num">{g.roiPct}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+  const economiaNota = (
+    <p className="muted" style={{ marginTop: '3mm' }}>
+      Valores estimados, não garantidos. Premissas: produtividade de {config.assumptions.produtividadeKwhKwpMes} kWh/kWp·mês,
+      degradação de {config.assumptions.degradacaoAnualPct}% ao ano e horizonte de {config.assumptions.horizonteAnos} anos.
+    </p>
+  );
+
+
   const renderSection = (s: SectionConfig) => {
     const body = (() => {
       switch (s.key) {
