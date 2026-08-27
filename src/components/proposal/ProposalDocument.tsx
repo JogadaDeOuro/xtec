@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import {
   interpolate, type ProposalDocConfig, type SectionConfig, type TemplateVariables,
