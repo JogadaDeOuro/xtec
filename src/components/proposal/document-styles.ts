@@ -78,7 +78,7 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-cover .fact { padding:7mm var(--margem); border-right:1px solid rgba(255,255,255,.18); }
   .pdoc-cover .fact:last-child { border-right:none; }
   .pdoc-cover .fact .k { font-size:8pt; text-transform:uppercase; letter-spacing:.14em; opacity:.75; }
-  .pdoc-cover .fact .v { font-size:15pt; font-weight:700; margin-top:1.5mm; }
+  .pdoc-cover .fact .v { font-size:15pt; font-weight:700; margin-top:1.5mm; white-space:nowrap; }
 
   /* seções */
   .pdoc-section { margin-bottom:7mm; break-inside:avoid; page-break-inside:avoid; }
