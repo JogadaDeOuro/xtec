@@ -98,9 +98,13 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-grid.g3 { grid-template-columns:repeat(3,1fr); }
   .pdoc-grid.g4 { grid-template-columns:repeat(4,1fr); }
   .pdoc-card { background:var(--card); border:1px solid var(--linha); border-radius:var(--raio);
-    padding:3.5mm 4mm; box-shadow:var(--sombra); break-inside:avoid; page-break-inside:avoid; }
-  .pdoc-card .k { font-size:8pt; color:#6b7a6e; text-transform:uppercase; letter-spacing:.08em; }
-  .pdoc-card .v { font-size:13pt; font-weight:700; margin-top:1mm; }
+    padding:3.5mm 4mm; box-shadow:var(--sombra); break-inside:avoid; page-break-inside:avoid;
+    height:auto; min-height:16mm; display:flex; flex-direction:column; justify-content:center;
+    overflow:visible; min-width:0; }
+  .pdoc-card .k { font-size:8pt; color:#6b7a6e; text-transform:uppercase; letter-spacing:.08em;
+    line-height:1.25; overflow-wrap:anywhere; }
+  .pdoc-card .v { font-size:13pt; font-weight:700; margin-top:1mm;
+    line-height:1.2; overflow-wrap:anywhere; word-break:normal; hyphens:none; }
   .pdoc-card.hi { background:${headerBg}; color:#fff; border-color:transparent; }
   .pdoc-card.hi .k { color:rgba(255,255,255,.78); }
 
