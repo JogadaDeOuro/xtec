@@ -279,6 +279,8 @@ export default function Propostas() {
           paybackExato={pdfProposal.paybackAnos}
           economiaTotal20={economiaTotal20(pdfProposal.economiaAnual)}
           docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
+          finalidade={pdfProposal.finalidade}
+          desagioPct={pdfProposal.desagioPct}
           payment={{
             condicao: mapCondicaoFromLabel(pdfProposal.condicaoPagamento),
             alternativas: pdfProposal.condicoesAlternativas ?? [],
