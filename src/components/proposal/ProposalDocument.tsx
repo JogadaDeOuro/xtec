@@ -530,21 +530,29 @@ export function ProposalDocument({
     if (s.key === 'capa') continue;
     const before = blocks.length;
     if (s.key === 'economia' && isInv && ganhos.length > 8) {
-      const size = 10;
-      blocks.push({ id: `${s.id}-cards`, node: wrapSection(s, economiaCards) });
-      for (let i = 0; i < ganhos.length; i += size) {
-        blocks.push({
-          id: `${s.id}-t${i}`,
-          node: wrapSection(s, economiaTable(ganhos.slice(i, i + size)),
-            i === 0 ? `${s.title} — projeção ano a ano` : `${s.title} — projeção (continuação)`),
-        });
-      }
-      blocks.push({ id: `${s.id}-nota`, node: wrapSection(s, economiaNota, null) });
+      // Anos estratégicos: cabe em uma única página junto dos cards
+      const estrategicos = new Set<number>();
+      for (let y = 1; y <= Math.min(5, ganhos.length); y++) estrategicos.add(y);
+      [10, 15, 20, 25].forEach(y => { if (y <= ganhos.length) estrategicos.add(y); });
+      estrategicos.add(ganhos.length); // sempre inclui o último ano do horizonte
+      const ganhosView = ganhos.filter(g => estrategicos.has(g.ano));
+      blocks.push({
+        id: s.id,
+        node: wrapSection(s, <>
+          {economiaCards}
+          {economiaTable(ganhosView)}
+          <p className="muted" style={{ marginTop: '2mm', fontSize: '2.6mm' }}>
+            Projeção exibida em anos estratégicos. Os valores intermediários seguem a mesma progressão anual.
+          </p>
+          {economiaNota}
+        </>, `${s.title} — projeção ano a ano`),
+      });
     } else {
       const node = renderSection(s);
       if (node) blocks.push({ id: s.id, node });
     }
-    if (s.newPage && blocks.length > before) blocks[before].newPage = true;
+    // 'geracao' nunca força quebra: é um bloco curto que deve preencher a página anterior
+    if (s.newPage && s.key !== 'geracao' && blocks.length > before) blocks[before].newPage = true;
   }
 
   const measureRef = useRef<HTMLDivElement>(null);
