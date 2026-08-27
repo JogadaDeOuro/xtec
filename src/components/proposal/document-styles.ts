@@ -160,7 +160,10 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-signatures .line { border-top:1px solid var(--texto); padding-top:2mm; font-size:9pt; text-align:center; }
 
   @media print {
-    .pdoc-page { box-shadow:none; margin:0; width:auto; min-height:auto; }
+    .pdoc-page { box-shadow:none !important; margin:0 !important;
+      width:210mm !important; height:297mm !important;
+      min-height:297mm !important; max-height:297mm !important; }
+    .pdoc-measure { display:none !important; }
     .no-print { display:none !important; }
   }
   `;
