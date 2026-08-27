@@ -354,30 +354,9 @@ export function ProposalDocument({ config, data }: { config: ProposalDocConfig; 
           </>);
         case 'economia':
           return (<>
-            <div className="pdoc-grid g3">
-              <div className="pdoc-card"><div className="k">Tarifa base</div><div className="v">{formatCurrency(data.tarifaKwh)}/kWh</div></div>
-              <div className="pdoc-card"><div className="k">Reajuste considerado</div><div className="v">{config.assumptions.reajusteTarifarioPct}% a.a.</div></div>
-              <div className="pdoc-card"><div className="k">{isInv ? 'Ganhos' : 'Economia'} em {config.assumptions.horizonteAnos} anos</div><div className="v">{formatCurrency(isInv ? ganhoAcumulado : data.economiaTotal)}</div></div>
-            </div>
-            {isInv && (
-              <table className="pdoc-table" style={{ marginTop: '4mm' }}>
-                <thead><tr><th>Ano</th><th className="num">Ganho no ano</th><th className="num">Acumulado</th><th className="num">ROI</th></tr></thead>
-                <tbody>
-                  {ganhos.map(g => (
-                    <tr key={g.ano}>
-                      <td>{g.ano}º</td>
-                      <td className="num">{formatCurrency(g.receita)}</td>
-                      <td className="num">{formatCurrency(g.acumulado)}</td>
-                      <td className="num">{g.roiPct}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <p className="muted" style={{ marginTop: '3mm' }}>
-              Valores estimados, não garantidos. Premissas: produtividade de {config.assumptions.produtividadeKwhKwpMes} kWh/kWp·mês,
-              degradação de {config.assumptions.degradacaoAnualPct}% ao ano e horizonte de {config.assumptions.horizonteAnos} anos.
-            </p>
+            {economiaCards}
+            {isInv && economiaTable(ganhos)}
+            {economiaNota}
           </>);
         case 'projecao':
           return (<>
