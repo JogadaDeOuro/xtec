@@ -21,6 +21,10 @@ import {
 } from 'recharts';
 import { ArrowLeft, Save, Send, Eye, Zap, TrendingUp, DollarSign, Clock, Plus, Trash2, FileSignature, Loader2 } from 'lucide-react';
 import { ProposalPreview } from '@/components/ProposalPreview';
+import {
+  DESAGIO_MIN, DESAGIO_MAX, DESAGIO_PADRAO, projecaoGanhos, roiTotal,
+  rentabilidadeAnual, valorCheioMensal, type Finalidade,
+} from '@/lib/investment';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -121,6 +125,8 @@ export default function EditarPropostaPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [garantiaEstendida, setGarantiaEstendida] = useState(false);
+  const [finalidade, setFinalidade] = useState<Finalidade>('consumo');
+  const [desagioPct, setDesagioPct] = useState(DESAGIO_PADRAO);
 
   useEffect(() => {
     let active = true;
@@ -142,6 +148,8 @@ export default function EditarPropostaPage() {
           if (p.consumoMedio > 0) setConsumoMensal(p.consumoMedio);
           if (p.tarifaKwh > 0) setTarifaKwh(p.tarifaKwh);
           if (p.potenciaModuloW > 0) setPotenciaModuloW(p.potenciaModuloW);
+          setFinalidade(p.finalidade);
+          if (p.desagioPct > 0) setDesagioPct(p.desagioPct);
         }
       })
       .catch(() => toast.error('Erro ao carregar proposta'))
@@ -206,10 +214,18 @@ export default function EditarPropostaPage() {
     tarifaKwh,
     numModulos: numPlacas,
     potenciaModuloW: potenciaModuloW,
+    finalidade,
+    desagioPct: isInv ? desagioPct : 0,
   });
 
-  const economiaMensal = Math.round(producao * tarifaKwh);
+  const isInv = finalidade === 'investimento';
+  const valorCheio = valorCheioMensal(producao, tarifaKwh);
+  const economiaMensal = isInv ? Math.round(valorCheio * (1 - desagioPct / 100)) : valorCheio;
   const economiaAnual = economiaMensal * 12;
+  const ganhos = projecaoGanhos(economiaAnual, valorFinal, 20);
+  const ganhoAcumulado = ganhos.length ? ganhos[ganhos.length - 1].acumulado : 0;
+  const roi = roiTotal(ganhoAcumulado, valorFinal);
+  const rentab = rentabilidadeAnual(economiaAnual, valorFinal);
   const paybackExato = economiaAnual > 0 ? +(valorFinal / economiaAnual).toFixed(1) : 0;
   const proj = projecaoAnos(economiaAnual, valorFinal, tarifaKwh);
   const paybackAno = proj.find(p => p.acumulado >= valorFinal)?.ano || null;
@@ -307,6 +323,57 @@ export default function EditarPropostaPage() {
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">Sistema Fotovoltaico</CardTitle></CardHeader>
             <CardContent className="space-y-5">
+              <div>
+                <Label className="text-xs">Finalidade da Usina</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {([
+                    { v: 'consumo' as const, t: 'Usina para consumo', d: 'Foco em economia na conta de luz' },
+                    { v: 'investimento' as const, t: 'Usina para investimento', d: 'Foco em ganhos com a venda da energia' },
+                  ]).map(opt => (
+                    <motion.button
+                      key={opt.v}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setFinalidade(opt.v)}
+                      className={`rounded-lg border p-3 text-left transition-all ${
+                        finalidade === opt.v ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-accent'
+                      }`}
+                    >
+                      <span className="block text-xs font-semibold">{opt.t}</span>
+                      <span className="block text-[10px] text-muted-foreground mt-0.5">{opt.d}</span>
+                    </motion.button>
+                  ))}
+                </div>
+                {isInv && (
+                  <div className="mt-3 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                    <div className="flex justify-between">
+                      <Label className="text-xs">Deságio na venda da energia</Label>
+                      <span className="text-sm font-bold text-primary">{desagioPct}%</span>
+                    </div>
+                    <Slider value={[desagioPct]} onValueChange={([v]) => setDesagioPct(v)} min={DESAGIO_MIN} max={DESAGIO_MAX} step={1} />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>{DESAGIO_MIN}%</span><span>{DESAGIO_MAX}%</span>
+                    </div>
+                    {producao > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Energia gerada (tarifa cheia)</span>
+                          <span>{formatCurrency(valorCheio)}/mês</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-primary">
+                          <span>Ganho com deságio de {desagioPct}%</span>
+                          <span>{formatCurrency(economiaMensal)}/mês</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Rentabilidade / ROI 20a</span>
+                          <span>{rentab}% a.a. · {roi}%</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-xs">Tipo de Sistema</Label>
                 <div className="grid grid-cols-3 gap-2 mt-2">
@@ -674,6 +741,8 @@ export default function EditarPropostaPage() {
         desconto={desconto}
         tarifaKwh={tarifaKwh}
         economiaMensal={economiaMensal}
+        finalidade={finalidade}
+        desagioPct={isInv ? desagioPct : 0}
         economiaAnual={economiaAnual}
         paybackExato={paybackExato}
         paybackAno={paybackAno}
@@ -701,6 +770,8 @@ export default function EditarPropostaPage() {
         desconto={desconto}
         tarifaKwh={tarifaKwh}
         economiaMensal={economiaMensal}
+        finalidade={finalidade}
+        desagioPct={isInv ? desagioPct : 0}
         economiaAnual={economiaAnual}
         paybackExato={paybackExato}
         economiaTotal20={proj[proj.length - 1]?.acumulado || 0}
