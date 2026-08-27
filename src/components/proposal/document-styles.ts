@@ -26,11 +26,18 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
     -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   .pdoc *, .pdoc *::before, .pdoc *::after { box-sizing:border-box; }
   .pdoc h1,.pdoc h2,.pdoc h3 { font-family:${b.fonteTitulos}; margin:0; }
-  .pdoc-page { width:210mm; min-height:297mm; background:var(--fundo); position:relative;
-    padding:var(--margem); padding-bottom:calc(var(--rodape) + 8mm); margin:0 auto 10mm;
+  .pdoc-page { width:210mm; min-width:210mm; max-width:210mm;
+    height:297mm; min-height:297mm; max-height:297mm;
+    background:var(--fundo); position:relative;
+    display:grid; grid-template-rows:auto minmax(0,1fr) auto;
+    padding:var(--margem); margin:0 auto 10mm; box-sizing:border-box;
     box-shadow:0 4px 24px rgba(0,0,0,.12); overflow:hidden; break-after:page; page-break-after:always; }
   .pdoc-page:last-child { break-after:auto; page-break-after:auto; margin-bottom:0; }
-  .pdoc-page.cover { padding:0; }
+  .pdoc-page.cover { padding:0; display:block; }
+  .pdoc-page-content { min-height:0; overflow:hidden; }
+  .pdoc-measure { position:fixed !important; left:-10000px !important; top:0 !important;
+    visibility:hidden !important; pointer-events:none !important; }
+
 
   /* cabeçalho */
   .pdoc-header { display:flex; align-items:center; justify-content:space-between; gap:12px;
