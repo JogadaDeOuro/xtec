@@ -46,6 +46,9 @@ import {
   EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION,
 } from '@/lib/payment-options';
 
+const AREA_POR_PLACA_M2 = 3.1;
+
+
 // Calculation helpers
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
 

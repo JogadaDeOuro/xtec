@@ -30,6 +30,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel, mapCondicaoFromLabel, calcExtendedWarranty, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 
+const AREA_POR_PLACA_M2 = 3.1;
+
 const calcProducao = (kwp: number) => Math.round(kwp * 125);
 
 interface EtapaPersonalizada {
