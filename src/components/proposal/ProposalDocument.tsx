@@ -638,10 +638,26 @@ export function ProposalDocument({
       {pages.map((page, idx) => (
         <div className="pdoc-page" key={idx}>
           <Header />
-          {page.sections.map(renderSection)}
+          <div className="pdoc-page-content">
+            {page.map(i => <div key={blocks[i].id}>{blocks[i].node}</div>)}
+          </div>
           <Footer page={idx + (cover ? 2 : 1)} />
         </div>
       ))}
+
+      {/* container de medição (offscreen) — define a paginação real */}
+      <div
+        ref={measureRef}
+        className="pdoc-measure"
+        aria-hidden
+        style={{ width: `calc(210mm - ${config.branding.margemMm * 2}mm)` }}
+      >
+        <div className="mm-probe" style={{ height: '100mm' }} />
+        <Header />
+        {blocks.map(b => (
+          <div key={b.id} className="pdoc-mblock" style={{ display: 'flow-root' }}>{b.node}</div>
+        ))}
+      </div>
     </div>
   );
 }
