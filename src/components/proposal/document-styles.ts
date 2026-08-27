@@ -81,7 +81,7 @@ export function buildDocumentCss(c: ProposalDocConfig): string {
   .pdoc-cover .fact .v { font-size:15pt; font-weight:700; margin-top:1.5mm; white-space:nowrap; }
 
   /* seções */
-  .pdoc-section { margin-bottom:7mm; break-inside:avoid; page-break-inside:avoid; }
+  .pdoc-section { margin-bottom:5mm; break-inside:avoid; page-break-inside:avoid; }
   .pdoc-section.break { break-before:page; page-break-before:always; }
   .pdoc-section.cols2 .body { column-count:2; column-gap:8mm; }
   .pdoc-section.colorido { background:var(--card); border-radius:var(--raio); padding:5mm; }
