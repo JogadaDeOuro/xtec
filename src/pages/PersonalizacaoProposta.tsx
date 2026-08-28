@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import {
-  ArrowDown, ArrowUp, Copy, Loader2, Plus, RotateCcw, Save, Star, Trash2, Upload,
+  ArrowDown, ArrowUp, Copy, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, Star, Trash2, Upload,
 } from 'lucide-react';
 import {
   AVAILABLE_VARIABLES, DEFAULT_PROPOSAL_CONFIG, EQUIPMENT_CATEGORIES, FONT_OPTIONS,
