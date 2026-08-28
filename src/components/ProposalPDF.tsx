@@ -16,7 +16,10 @@ import { toast } from 'sonner';
 interface ProposalPDFProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** id da proposta salva — habilita o motor oficial server-side */
+  proposalId?: string;
   clientName: string;
+
   clientCity?: string;
   clientState?: string;
   clientEmail?: string;
@@ -58,6 +61,8 @@ export function ProposalPDF(props: ProposalPDFProps) {
   const [downloading, setDownloading] = useState(false);
   const [layout, setLayout] = useState<DocLayoutInfo>({ totalPages: 0, overflow: [] });
   const [tamanhoReal, setTamanhoReal] = useState(false);
+  const [progress, setProgress] = useState<PdfProgress | null>(null);
+
 
   useEffect(() => {
     if (!open) return;
@@ -97,20 +102,53 @@ export function ProposalPDF(props: ProposalPDFProps) {
     desagioPct: props.desagioPct ?? 0,
   };
 
+  const progressLabel: Record<PdfProgress, string> = {
+    'preparando': 'Preparando proposta...',
+    'carregando-imagens': 'Carregando imagens...',
+    'gerando': 'Gerando PDF...',
+    'finalizando': 'Finalizando...',
+    'pronto': 'Pronto!',
+    'erro': 'Erro na geração',
+  };
+
   const handleDownload = async () => {
-    const content = printRef.current;
-    if (!content || downloading) return;
+    if (downloading) return;
     setDownloading(true);
+    const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
     try {
-      const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
-      await downloadProposalPdf(content, config, nome);
-    } catch {
-      // fallback: impressão do navegador
-      handlePrint();
+      // 1) motor oficial: Chromium server-side
+      if (props.proposalId) {
+        const result = await generateProposalPdfServerSide(props.proposalId, nome, setProgress);
+        deliverPdf(result.blob, result.fileName);
+        return;
+      }
+      if (isAppleWebKit()) {
+        throw new Error('Salve a proposta para gerar o PDF oficial neste dispositivo.');
+      }
+      // 2) fallback local controlado (somente navegadores compatíveis)
+      setProgress('gerando');
+      const content = printRef.current;
+      if (!content) throw new Error('Documento não renderizado');
+      const result = await downloadProposalPdf(content, config, nome);
+      deliverPdf(result.blob, result.fileName);
+    } catch (e) {
+      setProgress('erro');
+      const msg = e instanceof Error ? e.message : 'Falha ao gerar o PDF';
+      // último recurso apenas fora do Safari/iOS
+      if (!isAppleWebKit() && printRef.current) {
+        try {
+          const result = await downloadProposalPdf(printRef.current, config, nome);
+          deliverPdf(result.blob, result.fileName);
+          return;
+        } catch { /* segue para o aviso */ }
+      }
+      toast.error(msg);
     } finally {
       setDownloading(false);
+      setProgress(null);
     }
   };
+
 
   const handlePrint = () => {
     const content = printRef.current;
