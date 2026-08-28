@@ -203,6 +203,36 @@ export default function PersonalizacaoProposta() {
     catch { toast.error('Sem permissão para salvar'); }
   };
 
+  /* otimização das fotos já enviadas */
+  const [optimizing, setOptimizing] = useState(false);
+  const optimizeGallery = async () => {
+    const alvos = config.gallery.itens.filter(i => i.url);
+    if (!alvos.length) return;
+    setOptimizing(true);
+    let antes = 0, depois = 0, falhas = 0;
+    const mapa = new Map<string, string>();
+    for (const item of alvos) {
+      try {
+        const r = await optimizeExistingImage(item.url, 'foto');
+        antes += r.before; depois += r.after;
+        if (r.url !== item.url) mapa.set(item.id, r.url);
+      } catch { falhas++; }
+    }
+    if (mapa.size) {
+      set('gallery', {
+        ...config.gallery,
+        itens: config.gallery.itens.map(x => (mapa.has(x.id) ? { ...x, url: mapa.get(x.id)! } : x)),
+      });
+    }
+    setOptimizing(false);
+    const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
+    toast.success(
+      mapa.size
+        ? `Fotos otimizadas: ${mb(antes)} → ${mb(depois)}${falhas ? ` (${falhas} falharam)` : ''}. Salve para aplicar.`
+        : 'As fotos já estavam otimizadas.',
+    );
+  };
+
   const preview = useMemo(() => <ProposalDocument config={config} data={SAMPLE} />, [config]);
 
   if (loading) {
