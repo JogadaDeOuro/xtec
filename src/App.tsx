@@ -33,6 +33,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AcompanhamentoPublico = lazy(() => import("./pages/AcompanhamentoPublico"));
 const PropostaPublica = lazy(() => import("./pages/PropostaPublica"));
+const PropostaPrint = lazy(() => import("./pages/PropostaPrint"));
+
 const AceiteProposta = lazy(() => import("./pages/AceiteProposta"));
 const PortalCliente = lazy(() => import("./pages/PortalCliente"));
 
