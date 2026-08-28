@@ -219,8 +219,7 @@ export default function PersonalizacaoProposta() {
       } catch { falhas++; }
     }
     if (mapa.size) {
-      set('gallery', {
-        ...config.gallery,
+      patch('gallery', {
         itens: config.gallery.itens.map(x => (mapa.has(x.id) ? { ...x, url: mapa.get(x.id)! } : x)),
       });
     }
@@ -683,11 +682,19 @@ export default function PersonalizacaoProposta() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" className="gap-2" disabled={optimizing || !config.gallery.itens.some(i => i.url)}
+                onClick={optimizeGallery}>
+                {optimizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                {optimizing ? 'Otimizando...' : 'Otimizar fotos'}
+              </Button>
               <Button size="sm" variant="outline" className="gap-2" onClick={() => patch('gallery', {
                 itens: [...config.gallery.itens, { id: `img-${Date.now()}`, url: '', titulo: '', descricao: '' }],
               })}><Plus className="h-4 w-4" /> Adicionar imagem</Button>
             </div>
+            <p className="text-right text-[11px] text-muted-foreground">
+              A otimização reduz as fotos para 1600px e recomprime em JPEG, deixando o PDF muito mais leve no celular.
+            </p>
 
             {config.gallery.itens.length === 0 && (
               <p className="rounded-md border border-dashed p-6 text-center text-xs text-muted-foreground">
