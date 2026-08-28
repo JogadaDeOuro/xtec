@@ -58,8 +58,12 @@ Deno.serve(async (req) => {
     if (typeof proposalId !== 'string' || !UUID_RE.test(proposalId)) {
       return json({ error: 'proposalId inválido' }, 400);
     }
-    const origin = safeOrigin(body?.origin);
-    if (!origin) return json({ error: 'Origem não permitida' }, 400);
+    // O Chromium remoto só pode renderizar o domínio público publicado
+    // (o host de preview é protegido e devolveria a tela de login).
+    const requested = safeOrigin(body?.origin);
+    if (!requested) return json({ error: 'Origem não permitida' }, 400);
+    const published = safeOrigin(Deno.env.get('PDF_BASE_URL') ?? '') ?? 'https://inforsol-app.lovable.app';
+    const origin = /^id-preview--/.test(new URL(requested).hostname) ? published : requested;
 
     // RLS decide o acesso: se a linha não voltar, o usuário não pode ver esta proposta.
     const { data: proposal, error } = await supabase
