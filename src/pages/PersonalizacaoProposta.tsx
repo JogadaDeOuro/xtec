@@ -81,14 +81,14 @@ const ACCEPTED_IMAGE_TYPES = [
   '.bmp', '.dib', '.ico', '.cur', '.tif', '.tiff', '.heic', '.heif', '.apng', '.jxl', '.pnm', '.tga',
 ].join(',');
 
-function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function ImageField({ label, value, onChange, kind = 'logo' }: { label: string; value: string; onChange: (v: string) => void; kind?: 'foto' | 'logo' }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const upload = async (file?: File) => {
     if (!file) return;
     setBusy(true);
     try {
-      onChange(await uploadBrandingFile(file));
+      onChange(await uploadBrandingFile(file, 'branding', kind));
       toast.success('Imagem enviada');
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
