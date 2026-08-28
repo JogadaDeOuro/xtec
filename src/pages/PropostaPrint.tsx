@@ -62,6 +62,7 @@ export default function PropostaPrint() {
   const [config, setConfig] = useState<ProposalDocConfig | null>(null);
   const [data, setData] = useState<ProposalDocData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -104,6 +105,7 @@ export default function PropostaPrint() {
       // duplo rAF garante que o motor de paginação já aplicou o layout final
       requestAnimationFrame(() => requestAnimationFrame(() => {
         window.__PROPOSAL_PDF_READY__ = true;
+        setReady(true);
       }));
     }, 350);
     return () => { active = false; window.clearTimeout(id); };
@@ -122,6 +124,7 @@ export default function PropostaPrint() {
       <div ref={ref}>
         <ProposalDocument config={config} data={data} />
       </div>
+      {ready && <div id="pdf-ready" data-pdf-ready="1" style={{ position: 'fixed', left: -9999, top: 0, width: 1, height: 1 }} />}
     </>
   );
 }

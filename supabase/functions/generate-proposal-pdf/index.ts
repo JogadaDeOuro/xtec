@@ -83,10 +83,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         url: printUrl,
         gotoOptions: { waitUntil: 'networkidle2', timeout: 60_000 },
-        waitForFunction: {
-          fn: 'async () => window.__PROPOSAL_PDF_READY__ === true',
-          timeout: 45_000,
-        },
+        waitForSelector: { selector: '[data-pdf-ready="1"]', timeout: 55_000 },
         options: {
           format: 'A4',
           landscape: false,
