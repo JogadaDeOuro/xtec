@@ -33,6 +33,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AcompanhamentoPublico = lazy(() => import("./pages/AcompanhamentoPublico"));
 const PropostaPublica = lazy(() => import("./pages/PropostaPublica"));
+const PropostaPrint = lazy(() => import("./pages/PropostaPrint"));
+
 const AceiteProposta = lazy(() => import("./pages/AceiteProposta"));
 const PortalCliente = lazy(() => import("./pages/PortalCliente"));
 
@@ -97,6 +99,8 @@ const App = () => (
                 <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
                 <Route path="/assinar/:token" element={<AssinarContrato />} />
                 <Route path="/proposta/:token" element={<PropostaPublica />} />
+                <Route path="/proposta/:token/print" element={<PropostaPrint />} />
+
                 <Route path="/aceite/:token" element={<AceiteProposta />} />
                 <Route path="/cliente" element={<PortalCliente />} />
                   <Route path="*" element={<NotFound />} />

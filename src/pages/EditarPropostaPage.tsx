@@ -756,7 +756,9 @@ export default function EditarPropostaPage() {
 
       <ProposalPDF
         open={pdfOpen}
+        proposalId={id}
         onOpenChange={setPdfOpen}
+
         clientName={client?.name || ''}
         clientCity={client?.city}
         clientState={client?.state}
