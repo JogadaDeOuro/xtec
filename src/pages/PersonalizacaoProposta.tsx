@@ -25,7 +25,7 @@ import {
 import {
   createTemplate, deleteEquipment, deleteTemplate, fetchEquipment, fetchProposalSettings,
   refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
-  setDefaultTemplate, updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
+  setDefaultTemplate, updateTemplate, uploadBrandingFile, optimizeExistingImage, type EquipmentItem, type ProposalTemplate,
 } from '@/lib/proposal-settings';
 import { applyTemplateConfig } from '@/lib/proposal-themes';
 import { ProposalDocument, type ProposalDocData } from '@/components/proposal/ProposalDocument';
@@ -256,7 +256,7 @@ export default function PersonalizacaoProposta() {
                 <ImageField label="Logotipo para fundo claro" value={config.branding.logoClaro} onChange={v => patch('branding', { logoClaro: v })} />
                 <ImageField label="Logotipo para fundo escuro" value={config.branding.logoEscuro} onChange={v => patch('branding', { logoEscuro: v })} />
                 <ImageField label="Ícone / símbolo" value={config.branding.icone} onChange={v => patch('branding', { icone: v })} />
-                <ImageField label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
+                <ImageField kind="foto" label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
               </CardContent>
             </Card>
             <Card><CardHeader><CardTitle className="text-base">Tamanho dos logotipos</CardTitle></CardHeader>
@@ -352,7 +352,7 @@ export default function PersonalizacaoProposta() {
                   <div className="space-y-1.5"><Label className="text-xs">Subtítulo</Label>
                     <Input value={config.cover.subtitulo} onChange={e => patch('cover', { subtitulo: e.target.value })} /></div>
                 </div>
-                <ImageField label="Imagem de fundo da capa" value={config.cover.imagemFundo} onChange={v => patch('cover', { imagemFundo: v })} />
+                <ImageField kind="foto" label="Imagem de fundo da capa" value={config.cover.imagemFundo} onChange={v => patch('cover', { imagemFundo: v })} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-xs">Intensidade da máscara: {Math.round(config.cover.mascaraIntensidade * 100)}%</Label>
@@ -669,7 +669,7 @@ export default function PersonalizacaoProposta() {
               {config.gallery.itens.map((item, i) => (
                 <Card key={item.id}>
                   <CardContent className="space-y-3 p-4">
-                    <ImageField label={`Imagem ${i + 1}`} value={item.url}
+                    <ImageField kind="foto" label={`Imagem ${i + 1}`} value={item.url}
                       onChange={v => patch('gallery', {
                         itens: config.gallery.itens.map(x => x.id === item.id ? { ...x, url: v } : x),
                       })} />
