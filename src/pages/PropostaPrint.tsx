@@ -118,8 +118,7 @@ export default function PropostaPrint() {
     <>
       <style dangerouslySetInnerHTML={{ __html: `${PRINT_PAGE_RULE}
         body { background:#fff !important; }
-        .pdoc-page { box-shadow:none !important; margin:0 !important; }
-        .pdoc-measure { display:none !important; }` }} />
+        .pdoc-page { box-shadow:none !important; margin:0 !important; }` }} />
       <div ref={ref}>
         <ProposalDocument config={config} data={data} />
       </div>
