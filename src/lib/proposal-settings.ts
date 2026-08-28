@@ -231,8 +231,48 @@ async function normalizeImage(file: File): Promise<{ blob: Blob; ext: string; co
   }
 }
 
-export async function uploadBrandingFile(file: File, prefix = 'branding'): Promise<string> {
-  const { blob, ext, contentType } = await normalizeImage(file);
+/** Perfis de otimização: fotos da galeria/capa podem ser bem menores que o original da câmera. */
+export type ImageKind = 'foto' | 'logo';
+const PROFILE: Record<ImageKind, { maxSize: number; quality: number }> = {
+  foto: { maxSize: 1600, quality: 0.78 },
+  logo: { maxSize: 900, quality: 0.92 },
+};
+
+/** Reduz resolução e recomprime a imagem no navegador antes de enviar ao storage. */
+async function optimizeImage(
+  input: { blob: Blob; ext: string; contentType: string },
+  kind: ImageKind,
+): Promise<{ blob: Blob; ext: string; contentType: string }> {
+  const { maxSize, quality } = PROFILE[kind];
+  // vetor e animação não são recomprimidos
+  if (input.contentType === 'image/svg+xml' || input.contentType === 'image/gif') return input;
+  try {
+    const bitmap = await createImageBitmap(input.blob);
+    const larger = Math.max(bitmap.width, bitmap.height);
+    const scale = Math.min(1, maxSize / larger);
+    // já é pequena e leve: mantém o original
+    if (scale === 1 && input.blob.size < 300_000) { bitmap.close?.(); return input; }
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    // logos podem ter transparência → webp; fotos → jpeg (menor e universal)
+    const type = kind === 'logo' ? 'image/webp' : 'image/jpeg';
+    const out = await new Promise<Blob | null>(res => canvas.toBlob(res, type, quality));
+    if (!out || out.size >= input.blob.size) return input;
+    return { blob: out, ext: type === 'image/webp' ? 'webp' : 'jpg', contentType: type };
+  } catch {
+    return input;
+  }
+}
+
+export async function uploadBrandingFile(file: File, prefix = 'branding', kind: ImageKind = 'foto'): Promise<string> {
+  const normalized = await normalizeImage(file);
+  const { blob, ext, contentType } = await optimizeImage(normalized, kind);
   const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error } = await supabase.storage
     .from('branding')
@@ -242,6 +282,29 @@ export async function uploadBrandingFile(file: File, prefix = 'branding'): Promi
   if (signErr) throw signErr;
   return data.signedUrl;
 }
+
+/** Baixa uma imagem já hospedada, recomprime e reenvia. Devolve a nova URL e os tamanhos. */
+export async function optimizeExistingImage(
+  url: string,
+  kind: ImageKind = 'foto',
+): Promise<{ url: string; before: number; after: number }> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('download');
+  const original = await res.blob();
+  const contentType = original.type || 'image/jpeg';
+  const ext = contentType.split('/')[1] || 'jpg';
+  const optimized = await optimizeImage({ blob: original, ext, contentType }, kind);
+  if (optimized.blob === original) return { url, before: original.size, after: original.size };
+  const path = `branding/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${optimized.ext}`;
+  const { error } = await supabase.storage
+    .from('branding')
+    .upload(path, optimized.blob, { upsert: true, contentType: optimized.contentType, cacheControl: '3600' });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage.from('branding').createSignedUrl(path, TEN_YEARS);
+  if (signErr) throw signErr;
+  return { url: data.signedUrl, before: original.size, after: optimized.blob.size };
+}
+
 
 
 export { DEFAULT_PROPOSAL_CONFIG };

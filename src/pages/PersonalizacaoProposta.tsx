@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import {
-  ArrowDown, ArrowUp, Copy, Loader2, Plus, RotateCcw, Save, Star, Trash2, Upload,
+  ArrowDown, ArrowUp, Copy, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, Star, Trash2, Upload,
 } from 'lucide-react';
 import {
   AVAILABLE_VARIABLES, DEFAULT_PROPOSAL_CONFIG, EQUIPMENT_CATEGORIES, FONT_OPTIONS,
@@ -25,7 +25,7 @@ import {
 import {
   createTemplate, deleteEquipment, deleteTemplate, fetchEquipment, fetchProposalSettings,
   refreshDefaultTemplates, saveEquipment, saveProposalSettings, seedDefaultTemplates,
-  setDefaultTemplate, updateTemplate, uploadBrandingFile, type EquipmentItem, type ProposalTemplate,
+  setDefaultTemplate, updateTemplate, uploadBrandingFile, optimizeExistingImage, type EquipmentItem, type ProposalTemplate,
 } from '@/lib/proposal-settings';
 import { applyTemplateConfig } from '@/lib/proposal-themes';
 import { ProposalDocument, type ProposalDocData } from '@/components/proposal/ProposalDocument';
@@ -81,14 +81,14 @@ const ACCEPTED_IMAGE_TYPES = [
   '.bmp', '.dib', '.ico', '.cur', '.tif', '.tiff', '.heic', '.heif', '.apng', '.jxl', '.pnm', '.tga',
 ].join(',');
 
-function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function ImageField({ label, value, onChange, kind = 'logo' }: { label: string; value: string; onChange: (v: string) => void; kind?: 'foto' | 'logo' }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const upload = async (file?: File) => {
     if (!file) return;
     setBusy(true);
     try {
-      onChange(await uploadBrandingFile(file));
+      onChange(await uploadBrandingFile(file, 'branding', kind));
       toast.success('Imagem enviada');
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
@@ -203,6 +203,35 @@ export default function PersonalizacaoProposta() {
     catch { toast.error('Sem permissão para salvar'); }
   };
 
+  /* otimização das fotos já enviadas */
+  const [optimizing, setOptimizing] = useState(false);
+  const optimizeGallery = async () => {
+    const alvos = config.gallery.itens.filter(i => i.url);
+    if (!alvos.length) return;
+    setOptimizing(true);
+    let antes = 0, depois = 0, falhas = 0;
+    const mapa = new Map<string, string>();
+    for (const item of alvos) {
+      try {
+        const r = await optimizeExistingImage(item.url, 'foto');
+        antes += r.before; depois += r.after;
+        if (r.url !== item.url) mapa.set(item.id, r.url);
+      } catch { falhas++; }
+    }
+    if (mapa.size) {
+      patch('gallery', {
+        itens: config.gallery.itens.map(x => (mapa.has(x.id) ? { ...x, url: mapa.get(x.id)! } : x)),
+      });
+    }
+    setOptimizing(false);
+    const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
+    toast.success(
+      mapa.size
+        ? `Fotos otimizadas: ${mb(antes)} → ${mb(depois)}${falhas ? ` (${falhas} falharam)` : ''}. Salve para aplicar.`
+        : 'As fotos já estavam otimizadas.',
+    );
+  };
+
   const preview = useMemo(() => <ProposalDocument config={config} data={SAMPLE} />, [config]);
 
   if (loading) {
@@ -256,7 +285,7 @@ export default function PersonalizacaoProposta() {
                 <ImageField label="Logotipo para fundo claro" value={config.branding.logoClaro} onChange={v => patch('branding', { logoClaro: v })} />
                 <ImageField label="Logotipo para fundo escuro" value={config.branding.logoEscuro} onChange={v => patch('branding', { logoEscuro: v })} />
                 <ImageField label="Ícone / símbolo" value={config.branding.icone} onChange={v => patch('branding', { icone: v })} />
-                <ImageField label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
+                <ImageField kind="foto" label="Imagem principal da capa" value={config.branding.imagemCapa} onChange={v => patch('branding', { imagemCapa: v })} />
               </CardContent>
             </Card>
             <Card><CardHeader><CardTitle className="text-base">Tamanho dos logotipos</CardTitle></CardHeader>
@@ -352,7 +381,7 @@ export default function PersonalizacaoProposta() {
                   <div className="space-y-1.5"><Label className="text-xs">Subtítulo</Label>
                     <Input value={config.cover.subtitulo} onChange={e => patch('cover', { subtitulo: e.target.value })} /></div>
                 </div>
-                <ImageField label="Imagem de fundo da capa" value={config.cover.imagemFundo} onChange={v => patch('cover', { imagemFundo: v })} />
+                <ImageField kind="foto" label="Imagem de fundo da capa" value={config.cover.imagemFundo} onChange={v => patch('cover', { imagemFundo: v })} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-xs">Intensidade da máscara: {Math.round(config.cover.mascaraIntensidade * 100)}%</Label>
@@ -653,11 +682,19 @@ export default function PersonalizacaoProposta() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" className="gap-2" disabled={optimizing || !config.gallery.itens.some(i => i.url)}
+                onClick={optimizeGallery}>
+                {optimizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                {optimizing ? 'Otimizando...' : 'Otimizar fotos'}
+              </Button>
               <Button size="sm" variant="outline" className="gap-2" onClick={() => patch('gallery', {
                 itens: [...config.gallery.itens, { id: `img-${Date.now()}`, url: '', titulo: '', descricao: '' }],
               })}><Plus className="h-4 w-4" /> Adicionar imagem</Button>
             </div>
+            <p className="text-right text-[11px] text-muted-foreground">
+              A otimização reduz as fotos para 1600px e recomprime em JPEG, deixando o PDF muito mais leve no celular.
+            </p>
 
             {config.gallery.itens.length === 0 && (
               <p className="rounded-md border border-dashed p-6 text-center text-xs text-muted-foreground">
@@ -669,7 +706,7 @@ export default function PersonalizacaoProposta() {
               {config.gallery.itens.map((item, i) => (
                 <Card key={item.id}>
                   <CardContent className="space-y-3 p-4">
-                    <ImageField label={`Imagem ${i + 1}`} value={item.url}
+                    <ImageField kind="foto" label={`Imagem ${i + 1}`} value={item.url}
                       onChange={v => patch('gallery', {
                         itens: config.gallery.itens.map(x => x.id === item.id ? { ...x, url: v } : x),
                       })} />
