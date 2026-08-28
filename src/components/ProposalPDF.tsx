@@ -7,9 +7,11 @@ import { DEFAULT_PROPOSAL_CONFIG, mergeConfig, type ProposalDocConfig } from '@/
 import { fetchEquipment, fetchProposalSettings, type EquipmentItem } from '@/lib/proposal-settings';
 import { buildDocumentCss, PRINT_PAGE_RULE } from '@/components/proposal/document-styles';
 import { ProposalDocument, type DocLayoutInfo, type ProposalDocData, type ProposalPaymentInfo } from '@/components/proposal/ProposalDocument';
-import { downloadProposalPdf } from '@/lib/pdf-export';
+import { downloadProposalPdf, generateProposalPdfServerSide, deliverPdf, isAppleWebKit, type PdfProgress } from '@/lib/pdf-export';
 import type { Finalidade } from '@/lib/investment';
 import { Download, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 
 interface ProposalPDFProps {
   open: boolean;
