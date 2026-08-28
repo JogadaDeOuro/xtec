@@ -176,7 +176,8 @@ export function ProposalPDF(props: ProposalPDFProps) {
             <div className="flex items-center gap-2 mr-8">
               <Button onClick={handleDownload} disabled={downloading} className="gap-2">
                 {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {downloading ? 'Gerando PDF...' : 'Baixar PDF'}
+                {downloading ? (progress ? progressLabel[progress] : 'Gerando PDF...') : 'Baixar PDF'}
+
               </Button>
               <Button variant="outline" onClick={() => setTamanhoReal(v => !v)} className="gap-2">
                 {tamanhoReal ? 'Ajustar à tela' : 'Tamanho real'}

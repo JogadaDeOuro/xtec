@@ -260,7 +260,9 @@ export default function Propostas() {
       {pdfProposal && (
         <ProposalPDF
           open={!!pdfProposal}
+          proposalId={pdfProposal.id}
           onOpenChange={(o) => { if (!o) setPdfProposal(null); }}
+
           clientName={pdfProposal.clientName}
           systemType={pdfProposal.systemType}
           potencia={pdfProposal.potenciaKwp}
