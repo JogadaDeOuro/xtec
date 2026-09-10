@@ -9,7 +9,7 @@ import {
 } from '@/lib/manutencao';
 import type { EquipmentItem } from '@/lib/proposal-settings';
 import {
-  areaEstimada, arvoresEquivalentes, percentualCompensacao, projecao, reducaoCo2Anual,
+  areaEstimada, arvoresEquivalentes, formatPotencia, percentualCompensacao, projecao, reducaoCo2Anual,
 } from '@/lib/solar-calc';
 import { buildDocumentCss } from './document-styles';
 import {
@@ -92,7 +92,7 @@ export function buildVariables(c: ProposalDocConfig, d: ProposalDocData): Templa
     cliente_nome: d.clientName,
     cliente_cidade: d.clientCity ?? '',
     cliente_estado: d.clientState ?? '',
-    potencia_kwp: `${d.potenciaKwp.toFixed(2)} kWp`,
+    potencia_kwp: formatPotencia(d.potenciaKwp),
     geracao_mensal: `${formatNumber(d.producaoMensal)} kWh`,
     geracao_anual: `${formatNumber(d.producaoMensal * 12)} kWh`,
     valor_final: formatCurrency(d.valorFinal),
@@ -304,7 +304,7 @@ export function ProposalDocument({
         case 'resumo_executivo':
           return (
             <div className="pdoc-grid g3">
-              <div className="pdoc-card hi"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
+              <div className="pdoc-card hi"><div className="k">Potência instalada</div><div className="v">{formatPotencia(data.potenciaKwp)}</div></div>
               <div className="pdoc-card"><div className="k">Geração média</div><div className="v">{formatNumber(data.producaoMensal)} kWh/mês</div></div>
               <div className="pdoc-card"><div className="k">Investimento</div><div className="v">{formatCurrency(data.valorFinal)}</div></div>
               <div className="pdoc-card"><div className="k">{lblGanhoMes}</div><div className="v">{formatCurrency(ganhoMensal)}</div></div>
@@ -327,11 +327,11 @@ export function ProposalDocument({
             <div className="pdoc-grid g4">
               <div className="pdoc-card"><div className="k">Módulos</div><div className="v">{data.numModulos} un.</div></div>
               <div className="pdoc-card"><div className="k">Potência unitária</div><div className="v">{data.potenciaModuloW} Wp</div></div>
-              <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
+              <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{formatPotencia(data.potenciaKwp)}</div></div>
               <div className="pdoc-card"><div className="k">Área estimada</div><div className="v">{areaEstimada(data.numModulos, config.assumptions)} m²</div></div>
             </div>
             <p className="muted" style={{ marginTop: '3mm' }}>
-              Potência instalada = {data.numModulos} módulos × {data.potenciaModuloW} Wp ÷ 1.000 = {data.potenciaKwp.toFixed(2)} kWp.
+              Potência instalada = {data.numModulos} módulos × {data.potenciaModuloW} Wp ÷ 1.000 = {formatPotencia(data.potenciaKwp)}.
             </p>
           </>);
         case 'geracao':
@@ -557,7 +557,7 @@ export function ProposalDocument({
             <div className="pdoc-grid g3" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card"><div className="k">Módulos atendidos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
               <div className="pdoc-card"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
-              <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp > 0 ? `${data.potenciaKwp.toFixed(2)} kWp` : '—'}</div></div>
+              <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp > 0 ? formatPotencia(data.potenciaKwp) : '—'}</div></div>
             </div>
             <div className="pdoc-invest" style={{ marginTop: '4mm' }}>
               <div className="row"><span>{formatNumber(data.numModulos)} módulos × {formatCurrency(manut?.valorPorModulo ?? 0)}</span><span>{formatCurrency(data.valorBruto)}</span></div>
@@ -723,7 +723,7 @@ export function ProposalDocument({
                 <div className="fact"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
               </>) : (<>
                 {cv.mostrarPotencia && (
-                  <div className="fact"><div className="k">Potência</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
+                  <div className="fact"><div className="k">Potência</div><div className="v">{formatPotencia(data.potenciaKwp)}</div></div>
                 )}
                 {cv.mostrarGeracao && (
                   <div className="fact"><div className="k">Geração média</div><div className="v">{formatNumber(data.producaoMensal)} kWh/mês</div></div>
@@ -743,7 +743,7 @@ export function ProposalDocument({
         <div className="pdoc-page" key={idx}>
           <Header />
           <div className="pdoc-page-content">
-            {page.map(i => <div key={blocks[i].id}>{blocks[i].node}</div>)}
+            {page.filter(i => blocks[i]).map(i => <div key={blocks[i].id}>{blocks[i].node}</div>)}
           </div>
           <Footer page={idx + (cover ? 2 : 1)} />
         </div>
