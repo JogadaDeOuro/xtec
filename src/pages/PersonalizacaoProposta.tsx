@@ -172,24 +172,28 @@ export default function PersonalizacaoProposta() {
     finally { setSaving(false); }
   };
 
-  /* seções */
+  /* seções — cada tipo de proposta tem sua própria estrutura salva */
+  const secKey = (): 'sections' | 'sectionsManutencao' =>
+    previewTipo === 'manutencao' ? 'sectionsManutencao' : 'sections';
+  const secList = (): SectionConfig[] =>
+    (previewTipo === 'manutencao' ? config.sectionsManutencao : config.sections) ?? [];
   const moveSection = (i: number, dir: -1 | 1) => {
-    const arr = [...config.sections];
+    const arr = [...secList()];
     const j = i + dir;
     if (j < 0 || j >= arr.length) return;
     [arr[i], arr[j]] = [arr[j], arr[i]];
-    set('sections', arr);
+    set(secKey(), arr);
   };
   const updateSection = (id: string, p: Partial<SectionConfig>) =>
-    set('sections', config.sections.map(s => (s.id === id ? { ...s, ...p } : s)));
+    set(secKey(), secList().map(s => (s.id === id ? { ...s, ...p } : s)));
   const duplicateSection = (s: SectionConfig) =>
-    set('sections', [...config.sections, { ...s, id: `${s.key}-${Date.now()}`, required: false, title: `${s.title} (cópia)` }]);
+    set(secKey(), [...secList(), { ...s, id: `${s.key}-${Date.now()}`, required: false, title: `${s.title} (cópia)` }]);
   const addCustomSection = () =>
-    set('sections', [...config.sections, {
+    set(secKey(), [...secList(), {
       id: `personalizada-${Date.now()}`, key: 'personalizada', title: 'Nova seção',
       enabled: true, newPage: false, background: 'branco', columns: 1, required: false, content: '',
     }]);
-  const removeSection = (id: string) => set('sections', config.sections.filter(s => s.id !== id));
+  const removeSection = (id: string) => set(secKey(), secList().filter(s => s.id !== id));
 
   /* equipamentos */
   const addEquipment = async () => {
@@ -442,12 +446,25 @@ export default function PersonalizacaoProposta() {
 
           {/* ESTRUTURA */}
           <TabsContent value="estrutura" className="space-y-3">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs">Editando a estrutura de:</Label>
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                  <SelectTrigger className="h-8 w-[190px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usina">Proposta de usina nova</SelectItem>
+                    <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button variant="outline" size="sm" onClick={addCustomSection} className="gap-2">
                 <Plus className="h-4 w-4" /> Adicionar seção personalizada
               </Button>
             </div>
-            {config.sections.map((s, i) => (
+            <p className="text-xs text-muted-foreground">
+              Cada tipo de proposta tem sua própria estrutura: ativar ou desativar páginas aqui afeta somente o tipo selecionado.
+            </p>
+            {secList().map((s, i) => (
               <Card key={s.id} className={s.enabled ? '' : 'opacity-60'}>
                 <CardContent className="space-y-3 p-4">
                   <div className="flex flex-wrap items-center gap-2">
