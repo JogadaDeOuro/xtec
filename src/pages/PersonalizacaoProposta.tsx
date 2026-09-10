@@ -172,24 +172,28 @@ export default function PersonalizacaoProposta() {
     finally { setSaving(false); }
   };
 
-  /* seções */
+  /* seções — cada tipo de proposta tem sua própria estrutura salva */
+  const secKey = (): 'sections' | 'sectionsManutencao' =>
+    previewTipo === 'manutencao' ? 'sectionsManutencao' : 'sections';
+  const secList = (): SectionConfig[] =>
+    (previewTipo === 'manutencao' ? config.sectionsManutencao : config.sections) ?? [];
   const moveSection = (i: number, dir: -1 | 1) => {
-    const arr = [...config.sections];
+    const arr = [...secList()];
     const j = i + dir;
     if (j < 0 || j >= arr.length) return;
     [arr[i], arr[j]] = [arr[j], arr[i]];
-    set('sections', arr);
+    set(secKey(), arr);
   };
   const updateSection = (id: string, p: Partial<SectionConfig>) =>
-    set('sections', config.sections.map(s => (s.id === id ? { ...s, ...p } : s)));
+    set(secKey(), secList().map(s => (s.id === id ? { ...s, ...p } : s)));
   const duplicateSection = (s: SectionConfig) =>
-    set('sections', [...config.sections, { ...s, id: `${s.key}-${Date.now()}`, required: false, title: `${s.title} (cópia)` }]);
+    set(secKey(), [...secList(), { ...s, id: `${s.key}-${Date.now()}`, required: false, title: `${s.title} (cópia)` }]);
   const addCustomSection = () =>
-    set('sections', [...config.sections, {
+    set(secKey(), [...secList(), {
       id: `personalizada-${Date.now()}`, key: 'personalizada', title: 'Nova seção',
       enabled: true, newPage: false, background: 'branco', columns: 1, required: false, content: '',
     }]);
-  const removeSection = (id: string) => set('sections', config.sections.filter(s => s.id !== id));
+  const removeSection = (id: string) => set(secKey(), secList().filter(s => s.id !== id));
 
   /* equipamentos */
   const addEquipment = async () => {
