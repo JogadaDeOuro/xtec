@@ -454,6 +454,7 @@ export function mergeConfig(partial?: unknown): ProposalDocConfig {
         : [],
     },
     sections,
+    sectionsManutencao,
   };
 }
 
