@@ -77,29 +77,44 @@ Deno.serve(async (req) => {
     const printUrl = `${origin}/proposta/${proposal.public_token}/print`;
 
     const started = Date.now();
-    const res = await fetch(`https://production-sfo.browserless.io/pdf?token=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: printUrl,
-        gotoOptions: { waitUntil: 'networkidle2', timeout: 60_000 },
-        waitForSelector: { selector: '[data-pdf-ready="1"]', timeout: 55_000 },
-        options: {
-          format: 'A4',
-          landscape: false,
-          printBackground: true,
-          preferCSSPageSize: true,
-          scale: 1,
-          displayHeaderFooter: false,
-          margin: { top: '0', right: '0', bottom: '0', left: '0' },
-        },
-      }),
+    const payload = JSON.stringify({
+      url: printUrl,
+      // 'domcontentloaded' evita timeouts do networkidle em páginas com muitas imagens;
+      // o sinal real de "pronto" é o seletor abaixo.
+      gotoOptions: { waitUntil: 'domcontentloaded', timeout: 60_000 },
+      waitForSelector: { selector: '[data-pdf-ready="1"]', timeout: 60_000 },
+      options: {
+        format: 'A4',
+        landscape: false,
+        printBackground: true,
+        preferCSSPageSize: true,
+        scale: 1,
+        displayHeaderFooter: false,
+        margin: { top: '0', right: '0', bottom: '0', left: '0' },
+      },
     });
 
-    if (!res.ok) {
-      const detail = (await res.text().catch(() => '')).slice(0, 300);
-      console.error('browserless falhou', res.status, detail);
-      return json({ error: 'Falha na geração server-side do PDF', status: res.status }, 502);
+    let res: Response | null = null;
+    let lastDetail = '';
+    // O renderizador devolve 429/500 quando já há uma sessão ocupando o slot.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      res = await fetch(`https://production-sfo.browserless.io/pdf?token=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      });
+      if (res.ok) break;
+      lastDetail = (await res.text().catch(() => '')).slice(0, 300);
+      console.error('browserless falhou', res.status, lastDetail, 'tentativa', attempt);
+      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 4000));
+    }
+
+    if (!res || !res.ok) {
+      return json({
+        error: 'O gerador de PDF está ocupado no momento. Tente novamente em alguns segundos.',
+        status: res?.status ?? 0,
+        detail: lastDetail,
+      }, 502);
     }
 
     const pdf = new Uint8Array(await res.arrayBuffer());
