@@ -62,9 +62,9 @@ export default function NovaManutencaoPage() {
   const [areaM2, setAreaM2] = useState<number>(0);
   const [potenciaKwp, setPotenciaKwp] = useState<number>(0);
 
-  const [minPorModulo, setMinPorModulo] = useState(10);
-  const [maxPorModulo, setMaxPorModulo] = useState(60);
-  const [valorPorModulo, setValorPorModulo] = useState(25);
+  const [minPorM2, setMinPorM2] = useState(3);
+  const [maxPorM2, setMaxPorM2] = useState(30);
+  const [valorPorM2, setValorPorM2] = useState(8);
   const [valorFinalManual, setValorFinalManual] = useState<number | ''>('');
 
   const [itens, setItens] = useState<string[]>(ITENS_PADRAO);
@@ -124,7 +124,7 @@ export default function NovaManutencaoPage() {
       setNumModulos(p.numModulos);
       setAreaM2(p.areaM2 || areaSugerida(p.numModulos));
       setPotenciaKwp(p.potenciaKwp);
-      setValorPorModulo(p.valorPorModulo || 25);
+      setValorPorM2(p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 8);
       setValorFinalManual(p.valorSistema);
       setItens(p.manutencaoItens?.length ? p.manutencaoItens : ITENS_PADRAO);
       setOrigemTipo((p.origemTipo as 'contrato' | 'proposta' | 'manual') || 'manual');
@@ -147,9 +147,9 @@ export default function NovaManutencaoPage() {
   };
 
   const calc = useMemo(() => calcManutencao({
-    numModulos, areaM2, valorPorModulo,
+    numModulos, areaM2, valorPorM2,
     valorFinalManual: valorFinalManual === '' ? null : valorFinalManual,
-  }), [numModulos, areaM2, valorPorModulo, valorFinalManual]);
+  }), [numModulos, areaM2, valorPorM2, valorFinalManual]);
 
   const rows = buildPaymentRows(condicao, {
     valorTotal: calc.valorFinal, entradaValor, numParcelas, etapas,
@@ -176,7 +176,7 @@ export default function NovaManutencaoPage() {
     numModulos,
     tipo: 'manutencao',
     areaM2,
-    valorPorModulo: calc.valorPorModuloEfetivo,
+    valorPorModulo: 0,
     manutencaoItens: itens,
     origemTipo,
     origemRef: origemTipo === 'manual' ? '' : origemRef,
