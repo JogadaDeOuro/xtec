@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, Sun, Zap, DollarSign, TrendingUp, Clock, Shield, CheckCircle2 } from 'lucide-react';
@@ -74,7 +75,7 @@ export default function PropostaPublica() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-border bg-muted/30 p-3">
                   <p className="text-xs text-muted-foreground">Potência</p>
-                  <p className="text-sm font-semibold">{proposal.potenciaKwp} kWp</p>
+                  <p className="text-sm font-semibold">{formatPotencia(proposal.potenciaKwp)}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 p-3">
                   <p className="text-xs text-muted-foreground">Produção estimada</p>

@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -96,7 +97,7 @@ export default function NovaManutencaoPage() {
         const mod = (c.proposal_id && modulosDaProposta.get(c.proposal_id)) || Math.round((kwp * 1000) / 650);
         return {
           id: c.id, tipo: 'contrato' as const,
-          rotulo: `${c.client_name} — ${kwp.toFixed(2)} kWp`,
+          rotulo: `${c.client_name} — ${formatPotencia(kwp)}`,
           clientId: c.client_id, numModulos: mod, potenciaKwp: kwp,
         };
       });

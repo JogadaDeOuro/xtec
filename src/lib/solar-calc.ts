@@ -13,6 +13,18 @@ export function potenciaInstalada({ numModulos, potenciaModuloW }: SizingInput):
   return +((numModulos * potenciaModuloW) / 1000).toFixed(2);
 }
 
+/**
+ * Formata a potência: acima de 1.000 kWp exibe em MWp (megawatt-pico).
+ * Usado em propostas de usina e de manutenção.
+ */
+export function formatPotencia(kwp: number, casas = 2): string {
+  const v = Number(kwp) || 0;
+  if (Math.abs(v) >= 1000) {
+    return `${(v / 1000).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas })} MWp`;
+  }
+  return `${v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas })} kWp`;
+}
+
 /** Sugere a combinação de módulos mais próxima da potência desejada (quantidade par). */
 export function sugerirModulos(potenciaDesejadaKwp: number, potenciaModuloW: number): SizingInput {
   if (potenciaDesejadaKwp <= 0 || potenciaModuloW <= 0) {

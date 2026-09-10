@@ -232,7 +232,31 @@ export default function PersonalizacaoProposta() {
     );
   };
 
-  const preview = useMemo(() => <ProposalDocument config={config} data={SAMPLE} />, [config]);
+  const [previewTipo, setPreviewTipo] = useState<'usina' | 'manutencao'>('usina');
+
+  const sample: ProposalDocData = useMemo(() => (
+    previewTipo === 'manutencao'
+      ? {
+          ...SAMPLE,
+          tipo: 'manutencao',
+          numModulos: 1200,
+          potenciaModuloW: 700,
+          potenciaKwp: 840,
+          valorBruto: 42000,
+          valorFinal: 39000,
+          desconto: 3000,
+          manutencao: {
+            areaM2: 3720,
+            valorPorModulo: 35,
+            valorPorM2: 10.48,
+            itens: ['rocagem', 'limpeza_modulos', 'aterramento', 'estrutura', 'conexoes', 'inversor'],
+            origemDescricao: 'Usina exemplo — contrato ativo',
+          },
+        }
+      : { ...SAMPLE, tipo: 'usina' }
+  ), [previewTipo]);
+
+  const preview = useMemo(() => <ProposalDocument config={config} data={sample} />, [config, sample]);
 
   if (loading) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -824,6 +848,13 @@ export default function PersonalizacaoProposta() {
             <CardHeader className="flex-row items-center justify-between space-y-0 py-3">
               <CardTitle className="text-sm">Pré-visualização A4</CardTitle>
               <div className="flex items-center gap-2">
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                  <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usina">Proposta de usina</SelectItem>
+                    <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.max(0.25, +(z - 0.05).toFixed(2)))}>−</Button>
                 <span className="w-10 text-center text-xs text-muted-foreground">{Math.round(zoom * 100)}%</span>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.min(1, +(z + 0.05).toFixed(2)))}>+</Button>

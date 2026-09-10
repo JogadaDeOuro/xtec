@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
 import { useState, useEffect, useRef } from 'react';
@@ -644,7 +645,7 @@ export default function EditarPropostaPage() {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between"><span className="text-xs text-muted-foreground">Sistema</span><Badge variant="outline">{systemType.toUpperCase()}</Badge></div>
-                <div className="flex justify-between"><span className="text-xs text-muted-foreground">Potência</span><span className="text-sm font-medium">{potencia} kWp</span></div>
+                <div className="flex justify-between"><span className="text-xs text-muted-foreground">Potência</span><span className="text-sm font-medium">{formatPotencia(potencia)}</span></div>
                 <div className="flex justify-between"><span className="text-xs text-muted-foreground">Valor/kWp</span><span className="text-sm font-medium">{formatCurrency(valorKwp)}</span></div>
                 <Separator />
                 <div className="flex justify-between"><span className="text-xs text-muted-foreground">Produção</span><span className="text-sm font-medium">{formatNumber(producao)} kWh/mês</span></div>

@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';
@@ -212,7 +213,7 @@ export default function Propostas() {
                     <p className="text-xs text-muted-foreground">
                       {p.numero} · {p.tipo === 'manutencao'
                         ? `Manutenção · ${p.numModulos} módulos`
-                        : `${p.systemType.toUpperCase()} · ${p.potenciaKwp} kWp`} · {p.createdAt}
+                        : `${p.systemType.toUpperCase()} · ${formatPotencia(p.potenciaKwp)}`} · {p.createdAt}
                     </p>
                   </div>
                 </div>
