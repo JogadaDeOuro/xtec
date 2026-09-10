@@ -925,7 +925,7 @@ export default function NovaPropostaPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs text-muted-foreground">Potência</span>
-                  <span className="text-sm font-medium">{potencia} kWp</span>
+                  <span className="text-sm font-medium">{formatPotencia(potencia)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs text-muted-foreground">Valor/kWp</span>

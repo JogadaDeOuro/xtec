@@ -212,7 +212,7 @@ export default function Propostas() {
                     <p className="text-xs text-muted-foreground">
                       {p.numero} · {p.tipo === 'manutencao'
                         ? `Manutenção · ${p.numModulos} módulos`
-                        : `${p.systemType.toUpperCase()} · ${p.potenciaKwp} kWp`} · {p.createdAt}
+                        : `${p.systemType.toUpperCase()} · ${formatPotencia(p.potenciaKwp)}`} · {p.createdAt}
                     </p>
                   </div>
                 </div>

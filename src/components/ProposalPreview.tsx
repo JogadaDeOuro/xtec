@@ -159,7 +159,7 @@ export function ProposalPreview({
               </div>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Potência</p>
-                <p className="text-sm font-semibold">{potencia} kWp</p>
+                <p className="text-sm font-semibold">{formatPotencia(potencia)}</p>
               </div>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Módulos</p>
