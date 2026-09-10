@@ -98,6 +98,7 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     status: row.status as ProposalStatus,
     condicaoPagamento: row.condicao_pagamento || '',
     condicoesAlternativas: row.condicoes_alternativas ?? [],
+    pagamentoConfig: (row.pagamento_config as PagamentoConfig | null) ?? {},
     desconto: Number(row.desconto),
     margem: Number(row.margem),
     comissao: Number(row.comissao),
