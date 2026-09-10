@@ -1,6 +1,9 @@
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
+import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +40,7 @@ export default function Propostas() {
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'all'>('all');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [pdfProposal, setPdfProposal] = useState<ProposalRecord | null>(null);
+  const [tipoOpen, setTipoOpen] = useState(false);
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
