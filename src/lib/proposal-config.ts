@@ -430,20 +430,9 @@ function mergeSectionList(saved: SectionConfig[] | undefined, defaults: SectionC
 export function mergeConfig(partial?: unknown): ProposalDocConfig {
   const p = (partial ?? {}) as Partial<ProposalDocConfig>;
   const base = DEFAULT_PROPOSAL_CONFIG;
-  let sections =
-    Array.isArray(p.sections) && p.sections.length
-      ? p.sections.map((s, i) => ({ ...sec(s.key ?? 'personalizada'), ...s, id: s.id ?? `${s.key}-${i}` }))
-      : base.sections;
+  const sections = mergeSectionList(p.sections, base.sections);
+  const sectionsManutencao = mergeSectionList(p.sectionsManutencao, base.sectionsManutencao);
 
-  // Configs salvas antes de novas seções (ex.: galeria) não as possuem.
-  // Reinsere cada seção padrão ausente na posição relativa correta.
-  base.sections.forEach((def, defIdx) => {
-    if (sections.some(s => s.key === def.key)) return;
-    const prevKey = base.sections[defIdx - 1]?.key;
-    const at = prevKey ? sections.findIndex(s => s.key === prevKey) : -1;
-    const insertAt = at >= 0 ? at + 1 : sections.length;
-    sections = [...sections.slice(0, insertAt), { ...def }, ...sections.slice(insertAt)];
-  });
 
   return {
     branding: { ...base.branding, ...(p.branding ?? {}) },
