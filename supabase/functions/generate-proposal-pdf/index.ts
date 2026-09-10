@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
       url: printUrl,
       // 'domcontentloaded' evita timeouts do networkidle em páginas com muitas imagens;
       // o sinal real de "pronto" é o seletor abaixo.
-      gotoOptions: { waitUntil: 'domcontentloaded', timeout: 60_000 },
-      waitForSelector: { selector: '[data-pdf-ready="1"]', timeout: 60_000 },
+      gotoOptions: { waitUntil: 'domcontentloaded', timeout: 45_000 },
+      waitForSelector: { selector: '[data-pdf-ready="1"]', timeout: 45_000 },
       options: {
         format: 'A4',
         landscape: false,
@@ -96,17 +96,33 @@ Deno.serve(async (req) => {
 
     let res: Response | null = null;
     let lastDetail = '';
+    // Orçamento total < 150s (limite de idle da função): 2 tentativas curtas.
+    const BUDGET_MS = 130_000;
     // O renderizador devolve 429/500 quando já há uma sessão ocupando o slot.
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      res = await fetch(`https://production-sfo.browserless.io/pdf?token=${encodeURIComponent(apiKey)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-      });
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const left = BUDGET_MS - (Date.now() - started);
+      if (left < 15_000) { lastDetail ||= 'tempo esgotado'; break; }
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), Math.min(left, 70_000));
+      try {
+        res = await fetch(`https://production-sfo.browserless.io/pdf?token=${encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          signal: ctrl.signal,
+        });
+      } catch (err) {
+        res = null;
+        lastDetail = err instanceof Error ? err.message : 'falha de rede';
+        console.error('browserless abortado', lastDetail, 'tentativa', attempt);
+        continue;
+      } finally {
+        clearTimeout(timer);
+      }
       if (res.ok) break;
       lastDetail = (await res.text().catch(() => '')).slice(0, 300);
       console.error('browserless falhou', res.status, lastDetail, 'tentativa', attempt);
-      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 4000));
+      if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
     }
 
     if (!res || !res.ok) {
