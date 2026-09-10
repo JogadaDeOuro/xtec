@@ -194,7 +194,7 @@ export default function Propostas() {
         )}
         {!loading && visible.map((p) => (
           <Card key={p.id} className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
-            onClick={() => navigate(`/propostas/${p.id}`)}
+            onClick={() => navigate(p.tipo === 'manutencao' ? `/propostas/manutencao/${p.id}` : `/propostas/${p.id}`)}
           >
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -210,7 +210,9 @@ export default function Propostas() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {p.numero} · {p.systemType.toUpperCase()} · {p.potenciaKwp} kWp · {p.createdAt}
+                      {p.numero} · {p.tipo === 'manutencao'
+                        ? `Manutenção · ${p.numModulos} módulos`
+                        : `${p.systemType.toUpperCase()} · ${p.potenciaKwp} kWp`} · {p.createdAt}
                     </p>
                   </div>
                 </div>
@@ -319,6 +321,13 @@ export default function Propostas() {
           docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
           finalidade={pdfProposal.finalidade}
           desagioPct={pdfProposal.desagioPct}
+          tipo={pdfProposal.tipo}
+          manutencao={pdfProposal.tipo === 'manutencao' ? {
+            areaM2: pdfProposal.areaM2,
+            valorPorModulo: pdfProposal.valorPorModulo,
+            valorPorM2: pdfProposal.areaM2 > 0 ? +(pdfProposal.valorSistema / pdfProposal.areaM2).toFixed(2) : 0,
+            itens: pdfProposal.manutencaoItens ?? [],
+          } : undefined}
           payment={{
             condicao: mapCondicaoFromLabel(pdfProposal.condicaoPagamento),
             alternativas: pdfProposal.condicoesAlternativas ?? [],
