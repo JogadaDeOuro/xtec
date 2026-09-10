@@ -35,16 +35,38 @@ const inFlight = new Map<string, Promise<PdfResult>>();
 export function deliverPdf(blob: Blob, fileName: string) {
   const name = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
   const url = URL.createObjectURL(blob);
+  const revoke = () => setTimeout(() => URL.revokeObjectURL(url), 60_000);
+
+  // iOS/Safari ignora o atributo download: abre o visualizador nativo
+  if (isAppleWebKit()) {
+    const win = window.open(url, '_blank');
+    if (!win) window.location.href = url;
+    revoke();
+    return;
+  }
+
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
   a.rel = 'noopener';
-  a.target = '_blank';
   document.body.appendChild(a);
   a.click();
   a.remove();
-  // o Safari precisa da URL viva enquanto abre o visualizador nativo
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  revoke();
+}
+
+/** Compartilha o PDF pelo menu nativo quando disponível (iOS/Android). */
+export async function sharePdf(blob: Blob, fileName: string): Promise<boolean> {
+  const name = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+  try {
+    const file = new File([blob], name, { type: 'application/pdf' });
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+    if (nav.canShare?.({ files: [file] })) {
+      await nav.share({ files: [file], title: name });
+      return true;
+    }
+  } catch { /* usuário cancelou ou não suportado */ }
+  return false;
 }
 
 /**

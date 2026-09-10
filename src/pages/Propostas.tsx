@@ -212,7 +212,7 @@ export default function Propostas() {
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {p.numero} · {p.tipo === 'manutencao'
-                        ? `Manutenção · ${p.numModulos} módulos`
+                        ? `Manutenção · ${p.areaM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} m²`
                         : `${p.systemType.toUpperCase()} · ${formatPotencia(p.potenciaKwp)}`} · {p.createdAt}
                     </p>
                   </div>
@@ -220,7 +220,11 @@ export default function Propostas() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-bold">{formatCurrency(p.valorSistema)}</p>
-                    <p className="text-xs text-muted-foreground">Economia: {formatCurrency(p.economiaMensal)}/mês</p>
+                    <p className="text-xs text-muted-foreground">
+                      {p.tipo === 'manutencao'
+                        ? `Área: ${p.areaM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} m²${p.areaM2 > 0 ? ` · ${formatCurrency(p.valorSistema / p.areaM2)}/m²` : ''}`
+                        : `Economia: ${formatCurrency(p.economiaMensal)}/mês`}
+                    </p>
                   </div>
                   <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                     <Button
