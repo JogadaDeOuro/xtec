@@ -503,6 +503,7 @@ export type Database = {
           numero: string | null
           origem_ref: string | null
           origem_tipo: string | null
+          pagamento_config: Json
           payback_anos: number
           potencia_kwp: number
           potencia_modulo_w: number
@@ -546,6 +547,7 @@ export type Database = {
           numero?: string | null
           origem_ref?: string | null
           origem_tipo?: string | null
+          pagamento_config?: Json
           payback_anos?: number
           potencia_kwp?: number
           potencia_modulo_w?: number
@@ -589,6 +591,7 @@ export type Database = {
           numero?: string | null
           origem_ref?: string | null
           origem_tipo?: string | null
+          pagamento_config?: Json
           payback_anos?: number
           potencia_kwp?: number
           potencia_modulo_w?: number
@@ -775,6 +778,7 @@ export type Database = {
           numero: string | null
           origem_ref: string | null
           origem_tipo: string | null
+          pagamento_config: Json
           payback_anos: number
           potencia_kwp: number
           potencia_modulo_w: number

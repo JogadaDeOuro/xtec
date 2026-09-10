@@ -146,6 +146,11 @@ export default function EditarPropostaPage() {
           setDesconto(p.desconto);
           setCondicao(mapCondicaoFromLabel(p.condicaoPagamento));
           setCondicoesAlt((p.condicoesAlternativas ?? []).map(parseAlt).filter(a => a.value));
+          const pc = p.pagamentoConfig ?? {};
+          if (pc.condicao) setCondicao(pc.condicao);
+          if (typeof pc.entradaValor === 'number') setEntradaValor(pc.entradaValor);
+          if (typeof pc.numParcelas === 'number' && pc.numParcelas > 0) setNumParcelas(pc.numParcelas);
+          if (pc.etapas?.length) setEtapasPersonalizadas(pc.etapas);
 
           setGarantiaEstendida(p.garantiaEstendida);
           if (p.consumoMedio > 0) setConsumoMensal(p.consumoMedio);
@@ -211,6 +216,7 @@ export default function EditarPropostaPage() {
     status,
     condicaoPagamento: getCondicaoLabel(condicao),
     condicoesAlternativas: condicoesAlt.map(serializeAlt),
+    pagamentoConfig: { condicao, entradaValor, numParcelas, etapas: etapasPersonalizadas },
     desconto,
     consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
     garantiaEstendida,

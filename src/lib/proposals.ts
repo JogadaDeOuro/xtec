@@ -2,6 +2,13 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
 
+export interface PagamentoConfig {
+  condicao?: string;
+  entradaValor?: number;
+  numParcelas?: number;
+  etapas?: { descricao: string; valor: number }[];
+}
+
 export interface ProposalRow {
   id: string;
   numero: string | null;
@@ -19,6 +26,7 @@ export interface ProposalRow {
   status: string;
   condicao_pagamento: string | null;
   condicoes_alternativas: string[] | null;
+  pagamento_config?: PagamentoConfig | null;
   desconto: number;
   margem: number;
   comissao: number;
@@ -48,6 +56,7 @@ export interface ProposalRow {
 
 export interface ProposalRecord extends Proposal {
   condicoesAlternativas: string[];
+  pagamentoConfig: PagamentoConfig;
   numero: string;
   publicToken: string;
   consumoMedio: number;
@@ -89,6 +98,7 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     status: row.status as ProposalStatus,
     condicaoPagamento: row.condicao_pagamento || '',
     condicoesAlternativas: row.condicoes_alternativas ?? [],
+    pagamentoConfig: (row.pagamento_config as PagamentoConfig | null) ?? {},
     desconto: Number(row.desconto),
     margem: Number(row.margem),
     comissao: Number(row.comissao),
@@ -151,6 +161,7 @@ export interface ProposalInput {
   status: ProposalStatus;
   condicaoPagamento: string;
   condicoesAlternativas?: string[];
+  pagamentoConfig?: PagamentoConfig;
   desconto: number;
   consumoMedio?: number;
   garantiaEstendida?: boolean;
@@ -185,6 +196,7 @@ function toRow(input: ProposalInput) {
     status: input.status,
     condicao_pagamento: input.condicaoPagamento,
     condicoes_alternativas: input.condicoesAlternativas ?? [],
+    pagamento_config: (input.pagamentoConfig ?? {}) as never,
     desconto: input.desconto,
     consumo_medio: input.consumoMedio ?? 0,
     garantia_estendida: input.garantiaEstendida ?? false,

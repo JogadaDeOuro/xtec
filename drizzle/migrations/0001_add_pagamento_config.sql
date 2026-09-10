@@ -1,0 +1,1 @@
+ALTER TABLE public.proposals ADD COLUMN IF NOT EXISTS pagamento_config jsonb NOT NULL DEFAULT '{}'::jsonb;
