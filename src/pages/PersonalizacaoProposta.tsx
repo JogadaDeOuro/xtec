@@ -446,12 +446,25 @@ export default function PersonalizacaoProposta() {
 
           {/* ESTRUTURA */}
           <TabsContent value="estrutura" className="space-y-3">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs">Editando a estrutura de:</Label>
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                  <SelectTrigger className="h-8 w-[190px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usina">Proposta de usina nova</SelectItem>
+                    <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button variant="outline" size="sm" onClick={addCustomSection} className="gap-2">
                 <Plus className="h-4 w-4" /> Adicionar seção personalizada
               </Button>
             </div>
-            {config.sections.map((s, i) => (
+            <p className="text-xs text-muted-foreground">
+              Cada tipo de proposta tem sua própria estrutura: ativar ou desativar páginas aqui afeta somente o tipo selecionado.
+            </p>
+            {secList().map((s, i) => (
               <Card key={s.id} className={s.enabled ? '' : 'opacity-60'}>
                 <CardContent className="space-y-3 p-4">
                   <div className="flex flex-wrap items-center gap-2">
