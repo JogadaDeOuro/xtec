@@ -2,6 +2,13 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
 
+export interface PagamentoConfig {
+  condicao?: string;
+  entradaValor?: number;
+  numParcelas?: number;
+  etapas?: { descricao: string; valor: number }[];
+}
+
 export interface ProposalRow {
   id: string;
   numero: string | null;
