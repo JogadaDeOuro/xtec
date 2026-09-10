@@ -492,10 +492,6 @@ export default function NovaManutencaoPage() {
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-xs text-muted-foreground">Por módulo</span>
-                  <span className="text-sm font-medium">{formatCurrency(calc.valorPorModuloEfetivo)}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-xs text-muted-foreground">Por m²</span>
                   <span className="text-sm font-medium">{formatCurrency(calc.valorPorM2)}</span>
                 </div>
@@ -549,7 +545,7 @@ export default function NovaManutencaoPage() {
         tipo="manutencao"
         manutencao={{
           areaM2,
-          valorPorModulo: calc.valorPorModuloEfetivo,
+          valorPorModulo: 0,
           valorPorM2: calc.valorPorM2,
           itens,
           origemDescricao,
