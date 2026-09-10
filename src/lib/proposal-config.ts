@@ -273,6 +273,15 @@ export const DEFAULT_SECTIONS: SectionConfig[] = [
   sec('assinaturas', { enabled: false }),
 ];
 
+/** Estrutura padrão das propostas de MANUTENÇÃO. */
+export const DEFAULT_SECTIONS_MANUTENCAO: SectionConfig[] = MANUTENCAO_SECTION_ORDER.map(key =>
+  sec(key, {
+    required: key === 'capa',
+    background: key === 'capa' ? 'imagem' : 'branco',
+    newPage: key === 'capa' || key === 'apresentacao' || key === 'manutencao_recomendacoes',
+  }),
+);
+
 export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
   branding: {
     logoPrincipal: '',
