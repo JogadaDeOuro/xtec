@@ -117,22 +117,21 @@ export function ProposalDocument({
   const manut = data.manutencao;
   const docTitulo = isManut ? 'Proposta de Manutenção de Usina Solar' : config.cover.titulo;
 
-  /** Em manutenção o documento usa uma sequência própria de seções. */
-  const manutSections: SectionConfig[] = MANUTENCAO_SECTION_ORDER.map((key: SectionKey) => {
-    const base = config.sections.find(s => s.key === key);
-    return {
-      id: key,
-      key,
-      title: base?.title ?? SECTION_LABELS[key],
-      enabled: true,
-      newPage: key === 'apresentacao' || key === 'manutencao_recomendacoes' || key === 'capa',
-      background: base?.background ?? 'branco',
-      columns: 1,
-      required: false,
-    } as SectionConfig;
-  });
+  /** Em manutenção o documento usa a estrutura própria salva para esse tipo. */
+  const manutSections: SectionConfig[] = (config.sectionsManutencao?.length
+    ? config.sectionsManutencao
+    : MANUTENCAO_SECTION_ORDER.map((key: SectionKey) => ({
+        id: key,
+        key,
+        title: SECTION_LABELS[key],
+        enabled: true,
+        newPage: key === 'apresentacao' || key === 'manutencao_recomendacoes' || key === 'capa',
+        background: key === 'capa' ? 'imagem' : 'branco',
+        columns: 1,
+        required: key === 'capa',
+      } as SectionConfig)));
 
-  const enabled = isManut ? manutSections : config.sections.filter(s => s.enabled);
+  const enabled = (isManut ? manutSections : config.sections).filter(s => s.enabled);
   const cover = enabled.find(s => s.key === 'capa');
 
   const t = (text: string) => interpolate(text, vars);
