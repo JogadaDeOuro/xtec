@@ -280,6 +280,7 @@ export default function NovaPropostaPage() {
     status,
     condicaoPagamento: getCondicaoLabel(condicao),
     condicoesAlternativas: condicoesAlt.map(serializeAlt),
+    pagamentoConfig: { condicao, entradaValor, numParcelas, etapas: etapasPersonalizadas },
     desconto,
     consumoMedio: typeof consumoMensal === 'number' ? consumoMensal : 0,
     garantiaEstendida,
