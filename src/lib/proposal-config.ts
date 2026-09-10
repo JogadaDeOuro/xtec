@@ -27,6 +27,9 @@ export type SectionKey =
   | 'validade'
   | 'aceite'
   | 'assinaturas'
+  | 'manutencao_resumo'
+  | 'manutencao_escopo'
+  | 'manutencao_recomendacoes'
   | 'personalizada';
 
 export interface SectionConfig {
@@ -207,8 +210,25 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   validade: 'Validade da proposta',
   aceite: 'Termo de aceite',
   assinaturas: 'Assinaturas',
+  manutencao_resumo: 'Resumo do serviço de manutenção',
+  manutencao_escopo: 'Serviços inclusos na manutenção',
+  manutencao_recomendacoes: 'Por que manter a usina em dia',
   personalizada: 'Seção personalizada',
 };
+
+/** Ordem das seções em propostas de MANUTENÇÃO. */
+export const MANUTENCAO_SECTION_ORDER: SectionKey[] = [
+  'capa',
+  'apresentacao',
+  'dados_cliente',
+  'manutencao_resumo',
+  'manutencao_escopo',
+  'manutencao_recomendacoes',
+  'pagamento',
+  'galeria',
+  'observacoes',
+  'validade',
+];
 
 const sec = (
   key: SectionKey,

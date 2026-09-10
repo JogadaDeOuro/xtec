@@ -1,8 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import {
-  interpolate, type ProposalDocConfig, type SectionConfig, type TemplateVariables,
+  interpolate, MANUTENCAO_SECTION_ORDER, SECTION_LABELS,
+  type ProposalDocConfig, type SectionConfig, type SectionKey, type TemplateVariables,
 } from '@/lib/proposal-config';
+import {
+  itemByKey, MANUTENCAO_ITENS, PERDAS_POR_NEGLIGENCIA, RECOMENDACAO_PERIODICIDADE,
+} from '@/lib/manutencao';
 import type { EquipmentItem } from '@/lib/proposal-settings';
 import {
   areaEstimada, arvoresEquivalentes, percentualCompensacao, projecao, reducaoCo2Anual,
@@ -60,6 +64,16 @@ export interface ProposalDocData {
   finalidade?: Finalidade;
   /** deságio aplicado na venda da energia (usina de investimento) */
   desagioPct?: number;
+  /** 'usina' (padrão) ou 'manutencao' */
+  tipo?: 'usina' | 'manutencao';
+  /** dados exclusivos da proposta de manutenção */
+  manutencao?: {
+    areaM2: number;
+    valorPorModulo: number;
+    valorPorM2: number;
+    itens: string[];
+    origemDescricao?: string;
+  };
 }
 
 const dateBR = (d: Date) =>
@@ -99,7 +113,26 @@ export function ProposalDocument({
   config, data, onLayout,
 }: { config: ProposalDocConfig; data: ProposalDocData; onLayout?: (info: DocLayoutInfo) => void }) {
   const vars = useMemo(() => buildVariables(config, data), [config, data]);
-  const enabled = config.sections.filter(s => s.enabled);
+  const isManut = data.tipo === 'manutencao';
+  const manut = data.manutencao;
+  const docTitulo = isManut ? 'Proposta de Manutenção de Usina Solar' : config.cover.titulo;
+
+  /** Em manutenção o documento usa uma sequência própria de seções. */
+  const manutSections: SectionConfig[] = MANUTENCAO_SECTION_ORDER.map((key: SectionKey) => {
+    const base = config.sections.find(s => s.key === key);
+    return {
+      id: key,
+      key,
+      title: base?.title ?? SECTION_LABELS[key],
+      enabled: true,
+      newPage: key === 'apresentacao' || key === 'manutencao_recomendacoes' || key === 'capa',
+      background: base?.background ?? 'branco',
+      columns: 1,
+      required: false,
+    } as SectionConfig;
+  });
+
+  const enabled = isManut ? manutSections : config.sections.filter(s => s.enabled);
   const cover = enabled.find(s => s.key === 'capa');
 
   const t = (text: string) => interpolate(text, vars);
@@ -155,7 +188,7 @@ export function ProposalDocument({
       <div className={`pdoc-header ${config.branding.estiloCabecalho}`}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4mm' }}>
           {logo && <img src={logo} alt={config.company.nomeFantasia} />}
-          <div className="ttl">{config.cover.titulo}</div>
+          <div className="ttl">{docTitulo}</div>
         </div>
         <div className="meta">
           {data.numero && <div>{data.numero}</div>}
@@ -515,6 +548,62 @@ export function ProposalDocument({
               <div className="line">{config.company.responsavel || config.company.razaoSocial}</div>
             </div>
           );
+        case 'manutencao_resumo':
+          return (<>
+            <div className="pdoc-grid g2">
+              <div className="pdoc-card hi"><div className="k">Valor por módulo</div><div className="v">{formatCurrency(manut?.valorPorModulo ?? 0)}</div></div>
+              <div className="pdoc-card hi"><div className="k">Valor por m²</div><div className="v">{formatCurrency(manut?.valorPorM2 ?? 0)}</div></div>
+            </div>
+            <div className="pdoc-grid g3" style={{ marginTop: '4mm' }}>
+              <div className="pdoc-card"><div className="k">Módulos atendidos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
+              <div className="pdoc-card"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
+              <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp > 0 ? `${data.potenciaKwp.toFixed(2)} kWp` : '—'}</div></div>
+            </div>
+            <div className="pdoc-invest" style={{ marginTop: '4mm' }}>
+              <div className="row"><span>{formatNumber(data.numModulos)} módulos × {formatCurrency(manut?.valorPorModulo ?? 0)}</span><span>{formatCurrency(data.valorBruto)}</span></div>
+              {data.valorBruto > data.valorFinal && (
+                <div className="row desc"><span>Desconto comercial</span><span>-{formatCurrency(data.valorBruto - data.valorFinal)}</span></div>
+              )}
+              <div className="row total"><span>Valor total do serviço</span><span>{formatCurrency(data.valorFinal)}</span></div>
+            </div>
+            {manut?.origemDescricao && (
+              <p className="muted" style={{ marginTop: '3mm' }}>Referência da usina: {manut.origemDescricao}</p>
+            )}
+          </>);
+        case 'manutencao_escopo': {
+          const keys = manut?.itens ?? [];
+          const inclusos = keys.map(itemByKey).filter(Boolean) as typeof MANUTENCAO_ITENS;
+          if (!inclusos.length) return null;
+          const fora = MANUTENCAO_ITENS.filter(i => !keys.includes(i.key));
+          return (<>
+            <ul className="pdoc-list">
+              {inclusos.map(i => (
+                <li key={i.key}><strong>{i.label}</strong> — {i.descricao}</li>
+              ))}
+            </ul>
+            {fora.length > 0 && (
+              <p className="muted" style={{ marginTop: '3mm' }}>
+                Não incluso nesta proposta: {fora.map(i => i.label).join('; ')}. Pode ser contratado à parte.
+              </p>
+            )}
+          </>);
+        }
+        case 'manutencao_recomendacoes':
+          return (<>
+            <p>
+              A manutenção preventiva não é custo: é proteção da geração e do patrimônio. Usinas sem manutenção
+              periódica perdem produção de forma silenciosa e acumulam danos que só aparecem quando já são caros.
+            </p>
+            <div className="pdoc-grid g2" style={{ marginTop: '4mm' }}>
+              {PERDAS_POR_NEGLIGENCIA.map(f => (
+                <div key={f.titulo} className="pdoc-card">
+                  <div className="k">{f.titulo}</div>
+                  <div style={{ fontSize: '9pt', lineHeight: 1.4, marginTop: '1.5mm' }}>{f.texto}</div>
+                </div>
+              ))}
+            </div>
+            <p className="muted" style={{ marginTop: '4mm' }}>{RECOMENDACAO_PERIODICIDADE}</p>
+          </>);
         default:
           return s.content ? <p style={{ whiteSpace: 'pre-wrap' }}>{t(s.content)}</p> : null;
       }
@@ -617,8 +706,10 @@ export function ProposalDocument({
               </div>
             )}
             <div className={`inner ${cv.alinhamento}`}>
-              <h1>{cv.titulo}</h1>
-              {cv.subtitulo && <div className="sub">{cv.subtitulo}</div>}
+              <h1>{docTitulo}</h1>
+              {(isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo) && (
+                <div className="sub">{isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo}</div>
+              )}
               {cv.mostrarCliente && data.clientName && (
                 <div className="cliente">Preparado para<strong>{data.clientName}</strong></div>
               )}
@@ -627,12 +718,17 @@ export function ProposalDocument({
               )}
             </div>
             <div className="facts">
-              {cv.mostrarPotencia && (
-                <div className="fact"><div className="k">Potência</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
-              )}
-              {cv.mostrarGeracao && (
-                <div className="fact"><div className="k">Geração média</div><div className="v">{formatNumber(data.producaoMensal)} kWh/mês</div></div>
-              )}
+              {isManut ? (<>
+                <div className="fact"><div className="k">Módulos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
+                <div className="fact"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
+              </>) : (<>
+                {cv.mostrarPotencia && (
+                  <div className="fact"><div className="k">Potência</div><div className="v">{data.potenciaKwp.toFixed(2)} kWp</div></div>
+                )}
+                {cv.mostrarGeracao && (
+                  <div className="fact"><div className="k">Geração média</div><div className="v">{formatNumber(data.producaoMensal)} kWh/mês</div></div>
+                )}
+              </>)}
               <div className="fact">
                 {cv.mostrarNumero && data.numero && <div className="k">{data.numero}</div>}
                 {cv.mostrarData && <div className="v" style={{ fontSize: '11pt' }}>{dateBR(data.data)}</div>}

@@ -479,6 +479,7 @@ export type Database = {
       proposals: {
         Row: {
           accepted_at: string | null
+          area_m2: number
           client_id: string | null
           client_name: string
           comissao: number
@@ -496,9 +497,12 @@ export type Database = {
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
+          manutencao_itens: string[]
           margem: number
           num_modulos: number
           numero: string | null
+          origem_ref: string | null
+          origem_tipo: string | null
           payback_anos: number
           potencia_kwp: number
           potencia_modulo_w: number
@@ -508,14 +512,17 @@ export type Database = {
           system_type: string
           tarifa_kwh: number
           template_id: string | null
+          tipo: string
           updated_at: string
           user_id: string | null
+          valor_por_modulo: number
           valor_sistema: number
           versao: number
           viewed_at: string | null
         }
         Insert: {
           accepted_at?: string | null
+          area_m2?: number
           client_id?: string | null
           client_name: string
           comissao?: number
@@ -533,9 +540,12 @@ export type Database = {
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
+          manutencao_itens?: string[]
           margem?: number
           num_modulos?: number
           numero?: string | null
+          origem_ref?: string | null
+          origem_tipo?: string | null
           payback_anos?: number
           potencia_kwp?: number
           potencia_modulo_w?: number
@@ -545,14 +555,17 @@ export type Database = {
           system_type?: string
           tarifa_kwh?: number
           template_id?: string | null
+          tipo?: string
           updated_at?: string
           user_id?: string | null
+          valor_por_modulo?: number
           valor_sistema?: number
           versao?: number
           viewed_at?: string | null
         }
         Update: {
           accepted_at?: string | null
+          area_m2?: number
           client_id?: string | null
           client_name?: string
           comissao?: number
@@ -570,9 +583,12 @@ export type Database = {
           garantia_estendida?: boolean
           garantia_estendida_valor?: number
           id?: string
+          manutencao_itens?: string[]
           margem?: number
           num_modulos?: number
           numero?: string | null
+          origem_ref?: string | null
+          origem_tipo?: string | null
           payback_anos?: number
           potencia_kwp?: number
           potencia_modulo_w?: number
@@ -582,8 +598,10 @@ export type Database = {
           system_type?: string
           tarifa_kwh?: number
           template_id?: string | null
+          tipo?: string
           updated_at?: string
           user_id?: string | null
+          valor_por_modulo?: number
           valor_sistema?: number
           versao?: number
           viewed_at?: string | null
@@ -733,6 +751,7 @@ export type Database = {
         Args: { _token: string }
         Returns: {
           accepted_at: string | null
+          area_m2: number
           client_id: string | null
           client_name: string
           comissao: number
@@ -750,9 +769,12 @@ export type Database = {
           garantia_estendida: boolean
           garantia_estendida_valor: number
           id: string
+          manutencao_itens: string[]
           margem: number
           num_modulos: number
           numero: string | null
+          origem_ref: string | null
+          origem_tipo: string | null
           payback_anos: number
           potencia_kwp: number
           potencia_modulo_w: number
@@ -762,8 +784,10 @@ export type Database = {
           system_type: string
           tarifa_kwh: number
           template_id: string | null
+          tipo: string
           updated_at: string
           user_id: string | null
+          valor_por_modulo: number
           valor_sistema: number
           versao: number
           viewed_at: string | null

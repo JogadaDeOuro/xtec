@@ -30,6 +30,12 @@ export interface ProposalRow {
   potencia_modulo_w: number;
   finalidade: string | null;
   desagio_pct: number | null;
+  tipo?: string | null;
+  area_m2?: number | null;
+  valor_por_modulo?: number | null;
+  manutencao_itens?: string[] | null;
+  origem_tipo?: string | null;
+  origem_ref?: string | null;
   consultor: string | null;
   versao: number;
   template_id: string | null;
@@ -56,7 +62,15 @@ export interface ProposalRecord extends Proposal {
   versao: number;
   templateId: string | null;
   docConfig: Record<string, unknown> | null;
+  tipo: ProposalTipo;
+  areaM2: number;
+  valorPorModulo: number;
+  manutencaoItens: string[];
+  origemTipo: string;
+  origemRef: string;
 }
+
+export type ProposalTipo = 'usina' | 'manutencao';
 
 export function rowToProposal(row: ProposalRow): ProposalRecord {
   return {
@@ -90,6 +104,12 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     versao: Number(row.versao ?? 1),
     templateId: row.template_id ?? null,
     docConfig: (row.doc_config as Record<string, unknown> | null) ?? null,
+    tipo: (row.tipo === 'manutencao' ? 'manutencao' : 'usina') as ProposalTipo,
+    areaM2: Number(row.area_m2 ?? 0),
+    valorPorModulo: Number(row.valor_por_modulo ?? 0),
+    manutencaoItens: row.manutencao_itens ?? [],
+    origemTipo: row.origem_tipo ?? '',
+    origemRef: row.origem_ref ?? '',
     createdAt: row.created_at.slice(0, 10),
     viewedAt: row.viewed_at ?? undefined,
     acceptedAt: row.accepted_at ?? undefined,
@@ -143,6 +163,12 @@ export interface ProposalInput {
   consultor?: string;
   templateId?: string | null;
   docConfig?: Record<string, unknown> | null;
+  tipo?: ProposalTipo;
+  areaM2?: number;
+  valorPorModulo?: number;
+  manutencaoItens?: string[];
+  origemTipo?: string;
+  origemRef?: string;
 }
 
 function toRow(input: ProposalInput) {
@@ -171,6 +197,12 @@ function toRow(input: ProposalInput) {
     consultor: input.consultor ?? null,
     template_id: input.templateId ?? null,
     doc_config: (input.docConfig ?? null) as never,
+    tipo: input.tipo ?? 'usina',
+    area_m2: input.areaM2 ?? 0,
+    valor_por_modulo: input.valorPorModulo ?? 0,
+    manutencao_itens: input.manutencaoItens ?? [],
+    origem_tipo: input.origemTipo || null,
+    origem_ref: input.origemRef || null,
   };
 }
 

@@ -1,6 +1,9 @@
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, FileText, Printer, Copy, Trash2, Link2 } from 'lucide-react';
+import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +40,7 @@ export default function Propostas() {
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'all'>('all');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [pdfProposal, setPdfProposal] = useState<ProposalRecord | null>(null);
+  const [tipoOpen, setTipoOpen] = useState(false);
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
@@ -107,9 +111,41 @@ export default function Propostas() {
           <h1 className="text-2xl font-bold font-display">Propostas</h1>
           <p className="text-sm text-muted-foreground">{proposals.length} propostas</p>
         </div>
-        <Button className="gap-2" onClick={() => navigate('/propostas/nova')}>
-          <Plus className="h-4 w-4" /> Nova Proposta
-        </Button>
+        <Dialog open={tipoOpen} onOpenChange={setTipoOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> Nova Proposta
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>O que você quer propor?</DialogTitle>
+              <DialogDescription>Escolha o tipo de proposta para começar.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <button
+                onClick={() => { setTipoOpen(false); navigate('/propostas/nova'); }}
+                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <Sun className="h-5 w-5 text-primary mt-0.5" />
+                <span>
+                  <span className="block text-sm font-semibold">Usina nova</span>
+                  <span className="block text-xs text-muted-foreground">Dimensionamento, economia ou investimento</span>
+                </span>
+              </button>
+              <button
+                onClick={() => { setTipoOpen(false); navigate('/propostas/manutencao'); }}
+                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <Wrench className="h-5 w-5 text-primary mt-0.5" />
+                <span>
+                  <span className="block text-sm font-semibold">Manutenção</span>
+                  <span className="block text-xs text-muted-foreground">Cobrança por módulo, com escopo de serviços</span>
+                </span>
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="relative max-w-md">
@@ -158,7 +194,7 @@ export default function Propostas() {
         )}
         {!loading && visible.map((p) => (
           <Card key={p.id} className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
-            onClick={() => navigate(`/propostas/${p.id}`)}
+            onClick={() => navigate(p.tipo === 'manutencao' ? `/propostas/manutencao/${p.id}` : `/propostas/${p.id}`)}
           >
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -174,7 +210,9 @@ export default function Propostas() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {p.numero} · {p.systemType.toUpperCase()} · {p.potenciaKwp} kWp · {p.createdAt}
+                      {p.numero} · {p.tipo === 'manutencao'
+                        ? `Manutenção · ${p.numModulos} módulos`
+                        : `${p.systemType.toUpperCase()} · ${p.potenciaKwp} kWp`} · {p.createdAt}
                     </p>
                   </div>
                 </div>
@@ -283,6 +321,13 @@ export default function Propostas() {
           docConfig={(pdfProposal.docConfig as unknown as ProposalDocConfig | null) ?? null}
           finalidade={pdfProposal.finalidade}
           desagioPct={pdfProposal.desagioPct}
+          tipo={pdfProposal.tipo}
+          manutencao={pdfProposal.tipo === 'manutencao' ? {
+            areaM2: pdfProposal.areaM2,
+            valorPorModulo: pdfProposal.valorPorModulo,
+            valorPorM2: pdfProposal.areaM2 > 0 ? +(pdfProposal.valorSistema / pdfProposal.areaM2).toFixed(2) : 0,
+            itens: pdfProposal.manutencaoItens ?? [],
+          } : undefined}
           payment={{
             condicao: mapCondicaoFromLabel(pdfProposal.condicaoPagamento),
             alternativas: pdfProposal.condicoesAlternativas ?? [],
