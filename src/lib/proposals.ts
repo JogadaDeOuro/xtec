@@ -19,6 +19,7 @@ export interface ProposalRow {
   status: string;
   condicao_pagamento: string | null;
   condicoes_alternativas: string[] | null;
+  pagamento_config?: PagamentoConfig | null;
   desconto: number;
   margem: number;
   comissao: number;
