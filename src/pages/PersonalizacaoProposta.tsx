@@ -848,6 +848,13 @@ export default function PersonalizacaoProposta() {
             <CardHeader className="flex-row items-center justify-between space-y-0 py-3">
               <CardTitle className="text-sm">Pré-visualização A4</CardTitle>
               <div className="flex items-center gap-2">
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                  <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usina">Proposta de usina</SelectItem>
+                    <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.max(0.25, +(z - 0.05).toFixed(2)))}>−</Button>
                 <span className="w-10 text-center text-xs text-muted-foreground">{Math.round(zoom * 100)}%</span>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.min(1, +(z + 0.05).toFixed(2)))}>+</Button>
