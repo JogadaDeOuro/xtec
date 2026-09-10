@@ -21,7 +21,7 @@ import {
   createProposal, updateProposal, fetchProposal, type ProposalInput,
 } from '@/lib/proposals';
 import {
-  PAYMENT_CONDITIONS, getCondicaoLabel, buildPaymentRows, serializeAlt,
+  PAYMENT_CONDITIONS, getCondicaoLabel, buildPaymentRows, serializeAlt, parseAlt,
   type AltPaymentCondition,
 } from '@/lib/payment-options';
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
