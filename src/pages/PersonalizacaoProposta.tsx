@@ -232,6 +232,8 @@ export default function PersonalizacaoProposta() {
     );
   };
 
+  const [previewTipo, setPreviewTipo] = useState<'usina' | 'manutencao'>('usina');
+
   const sample: ProposalDocData = useMemo(() => (
     previewTipo === 'manutencao'
       ? {
