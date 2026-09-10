@@ -129,6 +129,12 @@ export default function NovaManutencaoPage() {
       setItens(p.manutencaoItens?.length ? p.manutencaoItens : ITENS_PADRAO);
       setOrigemTipo((p.origemTipo as 'contrato' | 'proposta' | 'manual') || 'manual');
       setOrigemRef(p.origemRef || '');
+      const pc = p.pagamentoConfig ?? {};
+      if (pc.condicao) setCondicao(pc.condicao);
+      if (typeof pc.entradaValor === 'number') setEntradaValor(pc.entradaValor);
+      if (typeof pc.numParcelas === 'number' && pc.numParcelas > 0) setNumParcelas(pc.numParcelas);
+      if (pc.etapas?.length) setEtapas(pc.etapas);
+      setCondicoesAlt((p.condicoesAlternativas ?? []).map(parseAlt).filter(a => a.value));
       setSavedId(p.id);
     }).catch(() => toast.error('Erro ao carregar a proposta'));
   }, [id]);
