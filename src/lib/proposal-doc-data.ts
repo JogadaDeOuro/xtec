@@ -18,7 +18,16 @@ export function buildProposalDocData(
   p: ProposalRecord,
   equipamentos: EquipmentItem[] = [],
 ): ProposalDocData {
+  const cfg = p.pagamentoConfig ?? {};
+  const condicao = cfg.condicao || mapCondicaoFromLabel(p.condicaoPagamento);
+  const entradaValor = cfg.entradaValor ?? 0;
+  const numParcelas = cfg.numParcelas ?? 0;
+  const saldoAposEntrada = Math.max(0, p.valorSistema - entradaValor);
+  const valorParcela = numParcelas > 0
+    ? (condicao === 'parcelado' ? p.valorSistema : saldoAposEntrada) / numParcelas
+    : 0;
   return {
+
     numero: p.numero,
     data: new Date(),
     consultor: p.consultor ?? '',
