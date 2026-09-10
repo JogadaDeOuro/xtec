@@ -178,6 +178,7 @@ export default function NovaManutencaoPage() {
     status,
     condicaoPagamento: getCondicaoLabel(condicao),
     condicoesAlternativas: condicoesAlt.map(serializeAlt),
+    pagamentoConfig: { condicao, entradaValor, numParcelas, etapas },
     desconto: Math.max(0, calc.valorCalculado - calc.valorFinal),
     numModulos,
     tipo: 'manutencao',
