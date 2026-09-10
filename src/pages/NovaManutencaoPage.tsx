@@ -62,9 +62,9 @@ export default function NovaManutencaoPage() {
   const [areaM2, setAreaM2] = useState<number>(0);
   const [potenciaKwp, setPotenciaKwp] = useState<number>(0);
 
-  const [minPorModulo, setMinPorModulo] = useState(10);
-  const [maxPorModulo, setMaxPorModulo] = useState(60);
-  const [valorPorModulo, setValorPorModulo] = useState(25);
+  const [minPorM2, setMinPorM2] = useState(3);
+  const [maxPorM2, setMaxPorM2] = useState(30);
+  const [valorPorM2, setValorPorM2] = useState(8);
   const [valorFinalManual, setValorFinalManual] = useState<number | ''>('');
 
   const [itens, setItens] = useState<string[]>(ITENS_PADRAO);
@@ -124,7 +124,7 @@ export default function NovaManutencaoPage() {
       setNumModulos(p.numModulos);
       setAreaM2(p.areaM2 || areaSugerida(p.numModulos));
       setPotenciaKwp(p.potenciaKwp);
-      setValorPorModulo(p.valorPorModulo || 25);
+      setValorPorM2(p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 8);
       setValorFinalManual(p.valorSistema);
       setItens(p.manutencaoItens?.length ? p.manutencaoItens : ITENS_PADRAO);
       setOrigemTipo((p.origemTipo as 'contrato' | 'proposta' | 'manual') || 'manual');
@@ -147,9 +147,9 @@ export default function NovaManutencaoPage() {
   };
 
   const calc = useMemo(() => calcManutencao({
-    numModulos, areaM2, valorPorModulo,
+    numModulos, areaM2, valorPorM2,
     valorFinalManual: valorFinalManual === '' ? null : valorFinalManual,
-  }), [numModulos, areaM2, valorPorModulo, valorFinalManual]);
+  }), [numModulos, areaM2, valorPorM2, valorFinalManual]);
 
   const rows = buildPaymentRows(condicao, {
     valorTotal: calc.valorFinal, entradaValor, numParcelas, etapas,
@@ -176,7 +176,7 @@ export default function NovaManutencaoPage() {
     numModulos,
     tipo: 'manutencao',
     areaM2,
-    valorPorModulo: calc.valorPorModuloEfetivo,
+    valorPorModulo: 0,
     manutencaoItens: itens,
     origemTipo,
     origemRef: origemTipo === 'manual' ? '' : origemRef,
@@ -311,52 +311,48 @@ export default function NovaManutencaoPage() {
             <CardContent className="space-y-5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Mínimo por módulo (R$)</Label>
+                  <Label className="text-xs">Mínimo por m² (R$)</Label>
                   <Input
                     type="text" inputMode="numeric" className="mt-1"
-                    value={minPorModulo}
-                    onChange={e => setMinPorModulo(+e.target.value.replace(/\D/g, '') || 0)}
+                    value={minPorM2}
+                    onChange={e => setMinPorM2(+e.target.value.replace(/\D/g, '') || 0)}
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">Máximo por módulo (R$)</Label>
+                  <Label className="text-xs">Máximo por m² (R$)</Label>
                   <Input
                     type="text" inputMode="numeric" className="mt-1"
-                    value={maxPorModulo}
-                    onChange={e => setMaxPorModulo(+e.target.value.replace(/\D/g, '') || 0)}
+                    value={maxPorM2}
+                    onChange={e => setMaxPorM2(+e.target.value.replace(/\D/g, '') || 0)}
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between mb-2">
-                  <Label className="text-xs">Valor por módulo</Label>
-                  <span className="text-sm font-bold text-primary">{formatCurrency(valorPorModulo)}/módulo</span>
+                  <Label className="text-xs">Valor por m²</Label>
+                  <span className="text-sm font-bold text-primary">{formatCurrency(valorPorM2)}/m²</span>
                 </div>
                 <Slider
-                  value={[Math.min(Math.max(valorPorModulo, minPorModulo), Math.max(maxPorModulo, minPorModulo + 1))]}
-                  onValueChange={([v]) => { setValorPorModulo(v); setValorFinalManual(''); }}
-                  min={minPorModulo}
-                  max={Math.max(maxPorModulo, minPorModulo + 1)}
-                  step={1}
+                  value={[Math.min(Math.max(valorPorM2, minPorM2), Math.max(maxPorM2, minPorM2 + 1))]}
+                  onValueChange={([v]) => { setValorPorM2(v); setValorFinalManual(''); }}
+                  min={minPorM2}
+                  max={Math.max(maxPorM2, minPorM2 + 1)}
+                  step={0.5}
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                  <span>{formatCurrency(minPorModulo)}</span><span>{formatCurrency(maxPorModulo)}</span>
+                  <span>{formatCurrency(minPorM2)}</span><span>{formatCurrency(maxPorM2)}</span>
                 </div>
               </div>
 
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{numModulos} módulos × {formatCurrency(valorPorModulo)}</span>
+                  <span className="text-muted-foreground">{formatNumber(areaM2)} m² × {formatCurrency(valorPorM2)}</span>
                   <span>{formatCurrency(calc.valorCalculado)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-primary">
                   <span>Valor total do serviço</span>
                   <span>{formatCurrency(calc.valorFinal)}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Valor por m² (informativo)</span>
-                  <span>{formatCurrency(calc.valorPorM2)}/m²</span>
                 </div>
               </div>
 
@@ -364,7 +360,7 @@ export default function NovaManutencaoPage() {
                 <Label className="text-xs">Valor final exato (R$) — opcional</Label>
                 <Input
                   type="text" inputMode="numeric" className="mt-1"
-                  placeholder="Deixe vazio para usar o cálculo por módulo"
+                  placeholder="Deixe vazio para usar o cálculo por m²"
                   value={valorFinalManual === '' ? '' : valorFinalManual}
                   onChange={e => {
                     const raw = e.target.value.replace(/\D/g, '');
@@ -372,7 +368,7 @@ export default function NovaManutencaoPage() {
                   }}
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Ao definir o valor exato, o valor por módulo apresentado passa a ser {formatCurrency(calc.valorPorModuloEfetivo)}.
+                  Ao definir o valor exato, o valor por m² apresentado passa a ser {formatCurrency(calc.valorPorM2)}.
                 </p>
               </div>
             </CardContent>

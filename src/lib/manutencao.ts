@@ -96,7 +96,8 @@ export const RECOMENDACAO_PERIODICIDADE =
 export interface ManutencaoCalcInput {
   numModulos: number;
   areaM2: number;
-  valorPorModulo: number;
+  /** preço praticado por metro quadrado da usina */
+  valorPorM2: number;
   /** valor final exato definido pelo vendedor (sobrepõe o cálculo) */
   valorFinalManual?: number | null;
 }
@@ -104,14 +105,12 @@ export interface ManutencaoCalcInput {
 export interface ManutencaoCalcResult {
   valorCalculado: number;
   valorFinal: number;
-  valorPorModuloEfetivo: number;
   valorPorM2: number;
 }
 
 export function calcManutencao(i: ManutencaoCalcInput): ManutencaoCalcResult {
-  const modulos = Math.max(0, Math.round(i.numModulos || 0));
   const area = Math.max(0, i.areaM2 || 0);
-  const valorCalculado = Math.round(modulos * (i.valorPorModulo || 0));
+  const valorCalculado = Math.round(area * (i.valorPorM2 || 0));
   const valorFinal =
     i.valorFinalManual != null && i.valorFinalManual > 0
       ? Math.round(i.valorFinalManual)
@@ -119,7 +118,6 @@ export function calcManutencao(i: ManutencaoCalcInput): ManutencaoCalcResult {
   return {
     valorCalculado,
     valorFinal,
-    valorPorModuloEfetivo: modulos > 0 ? +(valorFinal / modulos).toFixed(2) : 0,
     valorPorM2: area > 0 ? +(valorFinal / area).toFixed(2) : 0,
   };
 }
