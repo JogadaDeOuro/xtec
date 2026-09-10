@@ -161,6 +161,7 @@ export interface ProposalInput {
   status: ProposalStatus;
   condicaoPagamento: string;
   condicoesAlternativas?: string[];
+  pagamentoConfig?: PagamentoConfig;
   desconto: number;
   consumoMedio?: number;
   garantiaEstendida?: boolean;
