@@ -69,7 +69,7 @@ export interface ProposalDocData {
   /** dados exclusivos da proposta de manutenção */
   manutencao?: {
     areaM2: number;
-    valorPorModulo: number;
+    valorPorModulo?: number;
     valorPorM2: number;
     itens: string[];
     origemDescricao?: string;
