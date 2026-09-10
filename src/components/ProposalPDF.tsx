@@ -106,6 +106,15 @@ export function ProposalPDF(props: ProposalPDFProps) {
     manutencao: props.manutencao,
   };
 
+  const progressPct: Record<PdfProgress, number> = {
+    'preparando': 15,
+    'carregando-imagens': 35,
+    'gerando': 65,
+    'finalizando': 90,
+    'pronto': 100,
+    'erro': 100,
+  };
+
   const progressLabel: Record<PdfProgress, string> = {
     'preparando': 'Preparando proposta...',
     'carregando-imagens': 'Carregando imagens...',
@@ -172,8 +181,23 @@ export function ProposalPDF(props: ProposalPDFProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!downloading) onOpenChange(v); }}>
       <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-muted/40">
+        {downloading && (
+          <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-background/85 backdrop-blur-sm px-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium">{progress ? progressLabel[progress] : 'Gerando PDF...'}</p>
+            <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progress ? progressPct[progress] : 10}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              O documento está sendo renderizado em alta qualidade. Isso pode levar alguns segundos.
+            </p>
+          </div>
+        )}
         <DialogHeader className="no-print">
           <DialogTitle className="flex flex-wrap items-center justify-between gap-2">
             <span>Pré-visualização A4 · {layout.totalPages} página{layout.totalPages === 1 ? '' : 's'}</span>
