@@ -196,6 +196,7 @@ function toRow(input: ProposalInput) {
     status: input.status,
     condicao_pagamento: input.condicaoPagamento,
     condicoes_alternativas: input.condicoesAlternativas ?? [],
+    pagamento_config: (input.pagamentoConfig ?? {}) as never,
     desconto: input.desconto,
     consumo_medio: input.consumoMedio ?? 0,
     garantia_estendida: input.garantiaEstendida ?? false,
