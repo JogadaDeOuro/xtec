@@ -49,6 +49,8 @@ interface ProposalPDFProps {
   consultor?: string;
   finalidade?: Finalidade;
   desagioPct?: number;
+  tipo?: 'usina' | 'manutencao';
+  manutencao?: ProposalDocData['manutencao'];
   /** configuração específica da proposta (snapshot); se ausente usa a global */
   docConfig?: ProposalDocConfig | null;
 }
@@ -100,6 +102,8 @@ export function ProposalPDF(props: ProposalPDFProps) {
     equipamentos,
     finalidade: props.finalidade ?? 'consumo',
     desagioPct: props.desagioPct ?? 0,
+    tipo: props.tipo ?? 'usina',
+    manutencao: props.manutencao,
   };
 
   const progressLabel: Record<PdfProgress, string> = {

@@ -39,6 +39,13 @@ export function buildProposalDocData(
     economiaTotal: economiaTotal20(p.economiaAnual),
     finalidade: p.finalidade,
     desagioPct: p.desagioPct,
+    tipo: p.tipo,
+    manutencao: p.tipo === 'manutencao' ? {
+      areaM2: p.areaM2,
+      valorPorModulo: p.valorPorModulo,
+      valorPorM2: p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 0,
+      itens: p.manutencaoItens ?? [],
+    } : undefined,
     equipamentos,
     payment: {
       condicao: mapCondicaoFromLabel(p.condicaoPagamento),

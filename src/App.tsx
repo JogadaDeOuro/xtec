@@ -17,6 +17,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const Propostas = lazy(() => import("./pages/Propostas"));
 const NovaPropostaPage = lazy(() => import("./pages/NovaPropostaPage"));
 const EditarPropostaPage = lazy(() => import("./pages/EditarPropostaPage"));
+const NovaManutencaoPage = lazy(() => import("./pages/NovaManutencaoPage"));
 const Contratos = lazy(() => import("./pages/Contratos"));
 const AssinarContrato = lazy(() => import("./pages/AssinarContrato"));
 const Etapas = lazy(() => import("./pages/Etapas"));
