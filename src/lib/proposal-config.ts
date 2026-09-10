@@ -183,7 +183,10 @@ export interface ProposalDocConfig {
   texts: TextsConfig;
   assumptions: AssumptionsConfig;
   gallery: GalleryConfig;
+  /** estrutura das propostas de usina nova */
   sections: SectionConfig[];
+  /** estrutura das propostas de manutenção (independente da de usina) */
+  sectionsManutencao: SectionConfig[];
 }
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
