@@ -57,15 +57,16 @@ export function buildProposalDocData(
     } : undefined,
     equipamentos,
     payment: {
-      condicao: mapCondicaoFromLabel(p.condicaoPagamento),
+      condicao,
       alternativas: p.condicoesAlternativas ?? [],
-      entradaValor: 0,
-      numParcelas: 0,
-      valorParcela: 0,
-      saldoAposEntrada: 0,
-      etapasPersonalizadas: [],
+      entradaValor,
+      numParcelas,
+      valorParcela,
+      saldoAposEntrada,
+      etapasPersonalizadas: cfg.etapas ?? [],
       garantiaEstendida: p.garantiaEstendida,
       garantiaValor: p.garantiaEstendidaValor,
     },
+
   };
 }
