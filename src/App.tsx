@@ -86,6 +86,8 @@ const App = () => (
                 <Route path="/crm" element={<ProtectedPage pageKey="crm"><CRM /></ProtectedPage>} />
                 <Route path="/propostas" element={<ProtectedPage pageKey="propostas"><Propostas /></ProtectedPage>} />
                 <Route path="/propostas/nova" element={<ProtectedPage pageKey="propostas"><NovaPropostaPage /></ProtectedPage>} />
+                <Route path="/propostas/manutencao" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
+                <Route path="/propostas/manutencao/:id" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
                 <Route path="/propostas/:id" element={<ProtectedPage pageKey="propostas"><EditarPropostaPage /></ProtectedPage>} />
                 <Route path="/contratos" element={<ProtectedPage pageKey="contratos"><Contratos /></ProtectedPage>} />
                 <Route path="/etapas" element={<ProtectedPage pageKey="etapas"><Etapas /></ProtectedPage>} />
