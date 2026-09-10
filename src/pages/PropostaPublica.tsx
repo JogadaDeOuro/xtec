@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, Sun, Zap, DollarSign, TrendingUp, Clock, Shield, CheckCircle2 } from 'lucide-react';

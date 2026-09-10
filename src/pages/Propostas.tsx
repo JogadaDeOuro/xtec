@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';

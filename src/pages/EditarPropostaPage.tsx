@@ -1,3 +1,4 @@
+import { formatPotencia } from '@/lib/solar-calc';
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { serializeAlt, parseAlt, type AltPaymentCondition } from '@/lib/payment-options';
 import { useState, useEffect, useRef } from 'react';
