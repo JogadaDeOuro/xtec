@@ -550,8 +550,8 @@ export function ProposalDocument({
         case 'manutencao_resumo':
           return (<>
             <div className="pdoc-grid g2">
-              <div className="pdoc-card hi"><div className="k">Valor por módulo</div><div className="v">{formatCurrency(manut?.valorPorModulo ?? 0)}</div></div>
               <div className="pdoc-card hi"><div className="k">Valor por m²</div><div className="v">{formatCurrency(manut?.valorPorM2 ?? 0)}</div></div>
+              <div className="pdoc-card hi"><div className="k">Valor total do serviço</div><div className="v">{formatCurrency(data.valorFinal)}</div></div>
             </div>
             <div className="pdoc-grid g3" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card"><div className="k">Módulos atendidos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
@@ -559,7 +559,7 @@ export function ProposalDocument({
               <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp > 0 ? formatPotencia(data.potenciaKwp) : '—'}</div></div>
             </div>
             <div className="pdoc-invest" style={{ marginTop: '4mm' }}>
-              <div className="row"><span>{formatNumber(data.numModulos)} módulos × {formatCurrency(manut?.valorPorModulo ?? 0)}</span><span>{formatCurrency(data.valorBruto)}</span></div>
+              <div className="row"><span>{formatNumber(manut?.areaM2 ?? 0)} m² × {formatCurrency(manut?.valorPorM2 ?? 0)}</span><span>{formatCurrency(data.valorBruto)}</span></div>
               {data.valorBruto > data.valorFinal && (
                 <div className="row desc"><span>Desconto comercial</span><span>-{formatCurrency(data.valorBruto - data.valorFinal)}</span></div>
               )}

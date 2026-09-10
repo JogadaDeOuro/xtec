@@ -545,7 +545,7 @@ export default function NovaManutencaoPage() {
         tipo="manutencao"
         manutencao={{
           areaM2,
-          valorPorModulo: calc.valorPorModuloEfetivo,
+          valorPorModulo: 0,
           valorPorM2: calc.valorPorM2,
           itens,
           origemDescricao,
