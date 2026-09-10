@@ -56,6 +56,7 @@ export interface ProposalRow {
 
 export interface ProposalRecord extends Proposal {
   condicoesAlternativas: string[];
+  pagamentoConfig: PagamentoConfig;
   numero: string;
   publicToken: string;
   consumoMedio: number;
