@@ -406,7 +406,25 @@ export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
     itens: [],
   },
   sections: DEFAULT_SECTIONS,
+  sectionsManutencao: DEFAULT_SECTIONS_MANUTENCAO,
 };
+
+/** Completa uma lista salva com as seções padrão ausentes, na posição correta. */
+function mergeSectionList(saved: SectionConfig[] | undefined, defaults: SectionConfig[]): SectionConfig[] {
+  let list =
+    Array.isArray(saved) && saved.length
+      ? saved.map((s, i) => ({ ...sec(s.key ?? 'personalizada'), ...s, id: s.id ?? `${s.key}-${i}` }))
+      : defaults.map(d => ({ ...d }));
+
+  defaults.forEach((def, defIdx) => {
+    if (list.some(s => s.key === def.key)) return;
+    const prevKey = defaults[defIdx - 1]?.key;
+    const at = prevKey ? list.findIndex(s => s.key === prevKey) : -1;
+    const insertAt = at >= 0 ? at + 1 : list.length;
+    list = [...list.slice(0, insertAt), { ...def }, ...list.slice(insertAt)];
+  });
+  return list;
+}
 
 /** Merge profundo e tolerante: config salva pode estar incompleta ou antiga. */
 export function mergeConfig(partial?: unknown): ProposalDocConfig {
