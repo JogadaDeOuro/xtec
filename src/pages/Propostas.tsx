@@ -107,9 +107,41 @@ export default function Propostas() {
           <h1 className="text-2xl font-bold font-display">Propostas</h1>
           <p className="text-sm text-muted-foreground">{proposals.length} propostas</p>
         </div>
-        <Button className="gap-2" onClick={() => navigate('/propostas/nova')}>
-          <Plus className="h-4 w-4" /> Nova Proposta
-        </Button>
+        <Dialog open={tipoOpen} onOpenChange={setTipoOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> Nova Proposta
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>O que você quer propor?</DialogTitle>
+              <DialogDescription>Escolha o tipo de proposta para começar.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <button
+                onClick={() => { setTipoOpen(false); navigate('/propostas/nova'); }}
+                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <Sun className="h-5 w-5 text-primary mt-0.5" />
+                <span>
+                  <span className="block text-sm font-semibold">Usina nova</span>
+                  <span className="block text-xs text-muted-foreground">Dimensionamento, economia ou investimento</span>
+                </span>
+              </button>
+              <button
+                onClick={() => { setTipoOpen(false); navigate('/propostas/manutencao'); }}
+                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <Wrench className="h-5 w-5 text-primary mt-0.5" />
+                <span>
+                  <span className="block text-sm font-semibold">Manutenção</span>
+                  <span className="block text-xs text-muted-foreground">Cobrança por módulo, com escopo de serviços</span>
+                </span>
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="relative max-w-md">
