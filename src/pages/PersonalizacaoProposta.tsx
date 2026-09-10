@@ -232,7 +232,29 @@ export default function PersonalizacaoProposta() {
     );
   };
 
-  const preview = useMemo(() => <ProposalDocument config={config} data={SAMPLE} />, [config]);
+  const sample: ProposalDocData = useMemo(() => (
+    previewTipo === 'manutencao'
+      ? {
+          ...SAMPLE,
+          tipo: 'manutencao',
+          numModulos: 1200,
+          potenciaModuloW: 700,
+          potenciaKwp: 840,
+          valorBruto: 42000,
+          valorFinal: 39000,
+          desconto: 3000,
+          manutencao: {
+            areaM2: 3720,
+            valorPorModulo: 35,
+            valorPorM2: 10.48,
+            itens: ['rocagem', 'limpeza_modulos', 'aterramento', 'estrutura', 'conexoes', 'inversor'],
+            origemDescricao: 'Usina exemplo — contrato ativo',
+          },
+        }
+      : { ...SAMPLE, tipo: 'usina' }
+  ), [previewTipo]);
+
+  const preview = useMemo(() => <ProposalDocument config={config} data={sample} />, [config, sample]);
 
   if (loading) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
