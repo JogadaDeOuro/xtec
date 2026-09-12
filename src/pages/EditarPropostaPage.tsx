@@ -27,6 +27,7 @@ import {
   rentabilidadeAnual, valorCheioMensal, type Finalidade,
 } from '@/lib/investment';
 import { ProposalPDF } from '@/components/ProposalPDF';
+import { MobileProposalSummary } from '@/components/proposal/MobileProposalSummary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel, mapCondicaoFromLabel, calcExtendedWarranty, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
@@ -734,6 +735,15 @@ export default function EditarPropostaPage() {
           </Card>
         </div>
       </div>
+
+      <MobileProposalSummary
+        valorFinal={valorFinal}
+        descontoValor={descontoValor}
+        valorSistema={valorBruto}
+        economiaMensal={economiaMensal}
+        paybackAnos={paybackExato}
+        investimento={isInv}
+      />
 
       <ProposalPreview
         open={previewOpen}
