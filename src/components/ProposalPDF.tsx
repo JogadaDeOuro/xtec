@@ -252,17 +252,21 @@ export function ProposalPDF(props: ProposalPDFProps) {
         )}
 
         <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-2 sm:p-4">
-          <div ref={previewRef} className={tamanhoReal ? 'min-w-[794px]' : 'w-full'}>
+          <div ref={previewRef} className={tamanhoReal ? 'min-w-[794px]' : 'flex w-full justify-center'}>
             <div
-              className="mx-auto origin-top"
+              className="shrink-0"
               style={{
-                width: 794,
+                width: tamanhoReal ? 794 : 794 * previewScale,
                 height: tamanhoReal ? documentHeight : documentHeight * previewScale,
-                transform: tamanhoReal ? undefined : `scale(${previewScale})`,
               }}
             >
-              <div ref={printRef}>
-                <ProposalDocument config={config} data={data} onLayout={setLayout} />
+              <div
+                className="origin-top-left"
+                style={{ width: 794, transform: tamanhoReal ? undefined : `scale(${previewScale})` }}
+              >
+                <div ref={printRef}>
+                  <ProposalDocument config={config} data={data} onLayout={setLayout} />
+                </div>
               </div>
             </div>
           </div>

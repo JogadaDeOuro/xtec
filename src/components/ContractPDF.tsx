@@ -143,18 +143,19 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-auto bg-muted/40 p-2 sm:p-4">
-          <div ref={previewRef} className="w-full">
+          <div ref={previewRef} className="flex w-full justify-center">
             <div
-              className="mx-auto origin-top bg-background shadow-sm"
-              style={{ width: 794, height: documentHeight * previewScale, transform: `scale(${previewScale})` }}
+              className="shrink-0"
+              style={{ width: 794 * previewScale, height: documentHeight * previewScale }}
             >
-              <div ref={printRef} className="min-h-[1123px] px-[57px] py-[76px]">
-                <ContractDocument
-                  template={template}
-                  vars={vars}
-                  logoUrl={logoImg}
-                  cityLine={`${contract.clientCity || vars.empresa_cidade}/${contract.clientState || vars.empresa_estado}, ${today}.`}
-                  signatures={
+              <div className="origin-top-left bg-background shadow-sm" style={{ width: 794, transform: `scale(${previewScale})` }}>
+                <div ref={printRef} className="min-h-[1123px] px-[57px] py-[76px]">
+                  <ContractDocument
+                    template={template}
+                    vars={vars}
+                    logoUrl={logoImg}
+                    cityLine={`${contract.clientCity || vars.empresa_cidade}/${contract.clientState || vars.empresa_estado}, ${today}.`}
+                    signatures={
               <div className="signatures" style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
                 <div style={{ flex: 1, textAlign: 'center' }}>
                   <div className="sig-styled" style={{ fontSize: '22px', minHeight: '40px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4px' }}>
@@ -214,8 +215,9 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
                   </div>
                 </div>
               </div>
-                  }
-                />
+                    }
+                  />
+                </div>
               </div>
             </div>
           </div>
