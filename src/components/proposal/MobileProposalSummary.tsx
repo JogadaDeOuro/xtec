@@ -31,7 +31,6 @@ export function MobileProposalSummary({
       <div
         ref={boundsRef}
         className="pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] top-16 z-40 md:hidden"
-        aria-hidden="true"
       >
         <motion.div
           drag
