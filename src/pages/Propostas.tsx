@@ -124,26 +124,28 @@ export default function Propostas() {
               <DialogDescription>Escolha o tipo de proposta para começar.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => { setTipoOpen(false); navigate('/propostas/nova'); }}
-                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                className="h-auto justify-start gap-3 whitespace-normal p-4 text-left hover:border-primary hover:bg-primary/5"
               >
                 <Sun className="h-5 w-5 text-primary mt-0.5" />
                 <span>
                   <span className="block text-sm font-semibold">Usina nova</span>
                   <span className="block text-xs text-muted-foreground">Dimensionamento, economia ou investimento</span>
                 </span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => { setTipoOpen(false); navigate('/propostas/manutencao'); }}
-                className="flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                className="h-auto justify-start gap-3 whitespace-normal p-4 text-left hover:border-primary hover:bg-primary/5"
               >
                 <Wrench className="h-5 w-5 text-primary mt-0.5" />
                 <span>
                   <span className="block text-sm font-semibold">Manutenção</span>
-                  <span className="block text-xs text-muted-foreground">Cobrança por módulo, com escopo de serviços</span>
+                  <span className="block text-xs text-muted-foreground">Cobrança por m², com escopo de serviços</span>
                 </span>
-              </button>
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -199,26 +201,26 @@ export default function Propostas() {
           >
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{p.clientName}</p>
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-medium">{p.clientName}</p>
                       <Badge className={cn('text-[10px]', proposalStatusColors[p.status])}>
                         {proposalStatusLabels[p.status]}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs leading-relaxed text-muted-foreground">
                       {p.numero} · {p.tipo === 'manutencao'
                         ? `Manutenção · ${p.areaM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} m²`
                         : `${p.systemType.toUpperCase()} · ${formatPotencia(p.potenciaKwp)}`} · {p.createdAt}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
+                <div className="flex items-center justify-between gap-3 border-t pt-3 sm:justify-end sm:border-0 sm:pt-0">
+                  <div className="min-w-0 text-left sm:text-right">
                     <p className="text-sm font-bold">{formatCurrency(p.valorSistema)}</p>
                     <p className="text-xs text-muted-foreground">
                       {p.tipo === 'manutencao'
@@ -226,7 +228,7 @@ export default function Propostas() {
                         : `Economia: ${formatCurrency(p.economiaMensal)}/mês`}
                     </p>
                   </div>
-                  <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                  <div className="flex shrink-0 gap-1" onClick={e => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="icon"
