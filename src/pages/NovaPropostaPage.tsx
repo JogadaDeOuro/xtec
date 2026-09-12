@@ -39,6 +39,7 @@ import {
 import { ArrowLeft, Save, Send, Eye, Zap, TrendingUp, DollarSign, Clock, Plus, Trash2, FileSignature, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { ProposalPreview } from '@/components/ProposalPreview';
 import { ProposalPDF } from '@/components/ProposalPDF';
+import { MobileProposalSummary } from '@/components/proposal/MobileProposalSummary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatCpfCnpj } from '@/lib/utils';
 import {
@@ -1173,6 +1174,15 @@ export default function NovaPropostaPage() {
         }}
         finalidade={finalidade}
         desagioPct={isInv ? desagioPct : 0}
+      />
+
+      <MobileProposalSummary
+        valorFinal={valorFinal}
+        descontoValor={descontoValor}
+        valorSistema={valorBruto}
+        economiaMensal={economiaMensal}
+        paybackAnos={paybackExato}
+        investimento={isInv}
       />
 
       <ProposalPDF
