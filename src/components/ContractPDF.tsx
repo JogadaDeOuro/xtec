@@ -27,8 +27,11 @@ interface ContractPDFProps {
 
 export function ContractPDF({ open, onOpenChange, contract, showSignatures = false }: ContractPDFProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<ContractTemplateContent>(DEFAULT_CONTRACT_TEMPLATE);
   const [company, setCompany] = useState<Record<string, string | undefined>>({});
+  const [previewScale, setPreviewScale] = useState(1);
+  const [documentHeight, setDocumentHeight] = useState(0);
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +49,25 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
       }
     })();
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const updatePreviewSize = () => {
+      const viewport = previewRef.current;
+      const documentNode = printRef.current;
+      if (!viewport || !documentNode) return;
+      setPreviewScale(Math.min(1, Math.max(280, viewport.clientWidth) / 794));
+      setDocumentHeight(documentNode.scrollHeight);
+    };
+    const frame = window.requestAnimationFrame(updatePreviewSize);
+    const observer = new ResizeObserver(updatePreviewSize);
+    if (previewRef.current) observer.observe(previewRef.current);
+    if (printRef.current) observer.observe(printRef.current);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [open, template, showSignatures]);
 
   const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -112,23 +134,27 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Contrato — {contract.clientName}</span>
-            <Button size="sm" className="gap-2" onClick={handlePrint}>
+      <DialogContent className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-0 p-0 sm:h-[90vh] sm:w-[calc(100vw-2rem)] sm:max-w-4xl sm:rounded-lg sm:border">
+        <DialogHeader className="shrink-0 border-b px-4 pb-3 pt-4 text-left sm:px-6 sm:py-4">
+          <DialogTitle className="pr-8 text-base leading-tight sm:text-lg">Contrato — {contract.clientName}</DialogTitle>
+          <Button size="sm" className="mt-3 w-full gap-2 sm:w-fit" onClick={handlePrint}>
               <Printer className="h-4 w-4" /> Imprimir / PDF
-            </Button>
-          </DialogTitle>
+          </Button>
         </DialogHeader>
 
-        <div ref={printRef}>
-          <ContractDocument
-            template={template}
-            vars={vars}
-            logoUrl={logoImg}
-            cityLine={`${contract.clientCity || vars.empresa_cidade}/${contract.clientState || vars.empresa_estado}, ${today}.`}
-            signatures={
+        <div className="min-h-0 flex-1 overflow-auto bg-muted/40 p-2 sm:p-4">
+          <div ref={previewRef} className="w-full">
+            <div
+              className="mx-auto origin-top bg-background shadow-sm"
+              style={{ width: 794, height: documentHeight * previewScale, transform: `scale(${previewScale})` }}
+            >
+              <div ref={printRef} className="min-h-[1123px] px-[57px] py-[76px]">
+                <ContractDocument
+                  template={template}
+                  vars={vars}
+                  logoUrl={logoImg}
+                  cityLine={`${contract.clientCity || vars.empresa_cidade}/${contract.clientState || vars.empresa_estado}, ${today}.`}
+                  signatures={
               <div className="signatures" style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
                 <div style={{ flex: 1, textAlign: 'center' }}>
                   <div className="sig-styled" style={{ fontSize: '22px', minHeight: '40px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4px' }}>
@@ -188,8 +214,11 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
                   </div>
                 </div>
               </div>
-            }
-          />
+                  }
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

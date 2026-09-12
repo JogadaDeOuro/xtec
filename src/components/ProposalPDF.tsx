@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Maximize2, Printer } from 'lucide-react';
 import type { SystemType } from '@/lib/mock-data';
 import { DEFAULT_PROPOSAL_CONFIG, mergeConfig, type ProposalDocConfig } from '@/lib/proposal-config';
 import { fetchEquipment, fetchProposalSettings, type EquipmentItem } from '@/lib/proposal-settings';
@@ -58,12 +58,15 @@ interface ProposalPDFProps {
 export function ProposalPDF(props: ProposalPDFProps) {
   const { open, onOpenChange } = props;
   const printRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
   const [equipamentos, setEquipamentos] = useState<EquipmentItem[]>([]);
   const [downloading, setDownloading] = useState(false);
   const [layout, setLayout] = useState<DocLayoutInfo>({ totalPages: 0, overflow: [] });
   const [tamanhoReal, setTamanhoReal] = useState(false);
   const [progress, setProgress] = useState<PdfProgress | null>(null);
+  const [previewScale, setPreviewScale] = useState(0.82);
+  const [documentHeight, setDocumentHeight] = useState(0);
 
 
   useEffect(() => {
@@ -72,6 +75,28 @@ export function ProposalPDF(props: ProposalPDFProps) {
     else { fetchProposalSettings().then(setConfig).catch(() => setConfig(DEFAULT_PROPOSAL_CONFIG)); }
     fetchEquipment().then(list => setEquipamentos(list.filter(e => e.active))).catch(() => setEquipamentos([]));
   }, [open, props.docConfig]);
+
+  useEffect(() => {
+    if (!open) return;
+    const updatePreviewSize = () => {
+      const viewport = previewRef.current;
+      const documentNode = printRef.current;
+      if (!viewport || !documentNode) return;
+      const availableWidth = Math.max(280, viewport.clientWidth);
+      setPreviewScale(Math.min(0.82, availableWidth / 794));
+      setDocumentHeight(documentNode.scrollHeight);
+    };
+    const frame = window.requestAnimationFrame(updatePreviewSize);
+    const observer = new ResizeObserver(updatePreviewSize);
+    if (previewRef.current) observer.observe(previewRef.current);
+    if (printRef.current) observer.observe(printRef.current);
+    window.addEventListener('orientationchange', updatePreviewSize);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('orientationchange', updatePreviewSize);
+    };
+  }, [open, config, layout.totalPages]);
 
   const data: ProposalDocData = {
     numero: props.numero ?? '',
@@ -185,7 +210,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!downloading) onOpenChange(v); }}>
-      <DialogContent className="max-w-[900px] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-muted/40">
+      <DialogContent className="proposal-pdf-dialog flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-0 bg-muted/40 p-0 sm:h-[92vh] sm:w-[calc(100vw-2rem)] sm:max-w-[900px] sm:rounded-lg sm:border">
         {downloading && (
           <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-background/85 backdrop-blur-sm px-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -201,23 +226,23 @@ export function ProposalPDF(props: ProposalPDFProps) {
             </p>
           </div>
         )}
-        <DialogHeader className="no-print">
-          <DialogTitle className="flex flex-wrap items-center justify-between gap-2">
-            <span>Pré-visualização A4 · {layout.totalPages} página{layout.totalPages === 1 ? '' : 's'}</span>
-            <div className="flex items-center gap-2 mr-8">
-              <Button onClick={handleDownload} disabled={downloading} className="gap-2">
+        <DialogHeader className="no-print shrink-0 border-b bg-background px-4 pb-3 pt-4 text-left sm:px-6 sm:pb-4 sm:pt-5">
+          <DialogTitle className="pr-8 text-base leading-tight sm:text-lg">
+            Pré-visualização A4 <span className="font-normal text-muted-foreground">· {layout.totalPages} página{layout.totalPages === 1 ? '' : 's'}</span>
+          </DialogTitle>
+          <div className="grid grid-cols-2 gap-2 pt-3 sm:flex sm:items-center">
+              <Button onClick={handleDownload} disabled={downloading} className="col-span-2 gap-2 sm:col-span-1">
                 {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 {downloading ? (progress ? progressLabel[progress] : 'Gerando PDF...') : 'Baixar PDF'}
-
               </Button>
               <Button variant="outline" onClick={() => setTamanhoReal(v => !v)} className="gap-2">
+                <Maximize2 className="h-4 w-4" />
                 {tamanhoReal ? 'Ajustar à tela' : 'Tamanho real'}
               </Button>
               <Button variant="outline" onClick={handlePrint} className="gap-2">
                 <Printer className="h-4 w-4" /> Imprimir
               </Button>
-            </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
         {layout.overflow.length > 0 && (
@@ -226,10 +251,19 @@ export function ProposalPDF(props: ProposalPDFProps) {
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <div className={tamanhoReal ? 'origin-top' : 'origin-top scale-[0.82] -mb-[16%]'}>
-            <div ref={printRef}>
-              <ProposalDocument config={config} data={data} onLayout={setLayout} />
+        <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-2 sm:p-4">
+          <div ref={previewRef} className={tamanhoReal ? 'min-w-[794px]' : 'w-full'}>
+            <div
+              className="mx-auto origin-top"
+              style={{
+                width: 794,
+                height: tamanhoReal ? documentHeight : documentHeight * previewScale,
+                transform: tamanhoReal ? undefined : `scale(${previewScale})`,
+              }}
+            >
+              <div ref={printRef}>
+                <ProposalDocument config={config} data={data} onLayout={setLayout} />
+              </div>
             </div>
           </div>
         </div>
