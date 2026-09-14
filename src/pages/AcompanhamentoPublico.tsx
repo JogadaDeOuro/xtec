@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { invokePublicPortal } from '@/lib/public-portal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ export default function AcompanhamentoPublico() {
     async function load() {
       if (!token) { setNotFound(true); setLoading(false); return; }
 
-      const { data, error } = await supabase.rpc('get_public_tracking', { _token: token });
+      const { data, error } = await invokePublicPortal<{ client_name?: string; items?: StageItem[] }>('get-tracking', { token });
 
       const result = data as { client_name?: string; items?: StageItem[] } | null;
       if (error || !result) { setNotFound(true); setLoading(false); return; }

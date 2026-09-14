@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import logoImg from '@/assets/logo-inforsol.png';
 import { SignatureStylePicker } from '@/components/SignatureStylePicker';
 import { supabase } from '@/integrations/supabase/client';
+import { invokePublicPortal } from '@/lib/public-portal';
 
 interface ContractData {
   id: string;
@@ -66,7 +67,7 @@ export default function AssinarContrato() {
   useEffect(() => {
     if (!token) { setNotFound(true); setLoadingContract(false); return; }
     const fetchContract = async () => {
-      const { data, error } = await supabase.rpc('get_contract_for_signing', { _token: token });
+      const { data, error } = await invokePublicPortal<ContractData>('get-contract', { token });
       const result = data as unknown as ContractData | null;
       if (error || !result) {
         setNotFound(true);
@@ -139,16 +140,16 @@ export default function AssinarContrato() {
     const generatedHash = btoa(rawData).slice(0, 20).toUpperCase();
 
     // Register signature server-side (token validated in the database)
-    const { data: signResult, error: sigError } = await supabase.rpc('sign_contract_public', {
-      _token: token as string,
-      _name: name.trim(),
-      _document: document.trim(),
-      _email: email.trim(),
-      _ip: ip || 'Não identificado',
-      _location: location || 'Não disponível',
-      _user_agent: userAgent,
-      _hash: generatedHash,
-      _signature_font: signFont,
+    const { data: signResult, error: sigError } = await invokePublicPortal('sign-contract', {
+      token: token as string,
+      name: name.trim(),
+      document: document.trim(),
+      email: email.trim(),
+      ip: ip || 'Não identificado',
+      location: location || 'Não disponível',
+      userAgent,
+      hash: generatedHash,
+      signatureFont: signFont,
     });
 
     if (sigError || !signResult) {

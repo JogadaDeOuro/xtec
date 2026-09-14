@@ -14,8 +14,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { fetchPublicProposal, type ProposalRecord } from '@/lib/proposals';
+import { invokePublicPortal } from '@/lib/public-portal';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import {
@@ -70,11 +70,11 @@ export default function AceiteProposta() {
   const handleAccept = async () => {
     if (!token) return;
     setSaving(true);
-    const { data, error } = await (supabase as any).rpc('accept_proposal_public', {
-      _token: token,
-      _document: documento.replace(/\D/g, ''),
-      _garantia: garantia,
-      _condicao: condicaoEscolhida || null,
+    const { data, error } = await invokePublicPortal<AcceptResult>('accept-proposal', {
+      token,
+      document: documento.replace(/\D/g, ''),
+      warranty: garantia,
+      condition: condicaoEscolhida || null,
     });
     setSaving(false);
     setConfirmOpen(false);

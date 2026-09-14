@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { invokePublicPortal } from '@/lib/public-portal';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
 
@@ -136,7 +137,7 @@ export async function fetchProposals(): Promise<ProposalRecord[]> {
 }
 
 export async function fetchPublicProposal(token: string): Promise<ProposalRecord | null> {
-  const { data, error } = await (supabase as any).rpc('get_public_proposal', { _token: token });
+  const { data, error } = await invokePublicPortal<ProposalRow[]>('get-proposal', { token });
   if (error) throw error;
   const row = Array.isArray(data) ? data[0] : data;
   return row ? rowToProposal(row as ProposalRow) : null;
