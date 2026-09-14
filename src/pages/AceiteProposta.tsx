@@ -14,7 +14,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { fetchPublicProposal, type ProposalRecord } from '@/lib/proposals';
 import { invokePublicPortal } from '@/lib/public-portal';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
