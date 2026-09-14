@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
+import { invokePublicPortal } from '@/lib/public-portal';
 
 interface PortalProposal {
   id: string; numero: string | null; public_token: string; status: string;
@@ -47,8 +48,8 @@ export default function PortalCliente() {
 
   const buscar = async () => {
     setLoading(true);
-    const { data: res, error } = await (supabase as any).rpc('get_client_portal', {
-      _document: documento.replace(/\D/g, ''),
+    const { data: res, error } = await invokePublicPortal<PortalData>('get-client-portal', {
+      document: documento.replace(/\D/g, ''),
     });
     setLoading(false);
     if (error) { toast.error('Não foi possível consultar seus dados'); return; }
