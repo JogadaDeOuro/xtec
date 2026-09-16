@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RouteSeo } from "@/components/RouteSeo";
 
 // Lazy loaded pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
