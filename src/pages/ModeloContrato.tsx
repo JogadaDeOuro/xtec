@@ -236,6 +236,36 @@ export default function ModeloContrato() {
               <Input value={draft.headerSubtitle} onChange={e => setDraft(d => ({ ...d, headerSubtitle: e.target.value }))} />
             </div>
 
+            <div className="space-y-2">
+              <Label>Cor de destaque do contrato</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="color"
+                  aria-label="Cor de destaque"
+                  value={draft.accentColor || DEFAULT_CONTRACT_ACCENT}
+                  onChange={e => setDraft(d => ({ ...d, accentColor: e.target.value }))}
+                  className="h-9 w-14 cursor-pointer rounded border border-border bg-background p-1"
+                />
+                <Input
+                  value={draft.accentColor || DEFAULT_CONTRACT_ACCENT}
+                  onChange={e => setDraft(d => ({ ...d, accentColor: e.target.value }))}
+                  className="h-9 w-32 font-mono text-xs"
+                />
+                {CONTRACT_ACCENT_PRESETS.map(p => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    title={p.label}
+                    onClick={() => setDraft(d => ({ ...d, accentColor: p.value }))}
+                    className="h-7 w-7 rounded-full border border-border"
+                    style={{ background: p.value }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Usada nos títulos das cláusulas, na linha do cabeçalho e nos destaques.</p>
+            </div>
+
+
             <Tabs defaultValue="corpo">
               <TabsList>
                 <TabsTrigger value="corpo">Cláusulas</TabsTrigger>
