@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Loader2, Sun, Zap, ShieldCheck, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Loader2, Sun, Moon, Zap, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/use-theme';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import logoInforsol from '@/assets/logo-inforsol.png';
 
@@ -14,6 +16,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn, signUp, resetPassword } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +37,7 @@ export default function Login() {
       const requestedReturn = (location.state as { returnTo?: unknown } | null)?.returnTo;
       const returnTo = typeof requestedReturn === 'string' && requestedReturn.startsWith('/.lovable/oauth/consent?')
         ? requestedReturn
-        : '/';
+        : '/dashboard';
       navigate(returnTo, { replace: true });
     }
   };
@@ -105,6 +108,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background relative overflow-hidden">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar para o SolarFlow
+        </Link>
+        <Button variant="ghost" size="icon" aria-label="Alternar tema" onClick={toggleTheme}>
+          {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </Button>
+      </div>
       {/* Left brand panel */}
       <div className="relative hidden lg:flex flex-col justify-between p-12 text-primary-foreground bg-gradient-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-60" />
