@@ -16,6 +16,7 @@ import {
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { fetchProposal, updateProposal, updateProposalStatus, type ProposalInput, type ProposalRecord } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
+import { describeSaasError } from '@/lib/saas';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, ReferenceDot,
@@ -725,7 +726,7 @@ export default function EditarPropostaPage() {
                     garantia_estendida_valor: garantiaValor,
                     status: 'rascunho',
                    }).select('id').single();
-                  if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
+                  if (error) { toast.error(describeSaasError(error) ?? ('Erro ao criar contrato: ' + error.message)); return; }
                   toast.success('Proposta aceita e contrato criado!');
                    navigate(`/contratos?contrato=${created.id}`);
                 }}>
