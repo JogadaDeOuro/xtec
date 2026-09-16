@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Building2, FileText, Calculator, Users, Save, UserPlus, Loader2, Shield, ShieldCheck, Trash2, Pencil, CheckCircle, XCircle } from 'lucide-react';
+import { Building2, FileText, Calculator, Users, Save, UserPlus, Loader2, Shield, ShieldCheck, Trash2, Pencil, CheckCircle, XCircle, Upload } from 'lucide-react';
 import { useAuth, ALL_PAGES, type PageKey } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { fetchProposalSettings, saveProposalSettings } from '@/lib/proposal-settings';
-import { DEFAULT_PROPOSAL_CONFIG, type CompanyConfig } from '@/lib/proposal-config';
+import { fetchProposalSettings, saveProposalSettings, uploadBrandingFile } from '@/lib/proposal-settings';
+import { DEFAULT_PROPOSAL_CONFIG, type CompanyConfig, type ProposalDocConfig } from '@/lib/proposal-config';
 import { formatCpfCnpj } from '@/lib/utils';
 
 const PAGE_LABELS: Record<PageKey, string> = {
@@ -55,8 +55,14 @@ export default function Configuracoes() {
   const [editRole, setEditRole] = useState('vendedor');
   const [editPermissions, setEditPermissions] = useState<string[]>([]);
   const [company, setCompany] = useState<CompanyConfig>(DEFAULT_PROPOSAL_CONFIG.company);
+  const [proposalConfig, setProposalConfig] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
   const [loadingCompany, setLoadingCompany] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [savingProposal, setSavingProposal] = useState(false);
+  const [savingCalculations, setSavingCalculations] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const companyLogoRef = useRef<HTMLInputElement>(null);
+  const proposalLogoRef = useRef<HTMLInputElement>(null);
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -81,7 +87,10 @@ export default function Configuracoes() {
   useEffect(() => {
     fetchUsers();
     fetchProposalSettings()
-      .then(config => setCompany(config.company))
+      .then(config => {
+        setProposalConfig(config);
+        setCompany(config.company);
+      })
       .catch(() => toast.error('Não foi possível carregar os dados da empresa'))
       .finally(() => setLoadingCompany(false));
   }, []);
@@ -103,14 +112,63 @@ export default function Configuracoes() {
     setSavingCompany(true);
     try {
       const current = await fetchProposalSettings();
-      await saveProposalSettings({ ...current, company });
+      const updated = { ...current, company };
+      await saveProposalSettings(updated);
       const saved = await fetchProposalSettings();
+      setProposalConfig(saved);
       setCompany(saved.company);
       toast.success('Dados da empresa salvos');
     } catch {
       toast.error('Não foi possível salvar os dados da empresa');
     } finally {
       setSavingCompany(false);
+    }
+  };
+
+  const patchConfig = <K extends keyof ProposalDocConfig>(key: K, value: Partial<ProposalDocConfig[K]>) => {
+    setProposalConfig(current => ({
+      ...current,
+      [key]: { ...(current[key] as object), ...value } as ProposalDocConfig[K],
+    }));
+  };
+
+  const persistConfig = async (kind: 'proposal' | 'calculations') => {
+    if (!isAdmin) {
+      toast.error('Somente administradores podem salvar estas configurações');
+      return;
+    }
+    const setSaving = kind === 'proposal' ? setSavingProposal : setSavingCalculations;
+    setSaving(true);
+    try {
+      await saveProposalSettings({ ...proposalConfig, company });
+      const saved = await fetchProposalSettings();
+      setProposalConfig(saved);
+      setCompany(saved.company);
+      toast.success(kind === 'proposal' ? 'Personalização salva' : 'Parâmetros de cálculo salvos');
+    } catch {
+      toast.error('Não foi possível salvar as configurações');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (file: File | undefined, target: 'company' | 'proposal') => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 2 MB');
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const url = await uploadBrandingFile(file, 'branding', 'logo');
+      patchConfig('branding', { logoPrincipal: url });
+      toast.success(target === 'company' ? 'Logo da empresa enviada' : 'Logo da proposta enviada');
+    } catch {
+      toast.error('Não foi possível enviar a logo');
+    } finally {
+      setUploadingLogo(false);
+      if (companyLogoRef.current) companyLogoRef.current.value = '';
+      if (proposalLogoRef.current) proposalLogoRef.current.value = '';
     }
   };
 
@@ -222,7 +280,6 @@ export default function Configuracoes() {
     }
   };
 
-  const ADMIN_EMAIL = 'stfxfp@gmail.com';
   const pendingUsers = users.filter(u => u.roles.length === 0);
   const activeUsers = users.filter(u => u.roles.length > 0);
 
@@ -274,8 +331,12 @@ export default function Configuracoes() {
               <div>
                 <Label className="text-xs">Logo da Empresa</Label>
                 <div className="mt-2 border-2 border-dashed rounded-lg p-8 text-center text-muted-foreground">
-                  <p className="text-sm">Arraste a logo ou clique para fazer upload</p>
+                  {proposalConfig.branding.logoPrincipal && <img src={proposalConfig.branding.logoPrincipal} alt="Logo da empresa" className="mx-auto mb-3 h-16 max-w-full object-contain" />}
+                  <Button type="button" variant="outline" size="sm" onClick={() => companyLogoRef.current?.click()} disabled={uploadingLogo} className="gap-2">
+                    {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Escolher logo
+                  </Button>
                   <p className="text-xs mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
+                  <input ref={companyLogoRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={e => handleLogoUpload(e.target.files?.[0], 'company')} />
                 </div>
               </div>
               <Button className="gap-2" onClick={handleSaveCompany} disabled={loadingCompany || savingCompany || !isAdmin}>
@@ -293,39 +354,45 @@ export default function Configuracoes() {
                 <div>
                   <Label className="text-xs">Logo da Proposta</Label>
                   <div className="mt-2 border-2 border-dashed rounded-lg p-6 text-center text-muted-foreground">
-                    <p className="text-sm">Logo que aparecerá no cabeçalho do PDF</p>
+                    {proposalConfig.branding.logoPrincipal && <img src={proposalConfig.branding.logoPrincipal} alt="Logo da proposta" className="mx-auto mb-3 h-16 max-w-full object-contain" />}
+                    <Button type="button" variant="outline" size="sm" onClick={() => proposalLogoRef.current?.click()} disabled={uploadingLogo} className="gap-2">
+                      {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Escolher logo
+                    </Button>
                     <p className="text-xs mt-1">PNG ou JPG (máx. 2MB)</p>
+                    <input ref={proposalLogoRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={e => handleLogoUpload(e.target.files?.[0], 'proposal')} />
                   </div>
                 </div>
                 <div>
                   <Label className="text-xs">Título / Cabeçalho da Proposta</Label>
-                  <Input className="mt-1" defaultValue="Proposta Comercial — Energia Solar Fotovoltaica" />
+                  <Input className="mt-1" value={proposalConfig.cover.titulo} onChange={e => patchConfig('cover', { titulo: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Texto de Apresentação da Empresa</Label>
-                  <Textarea className="mt-1 min-h-[100px]" defaultValue="A Inforsol é uma empresa especializada em soluções de energia solar fotovoltaica, com anos de experiência no mercado e centenas de projetos entregues com excelência. Nossa missão é proporcionar economia e sustentabilidade por meio de energia limpa e renovável." />
+                  <Textarea className="mt-1 min-h-[100px]" value={proposalConfig.texts.apresentacao} onChange={e => patchConfig('texts', { apresentacao: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Observações Técnicas Padrão</Label>
-                  <Textarea className="mt-1 min-h-[80px]" defaultValue="O dimensionamento foi realizado com base no consumo médio informado e condições de irradiação solar da região. A produção real pode variar de acordo com condições climáticas, orientação e inclinação do telhado." />
+                  <Textarea className="mt-1 min-h-[80px]" value={proposalConfig.texts.observacoes} onChange={e => patchConfig('texts', { observacoes: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Itens Inclusos no Sistema</Label>
-                  <Textarea className="mt-1 min-h-[80px]" defaultValue="Módulos fotovoltaicos de alta performance, Inversor(es) com monitoramento Wi-Fi, Estrutura de fixação em alumínio, Cabeamento e conectores, Proteções elétricas, Projeto elétrico completo, Instalação com equipe especializada, Comissionamento e testes, Solicitação de acesso junto à concessionária." />
+                  <Textarea className="mt-1 min-h-[80px]" value={proposalConfig.texts.escopoPadrao} onChange={e => patchConfig('texts', { escopoPadrao: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Garantias</Label>
-                  <Textarea className="mt-1 min-h-[80px]" defaultValue="Módulos fotovoltaicos: 25 anos de garantia de performance. Inversor: 10 a 15 anos de garantia do fabricante. Instalação: 5 anos de garantia de serviço. Monitoramento remoto do sistema incluso. Suporte técnico dedicado." />
+                  <Textarea className="mt-1 min-h-[80px]" value={proposalConfig.texts.garantias} onChange={e => patchConfig('texts', { garantias: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Rodapé / Assinatura</Label>
-                  <Textarea className="mt-1 min-h-[60px]" defaultValue="Inforsol Energia Solar — contato@inforsol.com.br • (11) 3456-7890" />
+                  <Textarea className="mt-1 min-h-[60px]" value={proposalConfig.texts.rodape} onChange={e => patchConfig('texts', { rodape: e.target.value })} />
                 </div>
                 <div>
                   <Label className="text-xs">Validade da Proposta (dias)</Label>
-                  <Input type="number" className="mt-1 w-32" defaultValue="15" />
+                  <Input type="text" inputMode="numeric" className="mt-1 w-32" value={String(proposalConfig.assumptions.validadeDias)} onChange={e => patchConfig('assumptions', { validadeDias: Number(e.target.value.replace(/\D/g, '')) || 0 })} />
                 </div>
-                <Button className="gap-2"><Save className="h-4 w-4" /> Salvar Personalização</Button>
+                <Button className="gap-2" onClick={() => persistConfig('proposal')} disabled={savingProposal || loadingCompany || !isAdmin}>
+                  {savingProposal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar Personalização
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -336,15 +403,17 @@ export default function Configuracoes() {
             <CardHeader><CardTitle className="text-base">Parâmetros de Cálculo</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Reajuste anual da energia (%)</Label><Input type="number" defaultValue="10" className="mt-1" /></div>
-                <div><Label className="text-xs">Produção por kWp (kWh/mês)</Label><Input type="number" defaultValue="125" className="mt-1" /></div>
-                <div><Label className="text-xs">Tarifa média (R$/kWh)</Label><Input type="number" defaultValue="0.85" step="0.01" className="mt-1" /></div>
-                <div><Label className="text-xs">Degradação anual dos módulos (%)</Label><Input type="number" defaultValue="0.5" step="0.1" className="mt-1" /></div>
-                <div><Label className="text-xs">Preço base On-Grid (R$/Wp)</Label><Input type="number" defaultValue="4.80" step="0.1" className="mt-1" /></div>
-                <div><Label className="text-xs">Preço base Off-Grid (R$/Wp)</Label><Input type="number" defaultValue="6.20" step="0.1" className="mt-1" /></div>
-                <div><Label className="text-xs">Preço base Híbrido (R$/Wp)</Label><Input type="number" defaultValue="5.50" step="0.1" className="mt-1" /></div>
+                <div><Label className="text-xs">Reajuste anual da energia (%)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.assumptions.reajusteTarifarioPct)} onChange={e => patchConfig('assumptions', { reajusteTarifarioPct: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Produção por kWp (kWh/mês)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.assumptions.produtividadeKwhKwpMes)} onChange={e => patchConfig('assumptions', { produtividadeKwhKwpMes: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Tarifa média (R$/kWh)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.assumptions.tarifaKwh)} onChange={e => patchConfig('assumptions', { tarifaKwh: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Degradação anual dos módulos (%)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.assumptions.degradacaoAnualPct)} onChange={e => patchConfig('assumptions', { degradacaoAnualPct: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Preço base On-Grid (R$/kWp)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.pricing.onGridInicial)} onChange={e => patchConfig('pricing', { onGridInicial: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Preço base Off-Grid (R$/kWp)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.pricing.offGridInicial)} onChange={e => patchConfig('pricing', { offGridInicial: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
+                <div><Label className="text-xs">Preço base Híbrido (R$/kWp)</Label><Input type="text" inputMode="decimal" value={String(proposalConfig.pricing.hibridoInicial)} onChange={e => patchConfig('pricing', { hibridoInicial: Number(e.target.value.replace(',', '.')) || 0 })} className="mt-1" /></div>
               </div>
-              <Button className="gap-2"><Save className="h-4 w-4" /> Salvar</Button>
+              <Button className="gap-2" onClick={() => persistConfig('calculations')} disabled={savingCalculations || loadingCompany || !isAdmin}>
+                {savingCalculations ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
