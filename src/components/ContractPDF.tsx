@@ -96,6 +96,8 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
   const clienteSig = contract.signatures.find(s => s.signerType === 'cliente');
 
 
+  const accent = template.accentColor || DEFAULT_CONTRACT_ACCENT;
+
   const handlePrint = () => {
     if (!printRef.current) return;
     const content = printRef.current.innerHTML;
