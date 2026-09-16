@@ -8,6 +8,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://solarflow.inforsol.group',
   'https://inforsol-app.lovable.app',
 ]);
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 type RpcId = string | number | null;
 type JsonRpcRequest = { jsonrpc?: string; id?: RpcId; method?: string; params?: Record<string, unknown> };
@@ -126,6 +127,17 @@ function getLimit(args: Record<string, unknown>) {
   return Math.max(1, Math.min(50, value));
 }
 
+function isRateLimited(userId: string) {
+  const now = Date.now();
+  const current = rateLimits.get(userId);
+  if (!current || current.resetAt <= now) {
+    rateLimits.set(userId, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  current.count += 1;
+  return current.count > 60;
+}
+
 async function callTool(client: ReturnType<typeof createClient>, name: string, args: Record<string, unknown>) {
   if (name === 'listar_clientes') {
     let query = client.from('clients')
@@ -235,8 +247,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
 
   const url = new URL(req.url);
-  const resourceUrl = `${url.origin}${url.pathname.replace(/\/\.well-known\/oauth-protected-resource\/?$/, '')}`;
-  const authBase = `${Deno.env.get('SUPABASE_URL')}/auth/v1`;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const resourceUrl = `${supabaseUrl}/functions/v1/mcp`;
+  const authBase = `${supabaseUrl}/auth/v1`;
 
   if (req.method === 'GET' && url.pathname.endsWith('/.well-known/oauth-protected-resource')) {
     return new Response(JSON.stringify({ resource: resourceUrl, authorization_servers: [authBase], bearer_methods_supported: ['header'] }), {
@@ -260,7 +273,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
   if (!supabaseUrl || !anonKey) return rpcError(null, -32603, 'Servidor não configurado', 500, cors);
   const client = createClient(supabaseUrl, anonKey, {
@@ -269,6 +281,7 @@ Deno.serve(async (req) => {
   });
   const { data: userData, error: userError } = await client.auth.getUser();
   if (userError || !userData.user) return rpcError(null, -32001, 'Sessão inválida ou expirada', 401, cors);
+  if (isRateLimited(userData.user.id)) return rpcError(null, -32029, 'Muitas solicitações. Aguarde um minuto.', 429, cors);
 
   const request = await req.json().catch(() => null) as JsonRpcRequest | null;
   if (!request || request.jsonrpc !== '2.0' || typeof request.method !== 'string') {
