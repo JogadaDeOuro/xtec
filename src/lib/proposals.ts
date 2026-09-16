@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { describeSaasError } from '@/lib/saas';
 import { invokePublicPortal } from '@/lib/public-portal';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
@@ -240,7 +241,10 @@ export async function createProposal(input: ProposalInput): Promise<ProposalReco
     })
     .select('*')
     .single();
-  if (error) throw error;
+  if (error) {
+    const saasMessage = describeSaasError(error);
+    throw saasMessage ? new Error(saasMessage) : error;
+  }
   return rowToProposal(data as unknown as ProposalRow);
 }
 
@@ -254,7 +258,10 @@ export async function updateProposal(id: string, input: ProposalInput): Promise<
     .eq('id', id)
     .select('*')
     .single();
-  if (error) throw error;
+  if (error) {
+    const saasMessage = describeSaasError(error);
+    throw saasMessage ? new Error(saasMessage) : error;
+  }
   return rowToProposal(data as unknown as ProposalRow);
 }
 
