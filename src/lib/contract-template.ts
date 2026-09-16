@@ -7,7 +7,13 @@ export interface ContractTemplateContent {
   headerSubtitle: string;
   body: string;
   footerText: string;
+  /** Cor de destaque do contrato (títulos de cláusula, linhas e realces). */
+  accentColor?: string;
 }
+
+/** Cor de destaque padrão do contrato: verde escuro. */
+export const DEFAULT_CONTRACT_ACCENT = '#14532d';
+
 
 export interface ContractTemplate {
   id: string;
