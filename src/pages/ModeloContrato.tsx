@@ -51,6 +51,7 @@ export default function ModeloContrato() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<ContractTemplate[]>([]);
+  const [proposalType, setProposalType] = useState<ContractProposalType>('instalacao');
   const [selectedId, setSelectedId] = useState<string>('');
   const [draft, setDraft] = useState<ContractTemplateContent>(DEFAULT_CONTRACT_TEMPLATE);
   const [name, setName] = useState('');
@@ -59,7 +60,16 @@ export default function ModeloContrato() {
   const [previewSource, setPreviewSource] = useState<string>('exemplo');
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  const selected = templates.find(t => t.id === selectedId);
+  const typeTemplates = templates.filter(t => t.proposalType === proposalType);
+  const selected = typeTemplates.find(t => t.id === selectedId);
+
+  const selectType = (type: ContractProposalType) => {
+    setProposalType(type);
+    const list = templates.filter(t => t.proposalType === type);
+    const def = list.find(t => t.isDefault) || list[0];
+    if (def) { setSelectedId(def.id); setDraft(def.content); setName(def.name); }
+    else { setSelectedId(''); setDraft(DEFAULT_CONTRACT_TEMPLATE); setName(''); }
+  };
 
   useEffect(() => {
     (async () => {
