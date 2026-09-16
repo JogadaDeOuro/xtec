@@ -126,7 +126,7 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
         .sig-box .sig-name { font-weight: 700; font-size: 11px; }
         .sig-filled { color: #16a34a; font-size: 9px; margin-top: 4px; }
         .footer { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 10px; font-size: 9px; color: #888; }
-        .highlight { background: #fff7ed; padding: 8px 12px; border-radius: 6px; border-left: 3px solid ${accent}; margin: 8px 0; }
+        .highlight { background: ${accent}14; padding: 8px 12px; border-radius: 6px; border-left: 3px solid ${accent}; margin: 8px 0; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style>
     </head><body>${content}</body></html>`);
