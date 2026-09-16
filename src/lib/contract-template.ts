@@ -355,8 +355,8 @@ export async function updateContractTemplate(id: string, patch: { name?: string;
   if (error) throw error;
 }
 
-export async function setDefaultContractTemplate(id: string) {
-  await supabase.from('contract_templates').update({ is_default: false }).neq('id', id);
+export async function setDefaultContractTemplate(id: string, proposalType: ContractProposalType = 'instalacao') {
+  await supabase.from('contract_templates').update({ is_default: false }).eq('proposal_type', proposalType).neq('id', id);
   const { error } = await supabase.from('contract_templates').update({ is_default: true, is_active: true }).eq('id', id);
   if (error) throw error;
 }
@@ -366,14 +366,21 @@ export async function deleteContractTemplate(id: string) {
   if (error) throw error;
 }
 
-/** Garante que exista pelo menos o modelo padrão. */
+/** Garante que exista pelo menos um modelo padrão por tipo de proposta. */
 export async function ensureDefaultContractTemplate(): Promise<ContractTemplate[]> {
-  const list = await listContractTemplates();
-  if (list.length) return list;
+  let list = await listContractTemplates();
+  const hasInstalacao = list.some(t => t.proposalType === 'instalacao');
+  const hasManutencao = list.some(t => t.proposalType === 'manutencao');
   try {
-    await createContractTemplate('Modelo padrão Inforsol', DEFAULT_CONTRACT_TEMPLATE, true);
+    if (!hasInstalacao) {
+      await createContractTemplate('Modelo padrão — Instalação', DEFAULT_CONTRACT_TEMPLATE, true, 'instalacao');
+    }
+    if (!hasManutencao) {
+      await createContractTemplate('Modelo padrão — Manutenção', DEFAULT_MAINTENANCE_CONTRACT_TEMPLATE, true, 'manutencao');
+    }
   } catch {
     return list;
   }
-  return listContractTemplates();
+  if (!hasInstalacao || !hasManutencao) list = await listContractTemplates();
+  return list;
 }
