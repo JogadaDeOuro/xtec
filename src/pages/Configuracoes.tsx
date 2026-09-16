@@ -161,8 +161,11 @@ export default function Configuracoes() {
     setUploadingLogo(true);
     try {
       const url = await uploadBrandingFile(file, 'branding', 'logo');
-      patchConfig('branding', { logoPrincipal: url });
-      toast.success(target === 'company' ? 'Logo da empresa enviada' : 'Logo da proposta enviada');
+      const current = await fetchProposalSettings();
+      const updated = { ...current, company, branding: { ...current.branding, logoPrincipal: url } };
+      await saveProposalSettings(updated);
+      setProposalConfig(updated);
+      toast.success(target === 'company' ? 'Logo da empresa enviada e salva' : 'Logo da proposta enviada e salva');
     } catch {
       toast.error('Não foi possível enviar a logo');
     } finally {
@@ -173,12 +176,12 @@ export default function Configuracoes() {
   };
 
   const savePermissions = async (userId: string, pages: string[]) => {
-    // Delete existing
-    await supabase.from('user_page_permissions').delete().eq('user_id', userId);
-    // Insert new
+    const { error: deleteError } = await supabase.from('user_page_permissions').delete().eq('user_id', userId);
+    if (deleteError) throw deleteError;
     if (pages.length > 0) {
       const rows = pages.map(page_key => ({ user_id: userId, page_key }));
-      await supabase.from('user_page_permissions').insert(rows as any);
+      const { error: insertError } = await supabase.from('user_page_permissions').insert(rows as any);
+      if (insertError) throw insertError;
     }
   };
 
@@ -215,26 +218,43 @@ export default function Configuracoes() {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    await supabase.from('user_roles').delete().eq('user_id', userId);
-    await supabase.from('user_roles').insert({ user_id: userId, role: newRole as any });
-    toast.success('Papel atualizado');
-    fetchUsers();
+    if (userId === user?.id && user.email === 'stfxfp@gmail.com' && newRole !== 'admin') {
+      throw new Error('O administrador principal não pode perder o acesso de administrador');
+    }
+    const { error: deleteError } = await supabase.from('user_roles').delete().eq('user_id', userId);
+    if (deleteError) throw deleteError;
+    const { error: insertError } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole as any });
+    if (insertError) throw insertError;
   };
 
   const handleDeleteUser = async (userId: string) => {
-    await supabase.from('user_page_permissions').delete().eq('user_id', userId);
-    await supabase.from('user_roles').delete().eq('user_id', userId);
-    await supabase.from('profiles').delete().eq('id', userId);
-    toast.success('Usuário removido');
-    fetchUsers();
+    if (userId === user?.id || (user.email === 'stfxfp@gmail.com' && userId === user.id)) {
+      toast.error('Você não pode remover o próprio acesso');
+      return;
+    }
+    try {
+      await savePermissions(userId, []);
+      const { error: roleError } = await supabase.from('user_roles').delete().eq('user_id', userId);
+      if (roleError) throw roleError;
+      const { error: profileError } = await supabase.from('profiles').delete().eq('id', userId);
+      if (profileError) throw profileError;
+      toast.success('Usuário removido');
+      await fetchUsers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível remover o usuário');
+    }
   };
 
   const handleAcceptUser = async (userId: string) => {
-    await supabase.from('user_roles').insert({ user_id: userId, role: 'vendedor' as any });
-    // Give all pages by default
-    await savePermissions(userId, [...ALL_PAGES]);
-    toast.success('Usuário aprovado como Vendedor');
-    fetchUsers();
+    try {
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'vendedor' as any });
+      if (error) throw error;
+      await savePermissions(userId, [...ALL_PAGES]);
+      toast.success('Usuário aprovado como Vendedor');
+      await fetchUsers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível aprovar o usuário');
+    }
   };
 
   const handleRejectUser = async (userId: string) => {
@@ -245,19 +265,19 @@ export default function Configuracoes() {
 
   const handleEditUser = async () => {
     if (!editUser) return;
-    if (editName && editName !== editUser.full_name) {
-      await supabase.from('profiles').update({ full_name: editName }).eq('id', editUser.id);
+    try {
+      if (editName && editName !== editUser.full_name) {
+        const { error } = await supabase.from('profiles').update({ full_name: editName }).eq('id', editUser.id);
+        if (error) throw error;
+      }
+      if (editRole !== (editUser.roles[0] || 'vendedor')) await handleRoleChange(editUser.id, editRole);
+      if (editRole !== 'admin') await savePermissions(editUser.id, editPermissions);
+      toast.success('Usuário atualizado');
+      setEditUser(null);
+      await fetchUsers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar o usuário');
     }
-    if (editRole !== (editUser.roles[0] || 'vendedor')) {
-      await handleRoleChange(editUser.id, editRole);
-    }
-    // Save permissions (only for non-admin)
-    if (editRole !== 'admin') {
-      await savePermissions(editUser.id, editPermissions);
-    }
-    toast.success('Usuário atualizado');
-    setEditUser(null);
-    fetchUsers();
   };
 
   const openEditDialog = (u: UserWithRole) => {
