@@ -23,7 +23,7 @@ export function ContractDocument({ template, vars, logoUrl, accent, signatures, 
 
   return (
     <div className="text-xs leading-relaxed text-foreground">
-      <div style={{ textAlign: 'center', borderBottom: `2px solid ${accent}`, paddingBottom: '16px', marginBottom: '20px' }}>
+      <div style={{ textAlign: 'center', borderBottom: `2px solid ${color}`, paddingBottom: '16px', marginBottom: '20px' }}>
         {logoUrl && <img src={logoUrl} alt="" style={{ height: '48px', marginBottom: '8px', display: 'inline-block' }} />}
         <h1 style={{ fontSize: '18px', fontWeight: 700 }}>{renderTemplateText(template.headerTitle, vars)}</h1>
         <p style={{ fontSize: '10px', color: '#666' }}>{renderTemplateText(template.headerSubtitle, vars)}</p>
@@ -32,7 +32,7 @@ export function ContractDocument({ template, vars, logoUrl, accent, signatures, 
       {blocks.map((b, i) => {
         if (b.type === 'heading') {
           return (
-            <h2 key={i} style={{ fontSize: '12px', fontWeight: 700, color: accent, margin: '14px 0 4px', textTransform: 'uppercase' }}>
+            <h2 key={i} style={{ fontSize: '12px', fontWeight: 700, color: color, margin: '14px 0 4px', textTransform: 'uppercase' }}>
               {b.text}
             </h2>
           );
