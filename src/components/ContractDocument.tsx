@@ -3,6 +3,7 @@ import {
   parseContractBody,
   renderTemplateText,
   inlineToHtml,
+  DEFAULT_CONTRACT_ACCENT,
 } from '@/lib/contract-template';
 
 interface Props {
@@ -15,7 +16,8 @@ interface Props {
   cityLine?: string;
 }
 
-export function ContractDocument({ template, vars, logoUrl, accent = '#f97316', signatures, cityLine }: Props) {
+export function ContractDocument({ template, vars, logoUrl, accent, signatures, cityLine }: Props) {
+  const color = accent || template.accentColor || DEFAULT_CONTRACT_ACCENT;
   const blocks = parseContractBody(renderTemplateText(template.body, vars));
   const footerLines = renderTemplateText(template.footerText, vars).split('\n').filter(Boolean);
 
