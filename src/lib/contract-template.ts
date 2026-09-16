@@ -15,11 +15,19 @@ export interface ContractTemplateContent {
 export const DEFAULT_CONTRACT_ACCENT = '#14532d';
 
 
+export type ContractProposalType = 'instalacao' | 'manutencao';
+
+export const CONTRACT_TYPE_LABELS: Record<ContractProposalType, string> = {
+  instalacao: 'Instalação / Usina',
+  manutencao: 'Manutenção',
+};
+
 export interface ContractTemplate {
   id: string;
   name: string;
   description: string;
   content: ContractTemplateContent;
+  proposalType: ContractProposalType;
   isDefault: boolean;
   isActive: boolean;
   updatedAt?: string;
@@ -120,6 +128,46 @@ A CONTRATADA se compromete a executar a instalação no prazo de **30 (trinta) d
 O presente contrato poderá ser rescindido por qualquer das partes mediante notificação escrita com antecedência mínima de 30 (trinta) dias, ficando a parte que der causa à rescisão obrigada ao pagamento de multa rescisória de 10% sobre o valor total do contrato.
 
 ## CLÁUSULA 9ª — DO FORO
+Fica eleito o foro da comarca de %foro% para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.`,
+};
+
+/** Modelo padrão para contratos de manutenção de usinas. */
+export const DEFAULT_MAINTENANCE_CONTRACT_TEMPLATE: ContractTemplateContent = {
+  headerTitle: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS',
+  headerSubtitle: 'Manutenção de Usina de Energia Solar Fotovoltaica',
+  accentColor: DEFAULT_CONTRACT_ACCENT,
+  footerText: '%empresa_nome% — CNPJ: %empresa_cnpj%\n%empresa_telefone% — %empresa_email%\nEste documento tem validade jurídica conforme Lei nº 14.063/2020',
+  body: `## CLÁUSULA 1ª — DAS PARTES
+**CONTRATADA:** %empresa_nome%, inscrita no CNPJ sob nº %empresa_cnpj%, com sede em %empresa_cidade%/%empresa_estado%, doravante denominada CONTRATADA.
+**CONTRATANTE:** %cliente_nome%, inscrito(a) no CPF/CNPJ sob nº %cliente_documento%, residente/sediado(a) em %cliente_endereco%, %cliente_cidade_estado%, doravante denominado(a) CONTRATANTE.
+
+## CLÁUSULA 2ª — DO OBJETO
+O presente contrato tem por objeto a prestação de serviços de **manutenção da usina de energia solar fotovoltaica** do CONTRATANTE, incluindo os serviços descritos na proposta nº %numero_proposta%, tais como roçagem e controle de vegetação, limpeza dos módulos, conferência de aterramento e de estrutura, e recomendações de manutenção periódica e preventiva.
+
+## CLÁUSULA 3ª — DO VALOR E FORMA DE PAGAMENTO
+Valor total do contrato: **%valor%**
+Condição de pagamento: **%condicao_pagamento%**
+%parcelas_lista%
+O não pagamento nas datas acordadas acarretará juros de mora de 1% ao mês e multa de 2% sobre o valor em atraso.
+
+## CLÁUSULA 4ª — DO PRAZO DE EXECUÇÃO
+A CONTRATADA se compromete a executar os serviços no prazo de **15 (quinze) dias úteis** após a confirmação do pagamento inicial e agendamento com o CONTRATANTE.
+
+## CLÁUSULA 5ª — DAS OBRIGAÇÕES DA CONTRATADA
+- Executar os serviços com profissionais qualificados e equipamentos adequados
+- Utilizar produtos autorizados e em conformidade com as normas ambientais vigentes
+- Emitir relatório fotográfico dos serviços executados
+- Apresentar recomendações de manutenção periódica e preventiva
+
+## CLÁUSULA 6ª — DAS OBRIGAÇÕES DO CONTRATANTE
+- Efetuar os pagamentos nas datas e formas acordadas
+- Disponibilizar acesso ao local da usina, inclusive água e energia quando necessário
+- Informar previamente restrições de acesso ou particularidades do terreno
+
+## CLÁUSULA 7ª — DA RESCISÃO
+O presente contrato poderá ser rescindido por qualquer das partes mediante notificação escrita com antecedência mínima de 15 (quinze) dias, ficando a parte que der causa à rescisão obrigada ao pagamento de multa rescisória de 10% sobre o valor total do contrato.
+
+## CLÁUSULA 8ª — DO FORO
 Fica eleito o foro da comarca de %foro% para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.`,
 };
 
