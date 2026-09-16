@@ -162,7 +162,7 @@ export default function ModeloContrato() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      const t = await createContractTemplate(`Modelo ${templates.length + 1}`, draft, false);
+      const t = await createContractTemplate(`Modelo ${templates.length + 1}`, draft, false, proposalType);
       const tpls = await reload();
       const created = tpls.find(x => x.id === t.id);
       if (created) { setSelectedId(created.id); setName(created.name); setDraft(created.content); }
@@ -177,7 +177,7 @@ export default function ModeloContrato() {
   const handleSetDefault = async () => {
     if (!selectedId) return;
     try {
-      await setDefaultContractTemplate(selectedId);
+      await setDefaultContractTemplate(selectedId, proposalType);
       await reload();
       toast.success('Modelo definido como padrão');
     } catch {
