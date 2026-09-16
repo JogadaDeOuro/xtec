@@ -83,8 +83,8 @@ export default function ModeloContrato() {
             .limit(20),
         ]);
         setTemplates(tpls);
-        const def = tpls.find(t => t.isDefault) || tpls[0];
-        if (def) { setSelectedId(def.id); setDraft(def.content); setName(def.name); }
+        const def = tpls.find(t => t.proposalType === 'instalacao' && t.isDefault) || tpls.find(t => t.proposalType === 'instalacao') || tpls[0];
+        if (def) { setProposalType(def.proposalType); setSelectedId(def.id); setDraft(def.content); setName(def.name); }
         if (settings) setCompany(settings.company as unknown as Record<string, string | undefined>);
         setContracts((cs || []).map(c => ({
           contractId: c.id,
@@ -120,7 +120,7 @@ export default function ModeloContrato() {
   const vars = useMemo(() => buildContractVariables(source), [source]);
 
   const selectTemplate = (id: string) => {
-    const t = templates.find(x => x.id === id);
+    const t = typeTemplates.find(x => x.id === id);
     if (!t) return;
     setSelectedId(id); setDraft(t.content); setName(t.name);
   };
