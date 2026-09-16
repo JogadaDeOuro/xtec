@@ -41,7 +41,10 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
           ensureDefaultContractTemplate(),
           fetchProposalSettings().catch(() => null),
         ]);
-        const def = tpls.find(t => t.isDefault && t.isActive) || tpls.find(t => t.isActive);
+        const tipo = contract.systemType === 'manutencao' ? 'manutencao' : 'instalacao';
+        const doTipo = tpls.filter(t => t.proposalType === tipo);
+        const def = doTipo.find(t => t.isDefault && t.isActive) || doTipo.find(t => t.isActive)
+          || tpls.find(t => t.isDefault && t.isActive) || tpls.find(t => t.isActive);
         if (def) setTemplate(def.content);
         if (settings) setCompany(settings.company as unknown as Record<string, string | undefined>);
       } catch {
