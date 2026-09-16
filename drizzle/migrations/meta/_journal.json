@@ -36,6 +36,13 @@
       "when": 1789570731422,
       "tag": "0004_contract_templates_proposal_type",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789575849784,
+      "tag": "0005_restrict_ownership_policies",
+      "breakpoints": true
     }
   ]
 }
