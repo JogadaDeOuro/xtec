@@ -13,7 +13,7 @@ import logoImg from '@/assets/logo-inforsol.png';
 import { getMilestones, mapCondicaoFromLabel, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 import { ContractDocument } from '@/components/ContractDocument';
 import {
-  DEFAULT_CONTRACT_TEMPLATE, buildContractVariables, ensureDefaultContractTemplate,
+  DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, buildContractVariables, ensureDefaultContractTemplate,
   type ContractTemplateContent,
 } from '@/lib/contract-template';
 import { fetchProposalSettings } from '@/lib/proposal-settings';
@@ -96,6 +96,8 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
   const clienteSig = contract.signatures.find(s => s.signerType === 'cliente');
 
 
+  const accent = template.accentColor || DEFAULT_CONTRACT_ACCENT;
+
   const handlePrint = () => {
     if (!printRef.current) return;
     const content = printRef.current.innerHTML;
@@ -107,12 +109,12 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
         @page { size: A4; margin: 20mm 15mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; line-height: 1.6; color: #1a1a1a; padding: 0; }
-        .contract-header { text-align: center; border-bottom: 2px solid #f97316; padding-bottom: 16px; margin-bottom: 20px; }
+        .contract-header { text-align: center; border-bottom: 2px solid ${accent}; padding-bottom: 16px; margin-bottom: 20px; }
         .contract-header img { height: 48px; margin-bottom: 8px; }
         .contract-header h1 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
         .contract-header p { font-size: 10px; color: #666; }
         .clause { margin-bottom: 14px; }
-        .clause h2 { font-size: 12px; font-weight: 700; color: #f97316; margin-bottom: 4px; text-transform: uppercase; }
+        .clause h2 { font-size: 12px; font-weight: 700; color: ${accent}; margin-bottom: 4px; text-transform: uppercase; }
         .clause p, .clause li { font-size: 11px; line-height: 1.6; }
         .clause ul { padding-left: 18px; }
         .clause li { margin-bottom: 2px; }
@@ -124,7 +126,7 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
         .sig-box .sig-name { font-weight: 700; font-size: 11px; }
         .sig-filled { color: #16a34a; font-size: 9px; margin-top: 4px; }
         .footer { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 10px; font-size: 9px; color: #888; }
-        .highlight { background: #fff7ed; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #f97316; margin: 8px 0; }
+        .highlight { background: ${accent}14; padding: 8px 12px; border-radius: 6px; border-left: 3px solid ${accent}; margin: 8px 0; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style>
     </head><body>${content}</body></html>`);
