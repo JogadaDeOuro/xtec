@@ -2,7 +2,7 @@ import { formatPotencia } from '@/lib/solar-calc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Send, Eye, Wrench, Loader2, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Send, Eye, Wrench, Loader2, Plus, Trash2, FileSignature } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,10 +29,12 @@ import { ProposalPDF } from '@/components/ProposalPDF';
 import {
   MANUTENCAO_ITENS, areaSugerida, calcManutencao, AREA_POR_MODULO_M2,
 } from '@/lib/manutencao';
+import { customerUrl } from '@/lib/public-url';
 
 interface ClientDB {
   id: string; name: string; document: string | null; email: string | null;
   phone: string | null; city: string | null; state: string | null;
+  address: string | null;
 }
 interface OrigemItem {
   id: string;
@@ -81,7 +83,7 @@ export default function NovaManutencaoPage() {
 
   const load = useCallback(async () => {
     const [cl, ct, pr] = await Promise.all([
-      supabase.from('clients').select('id,name,document,email,phone,city,state').order('name'),
+      supabase.from('clients').select('id,name,document,email,phone,address,city,state').order('name'),
       supabase.from('contracts').select('id,client_id,client_name,proposal_id,potencia_kwp,status').order('created_at', { ascending: false }),
       supabase.from('proposals').select('id,numero,client_id,client_name,num_modulos,potencia_kwp,tipo').order('created_at', { ascending: false }),
     ]);
@@ -199,11 +201,57 @@ export default function NovaManutencaoPage() {
         ? await updateProposal(id, buildInput(status))
         : await createProposal(buildInput(status));
       setSavedId(saved.id);
-      toast.success(status === 'rascunho' ? 'Rascunho salvo!' : 'Proposta de manutenção salva!');
-      if (status === 'enviada') setPdfOpen(true);
-      else navigate('/propostas');
+      if (status === 'rascunho') {
+        toast.success('Rascunho salvo!');
+        navigate('/propostas');
+      } else {
+        const url = customerUrl(`/aceite/${saved.publicToken}`);
+        await navigator.clipboard.writeText(url);
+        toast.success('Proposta salva e link de aceite copiado!', { description: url });
+      }
     } catch (e) {
       toast.error('Erro ao salvar: ' + (e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const gerarContrato = async () => {
+    if (!client) { toast.error('Selecione o cliente'); return; }
+    if (numModulos <= 0 || calc.valorFinal <= 0) { toast.error('Complete os dados da manutenção'); return; }
+    setSaving(true);
+    try {
+      const saved = editing && id
+        ? await updateProposal(id, { ...buildInput('enviada'), status: 'aceita' })
+        : await createProposal({ ...buildInput('enviada'), status: 'aceita' });
+      const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', saved.id).maybeSingle();
+      if (existing) {
+        navigate(`/contratos?contrato=${existing.id}`);
+        return;
+      }
+      const { data: userData } = await supabase.auth.getUser();
+      const { data: created, error } = await supabase.from('contracts').insert({
+        proposal_id: saved.id,
+        client_id: client.id,
+        client_name: client.name,
+        client_document: client.document,
+        client_email: client.email,
+        client_phone: client.phone,
+        client_address: client.address,
+        client_city: client.city,
+        client_state: client.state,
+        system_type: 'manutencao',
+        potencia_kwp: potenciaKwp,
+        valor: calc.valorFinal,
+        condicao_pagamento: getCondicaoLabel(condicao),
+        status: 'rascunho',
+        user_id: userData.user?.id ?? null,
+      }).select('id').single();
+      if (error) throw error;
+      toast.success('Proposta aceita e contrato criado!');
+      navigate(`/contratos?contrato=${created.id}`);
+    } catch (e) {
+      toast.error('Erro ao criar contrato: ' + (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -519,7 +567,10 @@ export default function NovaManutencaoPage() {
                   <Eye className="h-4 w-4" /> Visualizar PDF
                 </Button>
                 <Button variant="secondary" className="w-full gap-2" disabled={saving} onClick={() => salvar('enviada')}>
-                  <Send className="h-4 w-4" /> Salvar e Enviar
+                  <Send className="h-4 w-4" /> Salvar e Copiar Link de Aceite
+                </Button>
+                <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" disabled={saving} onClick={gerarContrato}>
+                  <FileSignature className="h-4 w-4" /> Gerar Contrato
                 </Button>
               </div>
             </CardContent>

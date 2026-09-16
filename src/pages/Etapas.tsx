@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { customerUrl } from '@/lib/public-url';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -174,7 +175,7 @@ export default function Etapas() {
 
   const copyTrackingLink = () => {
     if (!projectStage) return;
-    const url = `${window.location.origin}/acompanhamento/${projectStage.tracking_token}`;
+    const url = customerUrl(`/acompanhamento/${projectStage.tracking_token}`);
     navigator.clipboard.writeText(url);
     toast.success('Link copiado!');
   };
@@ -271,7 +272,7 @@ export default function Etapas() {
               <div className="flex items-center gap-2 mt-3 p-2 rounded-md bg-muted/50">
                 <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="text-xs text-muted-foreground truncate">
-                  {window.location.origin}/acompanhamento/{projectStage.tracking_token}
+                  {customerUrl(`/acompanhamento/${projectStage.tracking_token}`)}
                 </span>
                 <Button variant="ghost" size="sm" className="h-6 px-2 ml-auto shrink-0" onClick={copyTrackingLink}>
                   <Copy className="h-3 w-3" />

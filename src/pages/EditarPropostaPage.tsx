@@ -31,6 +31,7 @@ import { MobileProposalSummary } from '@/components/proposal/MobileProposalSumma
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel, mapCondicaoFromLabel, calcExtendedWarranty, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
+import { customerUrl } from '@/lib/public-url';
 
 const AREA_POR_PLACA_M2 = 3.1;
 
@@ -250,18 +251,17 @@ export default function EditarPropostaPage() {
   const updateEtapa = (i: number, field: keyof EtapaPersonalizada, value: string | number) =>
     setEtapasPersonalizadas(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
 
-  const handleSendPDF = async () => {
-    if (id) {
-      try {
-        await updateProposal(id, buildProposalInput('enviada'));
-        setProposal(prev => prev ? { ...prev, status: 'enviada' } : prev);
-      } catch (e) {
-        toast.error('Erro ao salvar: ' + (e as Error).message);
-        return;
-      }
+  const copyAcceptanceLink = async () => {
+    if (!id) return;
+    try {
+      await updateProposal(id, buildProposalInput('enviada'));
+      setProposal(prev => prev ? { ...prev, status: 'enviada' } : prev);
+      const url = customerUrl(`/aceite/${proposal.publicToken}`);
+      await navigator.clipboard.writeText(url);
+      toast.success('Proposta salva e link de aceite copiado!', { description: url });
+    } catch (e) {
+      toast.error('Erro ao salvar: ' + (e as Error).message);
     }
-    setPdfOpen(true);
-    toast.success('Proposta enviada!');
   };
 
   if (loadingProposal) {
@@ -688,12 +688,12 @@ export default function EditarPropostaPage() {
                   } catch (e) {
                     toast.error('Erro ao salvar: ' + (e as Error).message);
                   }
-                }}><Save className="h-4 w-4" /> Salvar</Button>
+                }}><Save className="h-4 w-4" /> Salvar Rascunho</Button>
                 <Button variant="outline" className="w-full gap-2" onClick={() => setPreviewOpen(true)}>
-                  <Eye className="h-4 w-4" /> Visualizar
+                  <Eye className="h-4 w-4" /> Visualizar PDF
                 </Button>
-                <Button variant="secondary" className="w-full gap-2" onClick={handleSendPDF}>
-                  <Send className="h-4 w-4" /> Enviar ao Cliente
+                <Button variant="secondary" className="w-full gap-2" onClick={copyAcceptanceLink}>
+                  <Send className="h-4 w-4" /> Salvar e Copiar Link de Aceite
                 </Button>
                 <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
@@ -706,7 +706,13 @@ export default function EditarPropostaPage() {
                     }
                   }
                   const condicaoLabel = getCondicaoLabel(condicao);
-                  const { error } = await supabase.from('contracts').insert({
+                   const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', id || '').maybeSingle();
+                   if (existing) {
+                     toast.success('Contrato relacionado localizado');
+                     navigate(`/contratos?contrato=${existing.id}`);
+                     return;
+                   }
+                   const { data: created, error } = await supabase.from('contracts').insert({
                     proposal_id: id || '',
                     client_id: client.id,
                     client_name: client.name,
@@ -723,10 +729,10 @@ export default function EditarPropostaPage() {
                     garantia_estendida: garantiaEstendida,
                     garantia_estendida_valor: garantiaValor,
                     status: 'rascunho',
-                  });
+                   }).select('id').single();
                   if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
                   toast.success('Proposta aceita e contrato criado!');
-                  navigate('/contratos');
+                   navigate(`/contratos?contrato=${created.id}`);
                 }}>
                   <FileSignature className="h-4 w-4" /> Criar Contrato
                 </Button>

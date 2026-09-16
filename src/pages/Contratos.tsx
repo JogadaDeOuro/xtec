@@ -21,6 +21,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { useSearchParams } from 'react-router-dom';
+import { customerUrl } from '@/lib/public-url';
 
 // DB types
 interface ContractSignatureDB {
@@ -97,6 +99,7 @@ async function sendNotification(type: string, contractId: string, contractName: 
 }
 
 export default function Contratos() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [contracts, setContracts] = useState<ContractDB[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,6 +134,16 @@ export default function Contratos() {
 
   useEffect(() => { fetchContracts(); }, [fetchContracts]);
 
+  useEffect(() => {
+    const contractId = searchParams.get('contrato');
+    if (!contractId || contracts.length === 0) return;
+    const contract = contracts.find(item => item.id === contractId);
+    if (!contract) return;
+    setSelectedContract(contract);
+    setPreviewOpen(true);
+    setSearchParams({}, { replace: true });
+  }, [contracts, searchParams, setSearchParams]);
+
   // Keep selectedContract in sync after fetch
   useEffect(() => {
     if (selectedContract) {
@@ -158,7 +171,7 @@ export default function Contratos() {
     }).eq('id', contract.id);
     if (error) { toast.error('Erro ao gerar link'); return; }
     await fetchContracts();
-    const url = `${window.location.origin}/assinar/${token}`;
+    const url = customerUrl(`/assinar/${token}`);
     navigator.clipboard.writeText(url);
     toast.success('Link de assinatura copiado!', { description: url });
   };
@@ -488,7 +501,7 @@ export default function Contratos() {
                   {selectedContract.signing_token && (
                     <div className="rounded bg-muted p-2 text-xs text-center">
                       <p className="text-muted-foreground mb-1">Link de assinatura ativo:</p>
-                      <code className="text-[10px] break-all">{window.location.origin}/assinar/{selectedContract.signing_token}</code>
+                      <code className="text-[10px] break-all">{customerUrl(`/assinar/${selectedContract.signing_token}`)}</code>
                     </div>
                   )}
                 </div>

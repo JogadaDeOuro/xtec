@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { ProposalPDF } from '@/components/ProposalPDF';
+import { customerUrl } from '@/lib/public-url';
 import type { ProposalDocConfig } from '@/lib/proposal-config';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -88,10 +89,10 @@ export default function Propostas() {
   };
 
   const handleCopyLink = (token: string) =>
-    copyUrl(`${window.location.origin}/proposta/${token}`, 'Link da proposta');
+    copyUrl(customerUrl(`/proposta/${token}`), 'Link da proposta');
 
   const handleCopyAcceptLink = (token: string) =>
-    copyUrl(`${window.location.origin}/aceite/${token}`, 'Link de aceite');
+    copyUrl(customerUrl(`/aceite/${token}`), 'Link de aceite');
 
   // Sort by newest first
   const sorted = [...proposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

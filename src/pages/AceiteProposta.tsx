@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import { fetchPublicProposal, type ProposalRecord } from '@/lib/proposals';
 import { invokePublicPortal } from '@/lib/public-portal';
+import { customerUrl } from '@/lib/public-url';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import {
@@ -123,8 +124,8 @@ export default function AceiteProposta() {
   const docOk = isValidCpfCnpj(documento);
 
   if (result) {
-    const signUrl = `${window.location.origin}/assinar/${result.signing_token}`;
-    const trackUrl = result.tracking_token ? `${window.location.origin}/acompanhamento/${result.tracking_token}` : null;
+    const signUrl = customerUrl(`/assinar/${result.signing_token}`);
+    const trackUrl = result.tracking_token ? customerUrl(`/acompanhamento/${result.tracking_token}`) : null;
     return (
       <div className="min-h-screen bg-muted/30 py-10 px-4">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-xl space-y-4">
