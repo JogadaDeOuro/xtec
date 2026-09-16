@@ -77,6 +77,7 @@ const App = () => (
           }}
         >
           <AuthProvider>
+            <RouteSeo />
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
