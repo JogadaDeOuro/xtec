@@ -224,7 +224,7 @@ export default function NovaManutencaoPage() {
       const saved = editing && id
         ? await updateProposal(id, { ...buildInput('enviada'), status: 'aceita' })
         : await createProposal({ ...buildInput('enviada'), status: 'aceita' });
-      const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', saved.id).maybeSingle();
+      const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', saved.id).limit(1).maybeSingle();
       if (existing) {
         navigate(`/contratos?contrato=${existing.id}`);
         return;

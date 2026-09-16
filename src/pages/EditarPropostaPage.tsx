@@ -706,7 +706,7 @@ export default function EditarPropostaPage() {
                     }
                   }
                   const condicaoLabel = getCondicaoLabel(condicao);
-                   const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', id || '').maybeSingle();
+                   const { data: existing } = await supabase.from('contracts').select('id').eq('proposal_id', id || '').limit(1).maybeSingle();
                    if (existing) {
                      toast.success('Contrato relacionado localizado');
                      navigate(`/contratos?contrato=${existing.id}`);
