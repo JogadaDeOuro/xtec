@@ -20,6 +20,12 @@ export const MANUTENCAO_ITENS: ManutencaoItem[] = [
       'Corte de vegetação sob e ao redor das mesas, removendo sombreamento parcial e risco de incêndio na área da usina.',
   },
   {
+    key: 'controle_vegetacao',
+    label: 'Controle preventivo do crescimento da vegetação',
+    descricao:
+      'Aplicação técnica e direcionada de produto autorizado para controle preventivo da vegetação, conforme as condições do local, recomendações do fabricante e normas ambientais aplicáveis.',
+  },
+  {
     key: 'limpeza_modulos',
     label: 'Limpeza dos módulos',
     descricao:
