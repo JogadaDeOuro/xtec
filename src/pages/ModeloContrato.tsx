@@ -14,10 +14,20 @@ import { ContractDocument } from '@/components/ContractDocument';
 import logoImg from '@/assets/logo-inforsol.png';
 import { fetchProposalSettings } from '@/lib/proposal-settings';
 import {
-  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, ensureDefaultContractTemplate,
+  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, ensureDefaultContractTemplate,
   createContractTemplate, updateContractTemplate, setDefaultContractTemplate, deleteContractTemplate,
   buildContractVariables, type ContractTemplate, type ContractTemplateContent, type ContractVariableSource,
 } from '@/lib/contract-template';
+
+const CONTRACT_ACCENT_PRESETS = [
+  { label: 'Verde escuro', value: '#14532d' },
+  { label: 'Verde', value: '#166534' },
+  { label: 'Verde petróleo', value: '#0f3d3e' },
+  { label: 'Grafite', value: '#1f2937' },
+  { label: 'Azul escuro', value: '#1e3a8a' },
+  { label: 'Laranja', value: '#f97316' },
+];
+
 
 const SAMPLE: ContractVariableSource = {
   clientName: 'João da Silva',
