@@ -24,12 +24,12 @@ export function ProtectedRoute({ children, pageKey }: ProtectedRouteProps) {
 
   // System pages (integracoes, configuracoes) are admin-only
   if (pageKey === 'integracoes' || pageKey === 'configuracoes') {
-    if (!isAdmin) return <Navigate to="/" replace />;
+    if (!isAdmin) return <Navigate to="/dashboard" replace />;
   }
 
   // Check page-level permissions for non-admin users
   if (pageKey && !hasPageAccess(pageKey)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
