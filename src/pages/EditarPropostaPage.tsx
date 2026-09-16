@@ -32,10 +32,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PAYMENT_CONDITIONS, getMilestones, getCondicaoLabel, mapCondicaoFromLabel, calcExtendedWarranty, EXTENDED_WARRANTY_YEARS, EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION } from '@/lib/payment-options';
 import { customerUrl } from '@/lib/public-url';
+import { fetchProposalSettings } from '@/lib/proposal-settings';
+import { DEFAULT_PROPOSAL_CONFIG, type ProposalDocConfig } from '@/lib/proposal-config';
 
 const AREA_POR_PLACA_M2 = 3.1;
-
-const calcProducao = (kwp: number) => Math.round(kwp * 125);
 
 interface EtapaPersonalizada {
   descricao: string;
@@ -81,6 +81,7 @@ export default function EditarPropostaPage() {
   const { id } = useParams<{ id: string }>();
   const [proposal, setProposal] = useState<ProposalRecord | null>(null);
   const [loadingProposal, setLoadingProposal] = useState(true);
+  const [settings, setSettings] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
 
   const [clients, setClients] = useState<SupaClient[]>([]);
   const [clientId, setClientId] = useState(proposal?.clientId || '');
@@ -99,6 +100,10 @@ export default function EditarPropostaPage() {
     fetchClients();
   }, []);
 
+  useEffect(() => {
+    fetchProposalSettings().then(setSettings).catch(() => undefined);
+  }, []);
+
   // Set initial consumo from DB client once loaded
   useEffect(() => {
     if (clients.length > 0 && clientId) {
@@ -110,10 +115,10 @@ export default function EditarPropostaPage() {
   }, [clients, clientId]);
 
   const sliderConfig = {
-    'on-grid':  { min: 1800, max: 5000, initial: 2500 },
-    'off-grid': { min: 5800, max: 10000, initial: 6200 },
-    'hibrido':  { min: 3400, max: 6200, initial: 4000 },
-  } as const;
+    'on-grid':  { min: settings.pricing.onGridMin, max: settings.pricing.onGridMax, initial: settings.pricing.onGridInicial },
+    'off-grid': { min: settings.pricing.offGridMin, max: settings.pricing.offGridMax, initial: settings.pricing.offGridInicial },
+    'hibrido':  { min: settings.pricing.hibridoMin, max: settings.pricing.hibridoMax, initial: settings.pricing.hibridoInicial },
+  };
 
   const initialValorKwp = proposal ? Math.round(proposal.valorSistema / proposal.potenciaKwp) : sliderConfig['on-grid'].initial;
   const [valorKwp, setValorKwp] = useState<number>(initialValorKwp);
@@ -181,7 +186,7 @@ export default function EditarPropostaPage() {
     const consumo = val ? +val : '';
     setConsumoMensal(consumo);
     if (typeof consumo === 'number' && consumo > 0) {
-      const placasMin = Math.ceil((consumo / 125) * 1000 / 700);
+      const placasMin = Math.ceil((consumo / settings.assumptions.produtividadeKwhKwpMes) * 1000 / 700);
       const placasParMin = placasMin % 2 === 0 ? placasMin : placasMin + 1;
       const potMin = +((placasParMin * 0.6).toFixed(2));
       const potMax = +((placasParMin * 0.7).toFixed(2));
@@ -197,7 +202,7 @@ export default function EditarPropostaPage() {
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
   const areaEstimada = Math.round(numPlacas * AREA_POR_PLACA_M2);
   const client = clients.find(c => c.id === clientId);
-  const producao = calcProducao(potencia);
+  const producao = Math.round(potencia * settings.assumptions.produtividadeKwhKwpMes);
   const valorBruto = Math.round(potencia * valorKwp);
   const descontoValor = descontoTipo === 'percent' ? Math.round(valorBruto * desconto / 100) : desconto;
   const valorFinal = Math.max(0, valorBruto - descontoValor);

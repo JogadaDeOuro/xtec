@@ -47,12 +47,11 @@ import {
   calcExtendedWarranty, EXTENDED_WARRANTY_YEARS,
   EXTENDED_WARRANTY_DESCRIPTION, STANDARD_WARRANTY_DESCRIPTION,
 } from '@/lib/payment-options';
+import { fetchProposalSettings } from '@/lib/proposal-settings';
+import { DEFAULT_PROPOSAL_CONFIG, type ProposalDocConfig } from '@/lib/proposal-config';
 
 const AREA_POR_PLACA_M2 = 3.1;
 
-
-// Calculation helpers
-const calcProducao = (kwp: number) => Math.round(kwp * 125);
 
 interface EtapaPersonalizada {
   descricao: string;
@@ -116,6 +115,7 @@ export default function NovaPropostaPage() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickForm, setQuickForm] = useState(emptyClientForm);
   const [quickSaving, setQuickSaving] = useState(false);
+  const [settings, setSettings] = useState<ProposalDocConfig>(DEFAULT_PROPOSAL_CONFIG);
 
   const fetchClients = useCallback(async () => {
     setClientsLoading(true);
@@ -127,7 +127,14 @@ export default function NovaPropostaPage() {
     setClientsLoading(false);
   }, []);
 
-  useEffect(() => { fetchClients(); }, [fetchClients]);
+  useEffect(() => {
+    fetchClients();
+    fetchProposalSettings().then(config => {
+      setSettings(config);
+      setValorKwp(config.pricing.onGridInicial);
+      setTarifaKwh(config.assumptions.tarifaKwh);
+    }).catch(() => undefined);
+  }, [fetchClients]);
 
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,10 +174,10 @@ export default function NovaPropostaPage() {
 
   // Slider config per system type
   const sliderConfig = {
-    'on-grid':  { min: 1800, max: 5000, initial: 2500 },
-    'off-grid': { min: 5800, max: 10000, initial: 6200 },
-    'hibrido':  { min: 3400, max: 6200, initial: 4000 },
-  } as const;
+    'on-grid':  { min: settings.pricing.onGridMin, max: settings.pricing.onGridMax, initial: settings.pricing.onGridInicial },
+    'off-grid': { min: settings.pricing.offGridMin, max: settings.pricing.offGridMax, initial: settings.pricing.offGridInicial },
+    'hibrido':  { min: settings.pricing.hibridoMin, max: settings.pricing.hibridoMax, initial: settings.pricing.hibridoInicial },
+  };
 
   const [valorKwp, setValorKwp] = useState<number>(sliderConfig['on-grid'].initial);
 
@@ -205,7 +212,7 @@ export default function NovaPropostaPage() {
         setConsumoMensal(c.consumo_medio);
         // Replica lógica de handleConsumoChange
         const consumo = c.consumo_medio;
-        const placasMin = Math.ceil((consumo / 125) * 1000 / 700);
+        const placasMin = Math.ceil((consumo / settings.assumptions.produtividadeKwhKwpMes) * 1000 / 700);
         const placasParMin = placasMin % 2 === 0 ? placasMin : placasMin + 1;
         const potMin = +((placasParMin * 0.6).toFixed(2));
         const potMax = +((placasParMin * 0.7).toFixed(2));
@@ -219,8 +226,8 @@ export default function NovaPropostaPage() {
     setConsumoMensal(consumo);
     if (typeof consumo === 'number' && consumo > 0) {
       // Calcula placas arredondando para cima ao número par mais próximo
-      const placasMin = Math.ceil((consumo / 125) * 1000 / 700);
-      const placasMax = Math.ceil((consumo / 125) * 1000 / 600);
+      const placasMin = Math.ceil((consumo / settings.assumptions.produtividadeKwhKwpMes) * 1000 / 700);
+      const placasMax = Math.ceil((consumo / settings.assumptions.produtividadeKwhKwpMes) * 1000 / 600);
       const placasParMin = placasMin % 2 === 0 ? placasMin : placasMin + 1;
       const placasParMax = placasMax % 2 === 0 ? placasMax : placasMax + 1;
       // Usa a média de placas (par) para sugerir potência
@@ -239,7 +246,7 @@ export default function NovaPropostaPage() {
   const potenciaMin = numPlacas > 0 ? +((numPlacas * 0.6).toFixed(2)) : 0;
   const potenciaMax = numPlacas > 0 ? +((numPlacas * 0.7).toFixed(2)) : 0;
   const client = clients.find(c => c.id === clientId);
-  const producao = calcProducao(potencia);
+  const producao = Math.round(potencia * settings.assumptions.produtividadeKwhKwpMes);
   const valorBruto = Math.round(potencia * valorKwp);
   const descontoValor = descontoTipo === 'percent' ? Math.round(valorBruto * desconto / 100) : desconto;
   const valorFinal = Math.max(0, valorBruto - descontoValor);

@@ -160,6 +160,18 @@ export interface AssumptionsConfig {
   validadeDias: number;
 }
 
+export interface PricingConfig {
+  onGridMin: number;
+  onGridMax: number;
+  onGridInicial: number;
+  offGridMin: number;
+  offGridMax: number;
+  offGridInicial: number;
+  hibridoMin: number;
+  hibridoMax: number;
+  hibridoInicial: number;
+}
+
 export interface GalleryItem {
   id: string;
   url: string;
@@ -182,6 +194,7 @@ export interface ProposalDocConfig {
   footer: FooterConfig;
   texts: TextsConfig;
   assumptions: AssumptionsConfig;
+  pricing: PricingConfig;
   gallery: GalleryConfig;
   /** estrutura das propostas de usina nova */
   sections: SectionConfig[];
@@ -398,6 +411,17 @@ export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
     fatorCo2KgPorKwh: 0.0817,
     validadeDias: 15,
   },
+  pricing: {
+    onGridMin: 1800,
+    onGridMax: 5000,
+    onGridInicial: 2500,
+    offGridMin: 5800,
+    offGridMax: 10000,
+    offGridInicial: 6200,
+    hibridoMin: 3400,
+    hibridoMax: 6200,
+    hibridoInicial: 4000,
+  },
   gallery: {
     titulo: 'Projetos entregues',
     descricao: 'Alguns sistemas fotovoltaicos projetados e instalados pela nossa equipe.',
@@ -441,6 +465,7 @@ export function mergeConfig(partial?: unknown): ProposalDocConfig {
     footer: { ...base.footer, ...(p.footer ?? {}) },
     texts: { ...base.texts, ...(p.texts ?? {}) },
     assumptions: { ...base.assumptions, ...(p.assumptions ?? {}) },
+    pricing: { ...base.pricing, ...(p.pricing ?? {}) },
     gallery: {
       ...base.gallery,
       ...(p.gallery ?? {}),
