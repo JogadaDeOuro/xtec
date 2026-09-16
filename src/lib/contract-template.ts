@@ -256,6 +256,7 @@ function normalize(row: {
       headerSubtitle: c.headerSubtitle ?? DEFAULT_CONTRACT_TEMPLATE.headerSubtitle,
       body: c.body ?? DEFAULT_CONTRACT_TEMPLATE.body,
       footerText: c.footerText ?? DEFAULT_CONTRACT_TEMPLATE.footerText,
+      accentColor: c.accentColor || DEFAULT_CONTRACT_ACCENT,
     },
   };
 }
