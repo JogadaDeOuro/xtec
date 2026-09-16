@@ -14,9 +14,11 @@ import { ContractDocument } from '@/components/ContractDocument';
 import logoImg from '@/assets/logo-inforsol.png';
 import { fetchProposalSettings } from '@/lib/proposal-settings';
 import {
-  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, ensureDefaultContractTemplate,
+  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, CONTRACT_TYPE_LABELS,
+  ensureDefaultContractTemplate,
   createContractTemplate, updateContractTemplate, setDefaultContractTemplate, deleteContractTemplate,
   buildContractVariables, type ContractTemplate, type ContractTemplateContent, type ContractVariableSource,
+  type ContractProposalType,
 } from '@/lib/contract-template';
 
 const CONTRACT_ACCENT_PRESETS = [
@@ -49,6 +51,7 @@ export default function ModeloContrato() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<ContractTemplate[]>([]);
+  const [proposalType, setProposalType] = useState<ContractProposalType>('instalacao');
   const [selectedId, setSelectedId] = useState<string>('');
   const [draft, setDraft] = useState<ContractTemplateContent>(DEFAULT_CONTRACT_TEMPLATE);
   const [name, setName] = useState('');
@@ -57,7 +60,16 @@ export default function ModeloContrato() {
   const [previewSource, setPreviewSource] = useState<string>('exemplo');
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  const selected = templates.find(t => t.id === selectedId);
+  const typeTemplates = templates.filter(t => t.proposalType === proposalType);
+  const selected = typeTemplates.find(t => t.id === selectedId);
+
+  const selectType = (type: ContractProposalType) => {
+    setProposalType(type);
+    const list = templates.filter(t => t.proposalType === type);
+    const def = list.find(t => t.isDefault) || list[0];
+    if (def) { setSelectedId(def.id); setDraft(def.content); setName(def.name); }
+    else { setSelectedId(''); setDraft(DEFAULT_CONTRACT_TEMPLATE); setName(''); }
+  };
 
   useEffect(() => {
     (async () => {
@@ -71,8 +83,8 @@ export default function ModeloContrato() {
             .limit(20),
         ]);
         setTemplates(tpls);
-        const def = tpls.find(t => t.isDefault) || tpls[0];
-        if (def) { setSelectedId(def.id); setDraft(def.content); setName(def.name); }
+        const def = tpls.find(t => t.proposalType === 'instalacao' && t.isDefault) || tpls.find(t => t.proposalType === 'instalacao') || tpls[0];
+        if (def) { setProposalType(def.proposalType); setSelectedId(def.id); setDraft(def.content); setName(def.name); }
         if (settings) setCompany(settings.company as unknown as Record<string, string | undefined>);
         setContracts((cs || []).map(c => ({
           contractId: c.id,
@@ -108,7 +120,7 @@ export default function ModeloContrato() {
   const vars = useMemo(() => buildContractVariables(source), [source]);
 
   const selectTemplate = (id: string) => {
-    const t = templates.find(x => x.id === id);
+    const t = typeTemplates.find(x => x.id === id);
     if (!t) return;
     setSelectedId(id); setDraft(t.content); setName(t.name);
   };
@@ -150,7 +162,7 @@ export default function ModeloContrato() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      const t = await createContractTemplate(`Modelo ${templates.length + 1}`, draft, false);
+      const t = await createContractTemplate(`Modelo ${templates.length + 1}`, draft, false, proposalType);
       const tpls = await reload();
       const created = tpls.find(x => x.id === t.id);
       if (created) { setSelectedId(created.id); setName(created.name); setDraft(created.content); }
@@ -165,7 +177,7 @@ export default function ModeloContrato() {
   const handleSetDefault = async () => {
     if (!selectedId) return;
     try {
-      await setDefaultContractTemplate(selectedId);
+      await setDefaultContractTemplate(selectedId, proposalType);
       await reload();
       toast.success('Modelo definido como padrão');
     } catch {
@@ -174,11 +186,11 @@ export default function ModeloContrato() {
   };
 
   const handleDelete = async () => {
-    if (!selectedId || templates.length <= 1) { toast.error('Mantenha ao menos um modelo'); return; }
+    if (!selectedId || typeTemplates.length <= 1) { toast.error('Mantenha ao menos um modelo deste tipo'); return; }
     try {
       await deleteContractTemplate(selectedId);
       const tpls = await reload();
-      const next = tpls[0];
+      const next = tpls.find(t => t.proposalType === proposalType);
       if (next) { setSelectedId(next.id); setName(next.name); setDraft(next.content); }
       toast.success('Modelo removido');
     } catch {
@@ -208,10 +220,18 @@ export default function ModeloContrato() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Select value={proposalType} onValueChange={v => selectType(v as ContractProposalType)}>
+            <SelectTrigger className="w-[190px]"><SelectValue placeholder="Tipo de contrato" /></SelectTrigger>
+            <SelectContent>
+              {(Object.keys(CONTRACT_TYPE_LABELS) as ContractProposalType[]).map(k => (
+                <SelectItem key={k} value={k}>{CONTRACT_TYPE_LABELS[k]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={selectedId} onValueChange={selectTemplate}>
             <SelectTrigger className="w-[220px]"><SelectValue placeholder="Modelo" /></SelectTrigger>
             <SelectContent>
-              {templates.map(t => (
+              {typeTemplates.map(t => (
                 <SelectItem key={t.id} value={t.id}>{t.name}{t.isDefault ? ' • padrão' : ''}</SelectItem>
               ))}
             </SelectContent>

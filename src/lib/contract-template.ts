@@ -15,11 +15,19 @@ export interface ContractTemplateContent {
 export const DEFAULT_CONTRACT_ACCENT = '#14532d';
 
 
+export type ContractProposalType = 'instalacao' | 'manutencao';
+
+export const CONTRACT_TYPE_LABELS: Record<ContractProposalType, string> = {
+  instalacao: 'Instalação / Usina',
+  manutencao: 'Manutenção',
+};
+
 export interface ContractTemplate {
   id: string;
   name: string;
   description: string;
   content: ContractTemplateContent;
+  proposalType: ContractProposalType;
   isDefault: boolean;
   isActive: boolean;
   updatedAt?: string;
@@ -123,6 +131,46 @@ O presente contrato poderá ser rescindido por qualquer das partes mediante noti
 Fica eleito o foro da comarca de %foro% para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.`,
 };
 
+/** Modelo padrão para contratos de manutenção de usinas. */
+export const DEFAULT_MAINTENANCE_CONTRACT_TEMPLATE: ContractTemplateContent = {
+  headerTitle: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS',
+  headerSubtitle: 'Manutenção de Usina de Energia Solar Fotovoltaica',
+  accentColor: DEFAULT_CONTRACT_ACCENT,
+  footerText: '%empresa_nome% — CNPJ: %empresa_cnpj%\n%empresa_telefone% — %empresa_email%\nEste documento tem validade jurídica conforme Lei nº 14.063/2020',
+  body: `## CLÁUSULA 1ª — DAS PARTES
+**CONTRATADA:** %empresa_nome%, inscrita no CNPJ sob nº %empresa_cnpj%, com sede em %empresa_cidade%/%empresa_estado%, doravante denominada CONTRATADA.
+**CONTRATANTE:** %cliente_nome%, inscrito(a) no CPF/CNPJ sob nº %cliente_documento%, residente/sediado(a) em %cliente_endereco%, %cliente_cidade_estado%, doravante denominado(a) CONTRATANTE.
+
+## CLÁUSULA 2ª — DO OBJETO
+O presente contrato tem por objeto a prestação de serviços de **manutenção da usina de energia solar fotovoltaica** do CONTRATANTE, incluindo os serviços descritos na proposta nº %numero_proposta%, tais como roçagem e controle de vegetação, limpeza dos módulos, conferência de aterramento e de estrutura, e recomendações de manutenção periódica e preventiva.
+
+## CLÁUSULA 3ª — DO VALOR E FORMA DE PAGAMENTO
+Valor total do contrato: **%valor%**
+Condição de pagamento: **%condicao_pagamento%**
+%parcelas_lista%
+O não pagamento nas datas acordadas acarretará juros de mora de 1% ao mês e multa de 2% sobre o valor em atraso.
+
+## CLÁUSULA 4ª — DO PRAZO DE EXECUÇÃO
+A CONTRATADA se compromete a executar os serviços no prazo de **15 (quinze) dias úteis** após a confirmação do pagamento inicial e agendamento com o CONTRATANTE.
+
+## CLÁUSULA 5ª — DAS OBRIGAÇÕES DA CONTRATADA
+- Executar os serviços com profissionais qualificados e equipamentos adequados
+- Utilizar produtos autorizados e em conformidade com as normas ambientais vigentes
+- Emitir relatório fotográfico dos serviços executados
+- Apresentar recomendações de manutenção periódica e preventiva
+
+## CLÁUSULA 6ª — DAS OBRIGAÇÕES DO CONTRATANTE
+- Efetuar os pagamentos nas datas e formas acordadas
+- Disponibilizar acesso ao local da usina, inclusive água e energia quando necessário
+- Informar previamente restrições de acesso ou particularidades do terreno
+
+## CLÁUSULA 7ª — DA RESCISÃO
+O presente contrato poderá ser rescindido por qualquer das partes mediante notificação escrita com antecedência mínima de 15 (quinze) dias, ficando a parte que der causa à rescisão obrigada ao pagamento de multa rescisória de 10% sobre o valor total do contrato.
+
+## CLÁUSULA 8ª — DO FORO
+Fica eleito o foro da comarca de %foro% para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.`,
+};
+
 export interface ContractVariableSource {
   clientName?: string;
   clientDocument?: string;
@@ -186,7 +234,7 @@ export function buildContractVariables(src: ContractVariableSource): Record<stri
     valor_total_geral: formatCurrency(valor + gar),
 
     empresa_nome: empresaNome,
-    empresa_cnpj: c.cnpj || '00.000.000/0001-00',
+    empresa_cnpj: c.cnpj || '',
     empresa_endereco: c.endereco || '______',
     empresa_cidade: cidade || 'São Paulo',
     empresa_estado: estado || 'SP',
@@ -241,13 +289,14 @@ export function inlineToHtml(text: string): string {
 
 function normalize(row: {
   id: string; name: string; description: string | null; content: unknown;
-  is_default: boolean; is_active: boolean; updated_at?: string;
+  is_default: boolean; is_active: boolean; updated_at?: string; proposal_type?: string;
 }): ContractTemplate {
   const c = (row.content || {}) as Partial<ContractTemplateContent>;
   return {
     id: row.id,
     name: row.name,
     description: row.description || '',
+    proposalType: row.proposal_type === 'manutencao' ? 'manutencao' : 'instalacao',
     isDefault: row.is_default,
     isActive: row.is_active,
     updatedAt: row.updated_at,
@@ -271,11 +320,12 @@ export async function listContractTemplates(): Promise<ContractTemplate[]> {
   return (data || []).map(normalize as never);
 }
 
-export async function getDefaultContractTemplate(): Promise<ContractTemplate | null> {
+export async function getDefaultContractTemplate(proposalType: ContractProposalType = 'instalacao'): Promise<ContractTemplate | null> {
   const { data } = await supabase
     .from('contract_templates')
     .select('*')
     .eq('is_active', true)
+    .eq('proposal_type', proposalType)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: true })
     .limit(1);
@@ -283,11 +333,11 @@ export async function getDefaultContractTemplate(): Promise<ContractTemplate | n
   return normalize(data[0] as never);
 }
 
-export async function createContractTemplate(name: string, content: ContractTemplateContent, isDefault = false) {
+export async function createContractTemplate(name: string, content: ContractTemplateContent, isDefault = false, proposalType: ContractProposalType = 'instalacao') {
   const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('contract_templates')
-    .insert({ name, content: content as never, is_default: isDefault, created_by: user?.id ?? null })
+    .insert({ name, content: content as never, is_default: isDefault, proposal_type: proposalType, created_by: user?.id ?? null })
     .select('*')
     .single();
   if (error) throw error;
@@ -305,8 +355,8 @@ export async function updateContractTemplate(id: string, patch: { name?: string;
   if (error) throw error;
 }
 
-export async function setDefaultContractTemplate(id: string) {
-  await supabase.from('contract_templates').update({ is_default: false }).neq('id', id);
+export async function setDefaultContractTemplate(id: string, proposalType: ContractProposalType = 'instalacao') {
+  await supabase.from('contract_templates').update({ is_default: false }).eq('proposal_type', proposalType).neq('id', id);
   const { error } = await supabase.from('contract_templates').update({ is_default: true, is_active: true }).eq('id', id);
   if (error) throw error;
 }
@@ -316,14 +366,21 @@ export async function deleteContractTemplate(id: string) {
   if (error) throw error;
 }
 
-/** Garante que exista pelo menos o modelo padrão. */
+/** Garante que exista pelo menos um modelo padrão por tipo de proposta. */
 export async function ensureDefaultContractTemplate(): Promise<ContractTemplate[]> {
-  const list = await listContractTemplates();
-  if (list.length) return list;
+  let list = await listContractTemplates();
+  const hasInstalacao = list.some(t => t.proposalType === 'instalacao');
+  const hasManutencao = list.some(t => t.proposalType === 'manutencao');
   try {
-    await createContractTemplate('Modelo padrão Inforsol', DEFAULT_CONTRACT_TEMPLATE, true);
+    if (!hasInstalacao) {
+      await createContractTemplate('Modelo padrão — Instalação', DEFAULT_CONTRACT_TEMPLATE, true, 'instalacao');
+    }
+    if (!hasManutencao) {
+      await createContractTemplate('Modelo padrão — Manutenção', DEFAULT_MAINTENANCE_CONTRACT_TEMPLATE, true, 'manutencao');
+    }
   } catch {
     return list;
   }
-  return listContractTemplates();
+  if (!hasInstalacao || !hasManutencao) list = await listContractTemplates();
+  return list;
 }

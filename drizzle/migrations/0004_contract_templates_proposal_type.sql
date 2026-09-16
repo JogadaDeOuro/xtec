@@ -1,0 +1,2 @@
+ALTER TABLE public.contract_templates ADD COLUMN IF NOT EXISTS proposal_type TEXT NOT NULL DEFAULT 'instalacao';
+CREATE INDEX IF NOT EXISTS idx_contract_templates_type ON public.contract_templates (proposal_type, is_default);
