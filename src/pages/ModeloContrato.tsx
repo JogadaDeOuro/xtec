@@ -186,11 +186,11 @@ export default function ModeloContrato() {
   };
 
   const handleDelete = async () => {
-    if (!selectedId || templates.length <= 1) { toast.error('Mantenha ao menos um modelo'); return; }
+    if (!selectedId || typeTemplates.length <= 1) { toast.error('Mantenha ao menos um modelo deste tipo'); return; }
     try {
       await deleteContractTemplate(selectedId);
       const tpls = await reload();
-      const next = tpls[0];
+      const next = tpls.find(t => t.proposalType === proposalType);
       if (next) { setSelectedId(next.id); setName(next.name); setDraft(next.content); }
       toast.success('Modelo removido');
     } catch {
@@ -220,10 +220,18 @@ export default function ModeloContrato() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Select value={proposalType} onValueChange={v => selectType(v as ContractProposalType)}>
+            <SelectTrigger className="w-[190px]"><SelectValue placeholder="Tipo de contrato" /></SelectTrigger>
+            <SelectContent>
+              {(Object.keys(CONTRACT_TYPE_LABELS) as ContractProposalType[]).map(k => (
+                <SelectItem key={k} value={k}>{CONTRACT_TYPE_LABELS[k]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={selectedId} onValueChange={selectTemplate}>
             <SelectTrigger className="w-[220px]"><SelectValue placeholder="Modelo" /></SelectTrigger>
             <SelectContent>
-              {templates.map(t => (
+              {typeTemplates.map(t => (
                 <SelectItem key={t.id} value={t.id}>{t.name}{t.isDefault ? ' • padrão' : ''}</SelectItem>
               ))}
             </SelectContent>
