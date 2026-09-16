@@ -201,13 +201,14 @@ export default function NovaManutencaoPage() {
         ? await updateProposal(id, buildInput(status))
         : await createProposal(buildInput(status));
       setSavedId(saved.id);
-      if (status === 'rascunho') {
-        toast.success('Rascunho salvo!');
-        navigate('/propostas');
-      } else {
+      if (status === 'enviada') {
         const url = customerUrl(`/aceite/${saved.publicToken}`);
         await navigator.clipboard.writeText(url);
-        toast.success('Proposta salva e link de aceite copiado!', { description: url });
+        await updateProposal(saved.id, buildInput('rascunho'));
+        toast.success('Rascunho salvo e link de aceite copiado!', { description: url });
+      } else {
+        toast.success('Rascunho salvo!');
+        navigate('/propostas');
       }
     } catch (e) {
       toast.error('Erro ao salvar: ' + (e as Error).message);
@@ -560,14 +561,11 @@ export default function NovaManutencaoPage() {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full gap-2" disabled={saving} onClick={() => salvar('rascunho')}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar Rascunho
-                </Button>
                 <Button variant="outline" className="w-full gap-2" onClick={() => setPdfOpen(true)}>
                   <Eye className="h-4 w-4" /> Visualizar PDF
                 </Button>
-                <Button variant="secondary" className="w-full gap-2" disabled={saving} onClick={() => salvar('enviada')}>
-                  <Send className="h-4 w-4" /> Salvar e Copiar Link de Aceite
+                <Button className="w-full gap-2" disabled={saving} onClick={() => salvar('enviada')}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar Rascunho e Copiar Aceite
                 </Button>
                 <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" disabled={saving} onClick={gerarContrato}>
                   <FileSignature className="h-4 w-4" /> Gerar Contrato

@@ -254,8 +254,8 @@ export default function EditarPropostaPage() {
   const copyAcceptanceLink = async () => {
     if (!id) return;
     try {
-      await updateProposal(id, buildProposalInput('enviada'));
-      setProposal(prev => prev ? { ...prev, status: 'enviada' } : prev);
+      await updateProposal(id, buildProposalInput('rascunho'));
+      setProposal(prev => prev ? { ...prev, status: 'rascunho' } : prev);
       const url = customerUrl(`/aceite/${proposal.publicToken}`);
       await navigator.clipboard.writeText(url);
       toast.success('Proposta salva e link de aceite copiado!', { description: url });
@@ -679,21 +679,11 @@ export default function EditarPropostaPage() {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full gap-2" onClick={async () => {
-                  if (!id) return;
-                  try {
-                    await updateProposal(id, buildProposalInput(proposal?.status === 'aceita' ? 'aceita' : 'rascunho'));
-                    toast.success('Proposta salva!');
-                    navigate('/propostas');
-                  } catch (e) {
-                    toast.error('Erro ao salvar: ' + (e as Error).message);
-                  }
-                }}><Save className="h-4 w-4" /> Salvar Rascunho</Button>
                 <Button variant="outline" className="w-full gap-2" onClick={() => setPreviewOpen(true)}>
                   <Eye className="h-4 w-4" /> Visualizar PDF
                 </Button>
-                <Button variant="secondary" className="w-full gap-2" onClick={copyAcceptanceLink}>
-                  <Send className="h-4 w-4" /> Salvar e Copiar Link de Aceite
+                <Button className="w-full gap-2" onClick={copyAcceptanceLink}>
+                  <Save className="h-4 w-4" /> Salvar Rascunho e Copiar Aceite
                 </Button>
                 <Button variant="outline" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10" onClick={async () => {
                   if (!client) { toast.error('Selecione um cliente'); return; }
