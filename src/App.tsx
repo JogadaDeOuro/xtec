@@ -31,6 +31,7 @@ const ModeloContrato = lazy(() => import("./pages/ModeloContrato"));
 const WhatsApp = lazy(() => import("./pages/WhatsApp"));
 const WhatsAppAdmin = lazy(() => import("./pages/WhatsAppAdmin"));
 const Login = lazy(() => import("./pages/Login"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AcompanhamentoPublico = lazy(() => import("./pages/AcompanhamentoPublico"));
@@ -83,6 +84,7 @@ const App = () => (
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<ProtectedPage pageKey="dashboard"><Dashboard /></ProtectedPage>} />
                 <Route path="/crm" element={<ProtectedPage pageKey="crm"><CRM /></ProtectedPage>} />
