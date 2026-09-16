@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import logoInforsol from '@/assets/logo-inforsol.png';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signUp, resetPassword } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -30,7 +31,11 @@ export default function Login() {
         ? 'E-mail ou senha incorretos'
         : error.message);
     } else {
-      navigate('/');
+      const requestedReturn = (location.state as { returnTo?: unknown } | null)?.returnTo;
+      const returnTo = typeof requestedReturn === 'string' && requestedReturn.startsWith('/.lovable/oauth/consent?')
+        ? requestedReturn
+        : '/';
+      navigate(returnTo, { replace: true });
     }
   };
 
