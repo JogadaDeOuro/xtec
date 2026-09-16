@@ -205,16 +205,22 @@ export default function CRM() {
   }, []);
 
   const fetchVendedores = useCallback(async () => {
-    // Get users with role 'vendedor'
-    const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'vendedor');
+    // Responsáveis = vendedores e administradores (o admin também pode assumir clientes)
+    const { data: roles } = await supabase.from('user_roles').select('user_id, role').in('role', ['vendedor', 'admin']);
     if (roles && roles.length > 0) {
-      const userIds = roles.map((r: any) => r.user_id);
+      const userIds = Array.from(new Set(roles.map((r: any) => r.user_id)));
       const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', userIds);
-      if (profiles) setVendedores(profiles as VendedorOption[]);
+      if (profiles) {
+        const list = (profiles as VendedorOption[])
+          .filter(p => (p.full_name ?? '').trim().length > 0)
+          .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+        setVendedores(list);
+      }
     } else {
       setVendedores([]);
     }
   }, []);
+
 
   const fetchTags = useCallback(async () => {
     const { data } = await supabase.from('tags').select('*').order('name');
