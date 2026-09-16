@@ -1,11 +1,12 @@
 import {
   LayoutDashboard, Users, FileText, FileSignature, Clock, BarChart3,
-  Settings, Plug, Sun, Moon, LogOut, ChevronLeft, MessageSquare, Palette,
+  Settings, Plug, Sun, Moon, LogOut, ChevronLeft, MessageSquare, Palette, ShieldCheck, CreditCard,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/hooks/useAuth';
+import { useAccount } from '@/hooks/useAccount';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -42,9 +43,11 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { profile, signOut, user, isAdmin, hasPageAccess } = useAuth();
+  const { isSuperAdmin } = useAccount();
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === '/dashboard') return location.pathname === '/dashboard';
+    if (path === '/admin') return location.pathname === '/admin';
     return location.pathname.startsWith(path);
   };
 
@@ -100,7 +103,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink
                       to={item.url}
-                      end={item.url === '/'}
+                      end={item.url === '/dashboard'}
                       className="hover:bg-sidebar-accent/50"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
@@ -142,9 +145,50 @@ export function AppSidebar() {
             </SidebarGroup>
           </>
         )}
+
+        {isSuperAdmin && (
+          <>
+            <Separator className="bg-sidebar-border" />
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider">
+                Plataforma
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname.startsWith('/admin')}>
+                      <NavLink
+                        to="/admin"
+                        className="hover:bg-sidebar-accent/50"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        {!collapsed && <span>Admin</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-3 space-y-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname.startsWith('/conta')}>
+              <NavLink
+                to="/conta/plano"
+                className="hover:bg-sidebar-accent/50"
+                activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+              >
+                <CreditCard className="h-4 w-4" />
+                {!collapsed && <span>Plano e assinatura</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={profile?.avatar_url ?? undefined} />
