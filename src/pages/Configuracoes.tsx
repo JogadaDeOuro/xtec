@@ -16,6 +16,9 @@ import { Building2, FileText, Calculator, Users, Save, UserPlus, Loader2, Shield
 import { useAuth, ALL_PAGES, type PageKey } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchProposalSettings, saveProposalSettings } from '@/lib/proposal-settings';
+import { DEFAULT_PROPOSAL_CONFIG, type CompanyConfig } from '@/lib/proposal-config';
+import { formatCpfCnpj } from '@/lib/utils';
 
 const PAGE_LABELS: Record<PageKey, string> = {
   dashboard: 'Dashboard',
@@ -51,6 +54,9 @@ export default function Configuracoes() {
   const [editName, setEditName] = useState('');
   const [editRole, setEditRole] = useState('vendedor');
   const [editPermissions, setEditPermissions] = useState<string[]>([]);
+  const [company, setCompany] = useState<CompanyConfig>(DEFAULT_PROPOSAL_CONFIG.company);
+  const [loadingCompany, setLoadingCompany] = useState(true);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -74,7 +80,39 @@ export default function Configuracoes() {
 
   useEffect(() => {
     fetchUsers();
+    fetchProposalSettings()
+      .then(config => setCompany(config.company))
+      .catch(() => toast.error('Não foi possível carregar os dados da empresa'))
+      .finally(() => setLoadingCompany(false));
   }, []);
+
+  const updateCompany = (field: keyof CompanyConfig, value: string) => {
+    setCompany(current => ({ ...current, [field]: value }));
+  };
+
+  const handleSaveCompany = async () => {
+    if (!isAdmin) {
+      toast.error('Somente administradores podem salvar os dados da empresa');
+      return;
+    }
+    const cnpjDigits = company.cnpj.replace(/\D/g, '');
+    if (cnpjDigits.length > 0 && cnpjDigits.length !== 14) {
+      toast.error('Informe um CNPJ completo');
+      return;
+    }
+    setSavingCompany(true);
+    try {
+      const current = await fetchProposalSettings();
+      await saveProposalSettings({ ...current, company });
+      const saved = await fetchProposalSettings();
+      setCompany(saved.company);
+      toast.success('Dados da empresa salvos');
+    } catch {
+      toast.error('Não foi possível salvar os dados da empresa');
+    } finally {
+      setSavingCompany(false);
+    }
+  };
 
   const savePermissions = async (userId: string, pages: string[]) => {
     // Delete existing
@@ -226,11 +264,11 @@ export default function Configuracoes() {
             <CardHeader><CardTitle className="text-base">Dados da Empresa</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Razão Social</Label><Input defaultValue="Inforsol Energia Solar Ltda" className="mt-1" /></div>
-                <div><Label className="text-xs">CNPJ</Label><Input defaultValue="12.345.678/0001-90" className="mt-1" /></div>
-                <div><Label className="text-xs">Telefone</Label><Input defaultValue="(11) 3456-7890" className="mt-1" /></div>
-                <div><Label className="text-xs">E-mail</Label><Input defaultValue="contato@inforsol.com.br" className="mt-1" /></div>
-                <div className="sm:col-span-2"><Label className="text-xs">Endereço</Label><Input defaultValue="Av. Solar, 1000 - São Paulo, SP" className="mt-1" /></div>
+                <div><Label className="text-xs">Razão Social</Label><Input value={company.razaoSocial} onChange={e => updateCompany('razaoSocial', e.target.value)} disabled={loadingCompany} className="mt-1" /></div>
+                <div><Label className="text-xs">CNPJ</Label><Input type="text" inputMode="numeric" value={company.cnpj} onChange={e => updateCompany('cnpj', formatCpfCnpj(e.target.value))} disabled={loadingCompany} maxLength={18} className="mt-1" placeholder="00.000.000/0000-00" /></div>
+                <div><Label className="text-xs">Telefone</Label><Input value={company.telefone} onChange={e => updateCompany('telefone', e.target.value)} disabled={loadingCompany} className="mt-1" /></div>
+                <div><Label className="text-xs">E-mail</Label><Input type="email" value={company.email} onChange={e => updateCompany('email', e.target.value)} disabled={loadingCompany} className="mt-1" /></div>
+                <div className="sm:col-span-2"><Label className="text-xs">Endereço</Label><Input value={company.endereco} onChange={e => updateCompany('endereco', e.target.value)} disabled={loadingCompany} className="mt-1" /></div>
               </div>
               <Separator />
               <div>
@@ -240,7 +278,9 @@ export default function Configuracoes() {
                   <p className="text-xs mt-1">PNG, JPG ou SVG (máx. 2MB)</p>
                 </div>
               </div>
-              <Button className="gap-2"><Save className="h-4 w-4" /> Salvar</Button>
+              <Button className="gap-2" onClick={handleSaveCompany} disabled={loadingCompany || savingCompany || !isAdmin}>
+                {savingCompany ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
