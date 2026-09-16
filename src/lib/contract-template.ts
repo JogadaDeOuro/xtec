@@ -289,13 +289,14 @@ export function inlineToHtml(text: string): string {
 
 function normalize(row: {
   id: string; name: string; description: string | null; content: unknown;
-  is_default: boolean; is_active: boolean; updated_at?: string;
+  is_default: boolean; is_active: boolean; updated_at?: string; proposal_type?: string;
 }): ContractTemplate {
   const c = (row.content || {}) as Partial<ContractTemplateContent>;
   return {
     id: row.id,
     name: row.name,
     description: row.description || '',
+    proposalType: row.proposal_type === 'manutencao' ? 'manutencao' : 'instalacao',
     isDefault: row.is_default,
     isActive: row.is_active,
     updatedAt: row.updated_at,
@@ -319,11 +320,12 @@ export async function listContractTemplates(): Promise<ContractTemplate[]> {
   return (data || []).map(normalize as never);
 }
 
-export async function getDefaultContractTemplate(): Promise<ContractTemplate | null> {
+export async function getDefaultContractTemplate(proposalType: ContractProposalType = 'instalacao'): Promise<ContractTemplate | null> {
   const { data } = await supabase
     .from('contract_templates')
     .select('*')
     .eq('is_active', true)
+    .eq('proposal_type', proposalType)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: true })
     .limit(1);
@@ -331,11 +333,11 @@ export async function getDefaultContractTemplate(): Promise<ContractTemplate | n
   return normalize(data[0] as never);
 }
 
-export async function createContractTemplate(name: string, content: ContractTemplateContent, isDefault = false) {
+export async function createContractTemplate(name: string, content: ContractTemplateContent, isDefault = false, proposalType: ContractProposalType = 'instalacao') {
   const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('contract_templates')
-    .insert({ name, content: content as never, is_default: isDefault, created_by: user?.id ?? null })
+    .insert({ name, content: content as never, is_default: isDefault, proposal_type: proposalType, created_by: user?.id ?? null })
     .select('*')
     .single();
   if (error) throw error;
