@@ -75,6 +75,7 @@ export const CONTRACT_VARIABLES: ContractVariable[] = [
 export const DEFAULT_CONTRACT_TEMPLATE: ContractTemplateContent = {
   headerTitle: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS',
   headerSubtitle: 'Instalação de Sistema de Energia Solar Fotovoltaica',
+  accentColor: DEFAULT_CONTRACT_ACCENT,
   footerText: '%empresa_nome% — CNPJ: %empresa_cnpj%\n%empresa_telefone% — %empresa_email%\nEste documento tem validade jurídica conforme Lei nº 14.063/2020',
   body: `## CLÁUSULA 1ª — DAS PARTES
 **CONTRATADA:** %empresa_nome%, inscrita no CNPJ sob nº %empresa_cnpj%, com sede em %empresa_cidade%/%empresa_estado%, doravante denominada CONTRATADA.
