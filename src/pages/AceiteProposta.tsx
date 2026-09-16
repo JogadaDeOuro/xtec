@@ -247,7 +247,7 @@ export default function AceiteProposta() {
                     + {formatCurrency(calcExtendedWarranty(baseValor))} (8% do contrato)
                   </p>
                 </div>
-                <Switch checked={garantia} onCheckedChange={setGarantia} />
+                <Switch aria-label="Incluir garantia estendida" checked={garantia} onCheckedChange={setGarantia} />
               </div>
             </section>
 
