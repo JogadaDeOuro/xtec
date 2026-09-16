@@ -16,6 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { describeSaasError } from '@/lib/saas';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import {
   createProposal, updateProposal, fetchProposal, type ProposalInput,
@@ -248,7 +249,7 @@ export default function NovaManutencaoPage() {
         status: 'rascunho',
         user_id: userData.user?.id ?? null,
       }).select('id').single();
-      if (error) throw error;
+      if (error) throw new Error(describeSaasError(error) ?? error.message);
       toast.success('Proposta aceita e contrato criado!');
       navigate(`/contratos?contrato=${created.id}`);
     } catch (e) {

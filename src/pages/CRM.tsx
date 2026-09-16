@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { describeSaasError } from '@/lib/saas';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn, formatCpfCnpj } from '@/lib/utils';
@@ -285,6 +286,8 @@ export default function CRM() {
       if (error) toast.error(error.message); else toast.success('Cliente atualizado!');
     } else {
       const { error } = await supabase.from('clients').insert({ ...payload, user_id: user?.id ?? null });
+      const saasMessage = describeSaasError(error);
+      if (saasMessage) { toast.error(saasMessage); setSaving(false); return; }
       if (error) toast.error(error.message); else toast.success('Cliente cadastrado!');
     }
     setSaving(false);

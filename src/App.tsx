@@ -6,13 +6,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AccountProvider, useAccount } from "@/hooks/useAccount";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SuperAdminRoute } from "@/components/SuperAdminRoute";
+import { RestrictedAccount } from "@/components/RestrictedAccount";
 import { AppLayout } from "@/components/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RouteSeo } from "@/components/RouteSeo";
 
 // Lazy loaded pages
+const Landing = lazy(() => import("./pages/Landing"));
+const Cadastro = lazy(() => import("./pages/Cadastro"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const CRM = lazy(() => import("./pages/CRM"));
 const Propostas = lazy(() => import("./pages/Propostas"));
@@ -27,6 +32,15 @@ const Integracoes = lazy(() => import("./pages/Integracoes"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const PersonalizacaoProposta = lazy(() => import("./pages/PersonalizacaoProposta"));
 const ModeloContrato = lazy(() => import("./pages/ModeloContrato"));
+const ContaPlano = lazy(() => import("./pages/ContaPlano"));
+
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const AdminEmpresas = lazy(() => import("./pages/admin/AdminEmpresas"));
+const AdminAssinaturas = lazy(() => import("./pages/admin/AdminAssinaturas"));
+const AdminPlanos = lazy(() => import("./pages/admin/AdminPlanos"));
+const AdminFinanceiro = lazy(() => import("./pages/admin/AdminFinanceiro"));
+const AdminUso = lazy(() => import("./pages/admin/AdminUso"));
+const AdminAuditoria = lazy(() => import("./pages/admin/AdminAuditoria"));
 
 const WhatsApp = lazy(() => import("./pages/WhatsApp"));
 const WhatsAppAdmin = lazy(() => import("./pages/WhatsAppAdmin"));
@@ -58,10 +72,33 @@ function PageLoader() {
   );
 }
 
-function ProtectedPage({ children, pageKey }: { children: React.ReactNode; pageKey?: string }) {
+/** Conta restrita por inadimplência: só libera a área de assinatura. */
+function RestrictionGate({ children, allowRestricted }: { children: React.ReactNode; allowRestricted?: boolean }) {
+  const { restricted } = useAccount();
+  if (restricted && !allowRestricted) return <RestrictedAccount />;
+  return <>{children}</>;
+}
+
+function ProtectedPage({
+  children,
+  pageKey,
+  allowRestricted,
+}: { children: React.ReactNode; pageKey?: string; allowRestricted?: boolean }) {
   return (
     <ProtectedRoute pageKey={pageKey}>
-      <AppLayout>{children}</AppLayout>
+      <RestrictionGate allowRestricted={allowRestricted}>
+        <AppLayout>{children}</AppLayout>
+      </RestrictionGate>
+    </ProtectedRoute>
+  );
+}
+
+function AdminPage({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <SuperAdminRoute>
+        <AppLayout>{children}</AppLayout>
+      </SuperAdminRoute>
     </ProtectedRoute>
   );
 }
@@ -79,41 +116,58 @@ const App = () => (
           }}
         >
           <AuthProvider>
-            <RouteSeo />
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/" element={<ProtectedPage pageKey="dashboard"><Dashboard /></ProtectedPage>} />
-                <Route path="/crm" element={<ProtectedPage pageKey="crm"><CRM /></ProtectedPage>} />
-                <Route path="/propostas" element={<ProtectedPage pageKey="propostas"><Propostas /></ProtectedPage>} />
-                <Route path="/propostas/nova" element={<ProtectedPage pageKey="propostas"><NovaPropostaPage /></ProtectedPage>} />
-                <Route path="/propostas/manutencao" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
-                <Route path="/propostas/manutencao/:id" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
-                <Route path="/propostas/:id" element={<ProtectedPage pageKey="propostas"><EditarPropostaPage /></ProtectedPage>} />
-                <Route path="/contratos" element={<ProtectedPage pageKey="contratos"><Contratos /></ProtectedPage>} />
-                <Route path="/etapas" element={<ProtectedPage pageKey="etapas"><Etapas /></ProtectedPage>} />
-                <Route path="/financeiro" element={<ProtectedPage pageKey="financeiro"><Financeiro /></ProtectedPage>} />
-                <Route path="/whatsapp" element={<ProtectedPage pageKey="whatsapp"><WhatsApp /></ProtectedPage>} />
-                <Route path="/integracoes" element={<ProtectedPage pageKey="integracoes"><Integracoes /></ProtectedPage>} />
-                <Route path="/personalizacao-proposta" element={<ProtectedPage pageKey="configuracoes"><PersonalizacaoProposta /></ProtectedPage>} />
-                <Route path="/modelo-contrato" element={<ProtectedPage pageKey="contratos"><ModeloContrato /></ProtectedPage>} />
+            <AccountProvider>
+              <RouteSeo />
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                  {/* Público */}
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/cadastro" element={<Cadastro />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
-                <Route path="/configuracoes" element={<ProtectedPage pageKey="configuracoes"><Configuracoes /></ProtectedPage>} />
-                <Route path="/whatsapp-admin" element={<ProtectedPage pageKey="configuracoes"><WhatsAppAdmin /></ProtectedPage>} />
-                <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
-                <Route path="/assinar/:token" element={<AssinarContrato />} />
-                <Route path="/proposta/:token" element={<PropostaPublica />} />
-                <Route path="/proposta/:token/print" element={<PropostaPrint />} />
+                  {/* Aplicação */}
+                  <Route path="/dashboard" element={<ProtectedPage pageKey="dashboard"><Dashboard /></ProtectedPage>} />
+                  <Route path="/crm" element={<ProtectedPage pageKey="crm"><CRM /></ProtectedPage>} />
+                  <Route path="/propostas" element={<ProtectedPage pageKey="propostas"><Propostas /></ProtectedPage>} />
+                  <Route path="/propostas/nova" element={<ProtectedPage pageKey="propostas"><NovaPropostaPage /></ProtectedPage>} />
+                  <Route path="/propostas/manutencao" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
+                  <Route path="/propostas/manutencao/:id" element={<ProtectedPage pageKey="propostas"><NovaManutencaoPage /></ProtectedPage>} />
+                  <Route path="/propostas/:id" element={<ProtectedPage pageKey="propostas"><EditarPropostaPage /></ProtectedPage>} />
+                  <Route path="/contratos" element={<ProtectedPage pageKey="contratos"><Contratos /></ProtectedPage>} />
+                  <Route path="/etapas" element={<ProtectedPage pageKey="etapas"><Etapas /></ProtectedPage>} />
+                  <Route path="/financeiro" element={<ProtectedPage pageKey="financeiro"><Financeiro /></ProtectedPage>} />
+                  <Route path="/whatsapp" element={<ProtectedPage pageKey="whatsapp"><WhatsApp /></ProtectedPage>} />
+                  <Route path="/integracoes" element={<ProtectedPage pageKey="integracoes"><Integracoes /></ProtectedPage>} />
+                  <Route path="/personalizacao-proposta" element={<ProtectedPage pageKey="configuracoes"><PersonalizacaoProposta /></ProtectedPage>} />
+                  <Route path="/modelo-contrato" element={<ProtectedPage pageKey="contratos"><ModeloContrato /></ProtectedPage>} />
+                  <Route path="/configuracoes" element={<ProtectedPage pageKey="configuracoes"><Configuracoes /></ProtectedPage>} />
+                  <Route path="/whatsapp-admin" element={<ProtectedPage pageKey="configuracoes"><WhatsAppAdmin /></ProtectedPage>} />
+                  <Route path="/conta/plano" element={<ProtectedPage allowRestricted><ContaPlano /></ProtectedPage>} />
 
-                <Route path="/aceite/:token" element={<AceiteProposta />} />
-                <Route path="/cliente" element={<PortalCliente />} />
+                  {/* Super Admin da plataforma */}
+                  <Route path="/admin" element={<AdminPage><AdminOverview /></AdminPage>} />
+                  <Route path="/admin/empresas" element={<AdminPage><AdminEmpresas /></AdminPage>} />
+                  <Route path="/admin/assinaturas" element={<AdminPage><AdminAssinaturas /></AdminPage>} />
+                  <Route path="/admin/planos" element={<AdminPage><AdminPlanos /></AdminPage>} />
+                  <Route path="/admin/financeiro" element={<AdminPage><AdminFinanceiro /></AdminPage>} />
+                  <Route path="/admin/uso" element={<AdminPage><AdminUso /></AdminPage>} />
+                  <Route path="/admin/auditoria" element={<AdminPage><AdminAuditoria /></AdminPage>} />
+
+                  {/* Links públicos de cliente */}
+                  <Route path="/acompanhamento/:token" element={<AcompanhamentoPublico />} />
+                  <Route path="/assinar/:token" element={<AssinarContrato />} />
+                  <Route path="/proposta/:token" element={<PropostaPublica />} />
+                  <Route path="/proposta/:token/print" element={<PropostaPrint />} />
+                  <Route path="/aceite/:token" element={<AceiteProposta />} />
+                  <Route path="/cliente" element={<PortalCliente />} />
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </AccountProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

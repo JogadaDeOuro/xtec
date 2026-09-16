@@ -31,6 +31,7 @@ import {
 import { formatCurrency, formatNumber, type SystemType } from '@/lib/mock-data';
 import { createProposal, type ProposalInput } from '@/lib/proposals';
 import { supabase } from '@/integrations/supabase/client';
+import { describeSaasError } from '@/lib/saas';
 import { useAuth } from '@/hooks/useAuth';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -1132,7 +1133,7 @@ export default function NovaPropostaPage() {
                       status: 'rascunho',
                       user_id: user?.id ?? null,
                     });
-                    if (error) { toast.error('Erro ao criar contrato: ' + error.message); return; }
+                    if (error) { toast.error(describeSaasError(error) ?? ('Erro ao criar contrato: ' + error.message)); return; }
                     toast.success('Proposta aceita e contrato criado!');
                     navigate('/contratos');
                   } catch (e) {

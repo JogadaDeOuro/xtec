@@ -7,8 +7,26 @@ type Meta = { title: string; description: string; noindex?: boolean };
 
 const STATIC_ROUTES: Record<string, Meta> = {
   '/': {
+    title: 'SolarFlow — gestão comercial para energia solar',
+    description: 'CRM, propostas, contratos e pós-venda para empresas de energia solar em uma só plataforma. Comece grátis.',
+  },
+  '/cadastro': {
+    title: 'Criar conta grátis — SolarFlow',
+    description: 'Crie sua conta gratuita no SolarFlow e organize clientes, propostas e contratos de energia solar.',
+  },
+  '/dashboard': {
     title: `Painel comercial — ${SITE}`,
     description: 'Acompanhe propostas, contratos e obras de energia solar em um só painel.',
+  },
+  '/conta/plano': {
+    title: `Plano e assinatura — ${SITE}`,
+    description: 'Consulte seu plano, limites e uso atual na plataforma.',
+    noindex: true,
+  },
+  '/admin': {
+    title: `Administração da plataforma — ${SITE}`,
+    description: 'Painel administrativo do SaaS SolarFlow.',
+    noindex: true,
   },
   '/login': {
     title: `Entrar — ${SITE} Propostas & Contratos`,
