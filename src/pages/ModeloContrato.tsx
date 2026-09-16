@@ -14,9 +14,11 @@ import { ContractDocument } from '@/components/ContractDocument';
 import logoImg from '@/assets/logo-inforsol.png';
 import { fetchProposalSettings } from '@/lib/proposal-settings';
 import {
-  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, ensureDefaultContractTemplate,
+  CONTRACT_VARIABLES, DEFAULT_CONTRACT_TEMPLATE, DEFAULT_CONTRACT_ACCENT, CONTRACT_TYPE_LABELS,
+  ensureDefaultContractTemplate,
   createContractTemplate, updateContractTemplate, setDefaultContractTemplate, deleteContractTemplate,
   buildContractVariables, type ContractTemplate, type ContractTemplateContent, type ContractVariableSource,
+  type ContractProposalType,
 } from '@/lib/contract-template';
 
 const CONTRACT_ACCENT_PRESETS = [

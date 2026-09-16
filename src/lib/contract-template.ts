@@ -234,7 +234,7 @@ export function buildContractVariables(src: ContractVariableSource): Record<stri
     valor_total_geral: formatCurrency(valor + gar),
 
     empresa_nome: empresaNome,
-    empresa_cnpj: c.cnpj || '00.000.000/0001-00',
+    empresa_cnpj: c.cnpj || '',
     empresa_endereco: c.endereco || '______',
     empresa_cidade: cidade || 'São Paulo',
     empresa_estado: estado || 'SP',
