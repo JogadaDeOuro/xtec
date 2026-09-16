@@ -41,7 +41,7 @@ export function ContractPDF({ open, onOpenChange, contract, showSignatures = fal
           ensureDefaultContractTemplate(),
           fetchProposalSettings().catch(() => null),
         ]);
-        const tipo = contract.systemType === 'manutencao' ? 'manutencao' : 'instalacao';
+        const tipo = (contract.systemType as string) === 'manutencao' ? 'manutencao' as const : 'instalacao' as const;
         const doTipo = tpls.filter(t => t.proposalType === tipo);
         const def = doTipo.find(t => t.isDefault && t.isActive) || doTipo.find(t => t.isActive)
           || tpls.find(t => t.isDefault && t.isActive) || tpls.find(t => t.isActive);
