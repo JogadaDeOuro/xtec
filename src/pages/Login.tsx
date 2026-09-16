@@ -152,6 +152,7 @@ export default function Login() {
       <div className="flex items-center justify-center p-4 sm:p-8 relative">
         <div className="absolute inset-0 bg-gradient-hero lg:hidden" />
         <Card className="w-full max-w-md relative animate-fade-in shadow-elegant border-border/60 bg-card/95 backdrop-blur-sm">
+        <h1 className="sr-only lg:hidden">Inforsol — Propostas e contratos de energia solar</h1>
         <CardHeader className="text-center space-y-3">
           <img src={logoInforsol} alt="Inforsol" className="mx-auto h-14 w-auto object-contain lg:hidden" />
           <div>
@@ -180,7 +181,7 @@ export default function Login() {
                   <div className="relative mt-1">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" className="pl-9 pr-9" value={password} onChange={e => setPassword(e.target.value)} required />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
@@ -216,7 +217,7 @@ export default function Login() {
                   <div className="relative mt-1">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input type={showPassword ? 'text' : 'password'} placeholder="Mínimo 6 caracteres" className="pl-9 pr-9" value={password} onChange={e => setPassword(e.target.value)} required />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
