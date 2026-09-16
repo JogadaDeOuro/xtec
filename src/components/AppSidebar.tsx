@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import logoInforsol from '@/assets/logo-inforsol.png';
 
 const mainItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard, pageKey: 'dashboard' },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard, pageKey: 'dashboard' },
   { title: 'CRM / Clientes', url: '/crm', icon: Users, pageKey: 'crm' },
   { title: 'Propostas', url: '/propostas', icon: FileText, pageKey: 'propostas' },
   { title: 'Contratos', url: '/contratos', icon: FileSignature, pageKey: 'contratos' },

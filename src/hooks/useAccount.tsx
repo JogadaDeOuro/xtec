@@ -36,8 +36,23 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    const { data, error } = await supabase.rpc('get_my_account_summary');
-    if (!error && data) setAccount(data as unknown as AccountSummary);
+    let { data } = await supabase.rpc('get_my_account_summary');
+    let summary = data as unknown as AccountSummary | null;
+
+    // Cadastro concluído por e-mail: a empresa é criada no primeiro login.
+    if (summary?.error === 'no_organization') {
+      const meta = session.user.user_metadata as { company_name?: string; full_name?: string };
+      const name = meta?.company_name || meta?.full_name || session.user.email?.split('@')[0] || 'Minha empresa';
+      const { error: orgError } = await supabase.rpc('signup_create_organization', {
+        _name: name, _document: null, _phone: null,
+      });
+      if (!orgError) {
+        const retry = await supabase.rpc('get_my_account_summary');
+        summary = retry.data as unknown as AccountSummary | null;
+      }
+    }
+
+    if (summary && !summary.error) setAccount(summary);
     setLoading(false);
   }, [session]);
 
