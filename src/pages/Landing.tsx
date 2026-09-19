@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowRight, Users, FileText, FileSignature, Clock, BarChart3, MessageSquare,
   Check, Menu, X, ShieldCheck, Zap, Sun, Moon, TrendingUp, Layers3,
-  Infinity as InfinityIcon, XCircle, CircleCheck, TriangleAlert,
+  Smile, XCircle, CircleCheck, TriangleAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -219,7 +219,7 @@ export default function Landing() {
                 text: 'Uma meta de crescimento possível ao acelerar respostas, propostas e follow-ups — não uma garantia de resultado.',
               },
               {
-                icon: InfinityIcon,
+                icon: Smile,
                 value: '∞',
                 title: 'Satisfação sem teto',
                 text: 'Cada contato mais rápido, entrega transparente e atualização no prazo pode elevar a percepção de valor.',
