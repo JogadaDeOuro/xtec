@@ -18,7 +18,7 @@ interface PortalProposal {
   garantia_estendida: boolean; garantia_estendida_valor: number; created_at: string;
 }
 interface PortalContract {
-  id: string; status: string; valor: number; signing_token: string | null;
+  id: string; status: string; valor: number;
   signed_at: string | null; created_at: string; signatures: string[];
 }
 interface PortalStage {
@@ -30,7 +30,6 @@ interface PortalData {
   client?: { id: string; name: string; city: string | null; state: string | null };
   proposals?: PortalProposal[];
   contracts?: PortalContract[];
-  tracking_token?: string | null;
   stages?: PortalStage[];
 }
 
@@ -158,12 +157,8 @@ export default function PortalCliente() {
                         </div>
                         {c.signed_at || jaAssinou ? (
                           <Badge className="bg-success text-success-foreground text-[10px]">Assinado</Badge>
-                        ) : c.signing_token ? (
-                          <Button size="sm" asChild>
-                            <a href={`/assinar/${c.signing_token}`}>Assinar</a>
-                          </Button>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px]">Em preparação</Badge>
+                          <Badge variant="secondary" className="text-[10px]">Aguardando assinatura</Badge>
                         )}
                       </div>
                     );
@@ -199,14 +194,6 @@ export default function PortalCliente() {
                           );
                         })}
                       </div>
-                      {data.tracking_token && (
-                        <p className="text-xs text-muted-foreground pt-2">
-                          Link direto:{' '}
-                          <a className="underline" href={`/acompanhamento/${data.tracking_token}`}>
-                            acompanhamento completo com fotos
-                          </a>
-                        </p>
-                      )}
                     </section>
                   </>
                 )}
