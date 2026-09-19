@@ -219,7 +219,7 @@ export default function Landing() {
                 text: 'Uma meta de crescimento possível ao acelerar respostas, propostas e follow-ups — não uma garantia de resultado.',
               },
               {
-                icon: InfinityIcon,
+                icon: Smile,
                 value: '∞',
                 title: 'Satisfação sem teto',
                 text: 'Cada contato mais rápido, entrega transparente e atualização no prazo pode elevar a percepção de valor.',
