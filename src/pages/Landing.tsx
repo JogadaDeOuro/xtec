@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowRight, Users, FileText, FileSignature, Clock, BarChart3, MessageSquare,
   Check, Menu, X, ShieldCheck, Zap, Sun, Moon, TrendingUp, Layers3,
-  Infinity as InfinityIcon, XCircle, CircleCheck, TriangleAlert,
+  Smile, XCircle, CircleCheck, TriangleAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
