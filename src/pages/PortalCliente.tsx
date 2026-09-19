@@ -18,7 +18,7 @@ interface PortalProposal {
   garantia_estendida: boolean; garantia_estendida_valor: number; created_at: string;
 }
 interface PortalContract {
-  id: string; status: string; valor: number; signing_token: string | null;
+  id: string; status: string; valor: number;
   signed_at: string | null; created_at: string; signatures: string[];
 }
 interface PortalStage {
@@ -30,7 +30,6 @@ interface PortalData {
   client?: { id: string; name: string; city: string | null; state: string | null };
   proposals?: PortalProposal[];
   contracts?: PortalContract[];
-  tracking_token?: string | null;
   stages?: PortalStage[];
 }
 
