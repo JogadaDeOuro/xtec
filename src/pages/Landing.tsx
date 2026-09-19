@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, Users, FileText, FileSignature, Clock, BarChart3, MessageSquare,
-  Check, Menu, X, ShieldCheck, Zap, Sun, Moon,
+  Check, Menu, X, ShieldCheck, Zap, Sun, Moon, TrendingUp, Layers3,
+  Infinity as InfinityIcon, XCircle, CircleCheck, TriangleAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -73,6 +74,15 @@ export default function Landing() {
     { icon: MessageSquare, title: 'WhatsApp e automações', text: 'Atendimento centralizado e disparos automáticos.', soon: true },
   ];
 
+  const comparison = [
+    { label: 'Ferramentas necessárias', fragmented: '3 ou mais sistemas', solarFlow: '1 plataforma integrada' },
+    { label: 'CRM e processo de vendas', fragmented: 'Dados espalhados', solarFlow: 'Histórico comercial centralizado' },
+    { label: 'Propostas solares', fragmented: 'Cálculos e documentos separados', solarFlow: 'Dimensionamento, preço e PDF no mesmo fluxo' },
+    { label: 'Contratos', fragmented: 'Retrabalho e preenchimento manual', solarFlow: 'Dados da proposta reaproveitados automaticamente' },
+    { label: 'Pós-venda', fragmented: 'Atualizações sem padrão', solarFlow: 'Etapas, prazos e acompanhamento do cliente' },
+    { label: 'Visão da operação', fragmented: 'Informação fragmentada', solarFlow: 'Do primeiro contato à entrega' },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HEADER */}
@@ -126,11 +136,11 @@ export default function Landing() {
               <Zap className="h-3 w-3" /> Plataforma para empresas de energia solar
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl">
-              Do primeiro contato ao pós-venda, toda a sua operação solar em um só lugar.
+              Enquanto sua operação está espalhada, oportunidades e credibilidade ficam pelo caminho.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              O SolarFlow conecta CRM, propostas, contratos e acompanhamento de obra em um fluxo único —
-              menos planilhas, propostas em minutos e nenhum cliente esquecido no caminho.
+              O SolarFlow reúne CRM, vendas, propostas, contratos e pós-venda em um fluxo único — mais velocidade
+              para vender, mais controle para entregar e uma experiência profissional para cada cliente.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="gap-2" asChild>
@@ -181,8 +191,70 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* IMPACTO COMERCIAL */}
+      <section className="border-y border-border/60 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-4 py-20 md:px-6">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <p className="text-sm font-semibold uppercase text-primary">Impacto comercial esperado</p>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-5xl">
+              Transforme processos dispersos em uma operação que vende e entrega melhor.
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Menos troca de ferramentas, menos retrabalho e mais tempo para a equipe cuidar do que gera receita e confiança.
+            </p>
+          </motion.div>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: TrendingUp,
+                value: 'até +300%',
+                title: 'Potencial de faturamento',
+                text: 'Uma meta de crescimento possível ao acelerar respostas, propostas e follow-ups — não uma garantia de resultado.',
+              },
+              {
+                icon: InfinityIcon,
+                value: '∞',
+                title: 'Satisfação sem teto',
+                text: 'Cada contato mais rápido, entrega transparente e atualização no prazo pode elevar a percepção de valor.',
+              },
+              {
+                icon: Layers3,
+                value: '5 em 1',
+                title: 'Uma operação conectada',
+                text: 'CRM, vendas, propostas, contratos e pós-venda trabalhando com o mesmo histórico do cliente.',
+              },
+            ].map((metric, index) => (
+              <motion.div
+                key={metric.title}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                transition={{ delay: index * 0.08 }}
+                className="border-t-2 border-primary bg-card p-7 shadow-soft"
+              >
+                <metric.icon className="h-6 w-6 text-primary" />
+                <p className="mt-5 font-display text-4xl font-bold text-primary">{metric.value}</p>
+                <h3 className="mt-2 font-display text-lg font-semibold">{metric.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{metric.text}</p>
+              </motion.div>
+            ))}
+          </div>
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            Resultados variam conforme operação, equipe, mercado, volume de oportunidades e uso da plataforma.
+          </p>
+        </div>
+      </section>
+
       {/* COMO FUNCIONA */}
-      <section id="como-funciona" className="border-y border-border/60 bg-muted/30">
+      <section id="como-funciona">
         <div className="mx-auto max-w-6xl px-4 py-20 md:px-6">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Um fluxo, quatro passos</h2>
@@ -210,6 +282,59 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* COMPARATIVO */}
+      <section className="border-y border-border/60 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-4 py-20 md:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase text-primary">Uma plataforma, uma operação</p>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Trocar entre 3 ou mais softwares custa tempo, dinheiro e credibilidade.
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              O SolarFlow mantém o cliente e toda a jornada comercial conectados, sem redigitação entre etapas.
+            </p>
+          </div>
+
+          <div className="mt-12 overflow-hidden border border-border bg-card shadow-soft">
+            <div className="hidden grid-cols-[1.1fr_1fr_1.25fr] border-b border-border bg-muted/50 text-sm font-semibold md:grid">
+              <div className="p-5">O que sua equipe precisa</div>
+              <div className="border-l border-border p-5 text-muted-foreground">Operação fragmentada</div>
+              <div className="border-l border-primary/20 bg-primary/5 p-5 text-primary">SolarFlow</div>
+            </div>
+            <div className="divide-y divide-border">
+              {comparison.map((row) => (
+                <div key={row.label} className="grid md:grid-cols-[1.1fr_1fr_1.25fr]">
+                  <div className="p-5 text-sm font-semibold">{row.label}</div>
+                  <div className="flex items-start gap-3 border-t border-border px-5 py-4 text-sm text-muted-foreground md:border-l md:border-t-0">
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    <span>{row.fragmented}</span>
+                  </div>
+                  <div className="flex items-start gap-3 border-t border-primary/20 bg-primary/5 px-5 py-4 text-sm font-medium md:border-l md:border-t-0">
+                    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{row.solarFlow}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-between gap-5 border-l-4 border-warning bg-card p-6 shadow-soft sm:flex-row">
+            <div className="flex items-start gap-4">
+              <TriangleAlert className="mt-0.5 h-6 w-6 shrink-0 text-warning" />
+              <div>
+                <h3 className="font-display text-lg font-semibold">Cada lead esquecido pode virar venda para a concorrência.</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Respostas lentas, propostas sem padrão e pós-venda sem visibilidade comprometem receita e confiança.
+                </p>
+              </div>
+            </div>
+            <Button className="w-full shrink-0 gap-2 sm:w-auto" asChild>
+              <Link to="/cadastro">Organizar minha operação <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* RECURSOS */}
       <section id="recursos" className="mx-auto max-w-6xl px-4 py-20 md:px-6">
         <div className="max-w-2xl">
@@ -233,6 +358,25 @@ export default function Landing() {
               </Card>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* URGÊNCIA COMPETITIVA */}
+      <section className="bg-sidebar text-sidebar-foreground">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 py-16 md:flex-row md:items-center md:px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase text-sidebar-primary">O mercado não espera</p>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Profissionalizar depois também tem um custo agora.
+            </h2>
+            <p className="mt-4 text-sidebar-foreground/70">
+              Enquanto a equipe procura informações em planilhas e sistemas separados, o cliente percebe demora,
+              inconsistência e falta de acompanhamento. Centralize hoje e transforme agilidade em vantagem competitiva.
+            </p>
+          </div>
+          <Button size="lg" variant="secondary" className="w-full shrink-0 gap-2 md:w-auto" asChild>
+            <Link to="/cadastro">Começar grátis <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
         </div>
       </section>
 
