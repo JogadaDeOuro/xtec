@@ -187,7 +187,8 @@ export default function AssinarContrato() {
       contract.client_name,
       name.trim(),
       email.trim(),
-      'cliente'
+      'cliente',
+      token ?? ''
     );
   };
 
