@@ -29,10 +29,10 @@ interface ContractData {
   signatures: { signer_type: string }[];
 }
 
-async function sendNotification(type: string, contractId: string, contractName: string, signerName: string, signerEmail: string, signerType: string) {
+async function sendNotification(type: string, contractId: string, contractName: string, signerName: string, signerEmail: string, signerType: string, signingToken: string) {
   try {
     await supabase.functions.invoke('send-contract-notification', {
-      body: { type, contractId, contractName, signerName, signerEmail, signerType },
+      body: { type, contractId, contractName, signerName, signerEmail, signerType, signingToken },
     });
   } catch (e) {
     console.error('Notification error:', e);
