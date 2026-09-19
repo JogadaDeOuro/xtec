@@ -1,5 +1,12 @@
 # MCP agent integrations
 
+## Página de vendas
+
+- [x] Reforçar mensagem de impacto comercial sem promessas garantidas
+- [x] Adicionar métricas de potencial, satisfação e consolidação de ferramentas
+- [x] Criar comparativo entre operação fragmentada e SolarFlow
+- [ ] Validar a nova página em desktop e celular
+
 - [x] Confirm the existing authentication and backend patterns
 - [x] Design a protected read-only MCP server
 - [x] Implement tools for clients, proposals, contracts, and stages
