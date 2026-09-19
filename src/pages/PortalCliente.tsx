@@ -157,12 +157,8 @@ export default function PortalCliente() {
                         </div>
                         {c.signed_at || jaAssinou ? (
                           <Badge className="bg-success text-success-foreground text-[10px]">Assinado</Badge>
-                        ) : c.signing_token ? (
-                          <Button size="sm" asChild>
-                            <a href={`/assinar/${c.signing_token}`}>Assinar</a>
-                          </Button>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px]">Em preparação</Badge>
+                          <Badge variant="secondary" className="text-[10px]">Aguardando assinatura</Badge>
                         )}
                       </div>
                     );
@@ -198,14 +194,6 @@ export default function PortalCliente() {
                           );
                         })}
                       </div>
-                      {data.tracking_token && (
-                        <p className="text-xs text-muted-foreground pt-2">
-                          Link direto:{' '}
-                          <a className="underline" href={`/acompanhamento/${data.tracking_token}`}>
-                            acompanhamento completo com fotos
-                          </a>
-                        </p>
-                      )}
                     </section>
                   </>
                 )}
