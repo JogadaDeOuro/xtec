@@ -175,8 +175,10 @@ export function ProposalPDF(props: ProposalPDFProps) {
     } catch (e) {
       setProgress('erro');
       const msg = e instanceof Error ? e.message : 'Falha ao gerar o PDF';
-      // último recurso apenas fora do Safari/iOS
-      if (!isAppleWebKit() && printRef.current) {
+      // Propostas ainda não salvas podem usar o exportador local. Quando existe
+      // um id, nunca substituímos silenciosamente o PDF oficial por uma captura
+      // rasterizada, pois ela não mantém a mesma fidelidade da impressão.
+      if (!props.proposalId && !isAppleWebKit() && printRef.current) {
         try {
           const result = await downloadProposalPdf(printRef.current, config, nome);
           deliverPdf(result.blob, result.fileName);
