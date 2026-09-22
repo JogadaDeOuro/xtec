@@ -18,6 +18,8 @@ interface ProposalPDFProps {
   onOpenChange: (open: boolean) => void;
   /** id da proposta salva — habilita o motor oficial server-side */
   proposalId?: string;
+  /** Sincroniza alterações da tela antes de o servidor carregar a proposta. */
+  beforeServerDownload?: () => Promise<string | void>;
   clientName: string;
 
   clientCity?: string;
@@ -155,8 +157,10 @@ export function ProposalPDF(props: ProposalPDFProps) {
     const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
     try {
       // 1) motor oficial: Chromium server-side
-      if (props.proposalId) {
-        const result = await generateProposalPdfServerSide(props.proposalId, nome, setProgress);
+      const syncedProposalId = await props.beforeServerDownload?.();
+      const officialProposalId = syncedProposalId || props.proposalId;
+      if (officialProposalId) {
+        const result = await generateProposalPdfServerSide(officialProposalId, nome, setProgress);
         if (!(await sharePdf(result.blob, result.fileName))) {
           deliverPdf(result.blob, result.fileName);
         }
@@ -178,7 +182,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
       // Propostas ainda não salvas podem usar o exportador local. Quando existe
       // um id, nunca substituímos silenciosamente o PDF oficial por uma captura
       // rasterizada, pois ela não mantém a mesma fidelidade da impressão.
-      if (!props.proposalId && !isAppleWebKit() && printRef.current) {
+      if (!officialProposalId && !isAppleWebKit() && printRef.current) {
         try {
           const result = await downloadProposalPdf(printRef.current, config, nome);
           deliverPdf(result.blob, result.fileName);

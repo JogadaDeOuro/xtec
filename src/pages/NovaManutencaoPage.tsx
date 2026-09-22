@@ -224,6 +224,18 @@ export default function NovaManutencaoPage() {
     }
   };
 
+  const sincronizarAntesDoPdf = async (): Promise<string> => {
+    if (!client) throw new Error('Selecione o cliente antes de baixar o PDF.');
+    if (numModulos <= 0) throw new Error('Informe os dados da usina antes de baixar o PDF.');
+    if (calc.valorFinal <= 0) throw new Error('Defina o valor da manutenção antes de baixar o PDF.');
+    const proposalId = savedId ?? id;
+    const saved = proposalId
+      ? await updateProposal(proposalId, buildInput('rascunho'))
+      : await createProposal(buildInput('rascunho'));
+    setSavedId(saved.id);
+    return saved.id;
+  };
+
   const gerarContrato = async () => {
     if (!client) { toast.error('Selecione o cliente'); return; }
     if (numModulos <= 0 || calc.valorFinal <= 0) { toast.error('Complete os dados da manutenção'); return; }
@@ -631,6 +643,7 @@ export default function NovaManutencaoPage() {
         open={pdfOpen}
         onOpenChange={setPdfOpen}
         proposalId={savedId ?? undefined}
+        beforeServerDownload={sincronizarAntesDoPdf}
         clientName={client?.name ?? ''}
         clientCity={client?.city ?? undefined}
         clientState={client?.state ?? undefined}
