@@ -73,6 +73,9 @@ export interface ProposalDocData {
     valorPorM2: number;
     itens: string[];
     origemDescricao?: string;
+    /** 'pontual' = serviço único; 'recorrente' = plano anual */
+    regime?: 'pontual' | 'recorrente';
+    visitasAno?: number;
   };
 }
 
