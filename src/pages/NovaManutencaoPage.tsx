@@ -597,9 +597,15 @@ export default function NovaManutencaoPage() {
                   <span className="text-sm font-medium">{formatCurrency(calc.valorPorM2)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-medium">Valor total</span>
+                  <span className="text-sm font-medium">{regime === 'recorrente' ? 'Valor por visita' : 'Valor total'}</span>
                   <span className="text-lg font-bold text-primary">{formatCurrency(calc.valorFinal)}</span>
                 </div>
+                {regime === 'recorrente' && (
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">Valor anual ({Math.max(1, visitasAno)} visitas)</span>
+                    <span className="text-sm font-medium">{formatCurrency(calc.valorFinal * Math.max(1, visitasAno))}</span>
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">
                   {itens.length} serviço(s) incluso(s)
                 </div>
