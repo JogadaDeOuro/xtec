@@ -656,6 +656,8 @@ export default function NovaManutencaoPage() {
           valorPorM2: calc.valorPorM2,
           itens,
           origemDescricao,
+          regime,
+          visitasAno: Math.max(1, visitasAno),
         }}
         payment={{
           condicao,
