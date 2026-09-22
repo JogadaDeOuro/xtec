@@ -550,28 +550,50 @@ export function ProposalDocument({
               <div className="line">{config.company.responsavel || config.company.razaoSocial}</div>
             </div>
           );
-        case 'manutencao_resumo':
+        case 'manutencao_resumo': {
+          const recorrente = manut?.regime === 'recorrente';
+          const visitas = Math.max(1, manut?.visitasAno ?? 1);
           return (<>
             <div className="pdoc-grid g2">
               <div className="pdoc-card hi"><div className="k">Valor por m²</div><div className="v">{formatCurrency(manut?.valorPorM2 ?? 0)}</div></div>
-              <div className="pdoc-card hi"><div className="k">Valor total do serviço</div><div className="v">{formatCurrency(data.valorFinal)}</div></div>
+              <div className="pdoc-card hi">
+                <div className="k">{recorrente ? 'Valor por visita' : 'Valor total do serviço'}</div>
+                <div className="v">{formatCurrency(data.valorFinal)}</div>
+              </div>
             </div>
             <div className="pdoc-grid g3" style={{ marginTop: '4mm' }}>
               <div className="pdoc-card"><div className="k">Módulos atendidos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
               <div className="pdoc-card"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
               <div className="pdoc-card"><div className="k">Potência instalada</div><div className="v">{data.potenciaKwp > 0 ? formatPotencia(data.potenciaKwp) : '—'}</div></div>
             </div>
+            <div className="pdoc-grid g2" style={{ marginTop: '4mm' }}>
+              <div className="pdoc-card">
+                <div className="k">Modalidade</div>
+                <div className="v">{recorrente ? 'Plano anual de manutenção' : 'Serviço único (pontual)'}</div>
+              </div>
+              <div className="pdoc-card">
+                <div className="k">{recorrente ? 'Visitas contratadas' : 'Visita contratada'}</div>
+                <div className="v">{recorrente ? `${visitas}× por ano` : '1 visita'}</div>
+              </div>
+            </div>
             <div className="pdoc-invest" style={{ marginTop: '4mm' }}>
               <div className="row"><span>{formatNumber(manut?.areaM2 ?? 0)} m² × {formatCurrency(manut?.valorPorM2 ?? 0)}</span><span>{formatCurrency(data.valorBruto)}</span></div>
               {data.valorBruto > data.valorFinal && (
                 <div className="row desc"><span>Desconto comercial</span><span>-{formatCurrency(data.valorBruto - data.valorFinal)}</span></div>
               )}
-              <div className="row total"><span>Valor total do serviço</span><span>{formatCurrency(data.valorFinal)}</span></div>
+              <div className="row total">
+                <span>{recorrente ? 'Valor por visita' : 'Valor total do serviço'}</span>
+                <span>{formatCurrency(data.valorFinal)}</span>
+              </div>
+              {recorrente && (
+                <div className="row total"><span>Valor anual ({visitas} visitas)</span><span>{formatCurrency(data.valorFinal * visitas)}</span></div>
+              )}
             </div>
             {manut?.origemDescricao && (
               <p className="muted" style={{ marginTop: '3mm' }}>Referência da usina: {manut.origemDescricao}</p>
             )}
           </>);
+        }
         case 'manutencao_escopo': {
           const keys = manut?.itens ?? [];
           const inclusos = keys.map(itemByKey).filter(Boolean) as typeof MANUTENCAO_ITENS;
