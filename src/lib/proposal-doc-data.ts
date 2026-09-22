@@ -54,6 +54,8 @@ export function buildProposalDocData(
       valorPorModulo: p.valorPorModulo,
       valorPorM2: p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 0,
       itens: p.manutencaoItens ?? [],
+      regime: p.manutencaoRegime,
+      visitasAno: p.manutencaoVisitasAno,
     } : undefined,
     equipamentos,
     payment: {

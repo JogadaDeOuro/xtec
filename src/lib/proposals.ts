@@ -44,6 +44,8 @@ export interface ProposalRow {
   area_m2?: number | null;
   valor_por_modulo?: number | null;
   manutencao_itens?: string[] | null;
+  manutencao_regime?: string | null;
+  manutencao_visitas_ano?: number | null;
   origem_tipo?: string | null;
   origem_ref?: string | null;
   consultor: string | null;
@@ -77,11 +79,15 @@ export interface ProposalRecord extends Proposal {
   areaM2: number;
   valorPorModulo: number;
   manutencaoItens: string[];
+  manutencaoRegime: ManutencaoRegime;
+  manutencaoVisitasAno: number;
   origemTipo: string;
   origemRef: string;
 }
 
 export type ProposalTipo = 'usina' | 'manutencao';
+/** Manutenção pontual (serviço único) ou recorrente (contrato anual). */
+export type ManutencaoRegime = 'pontual' | 'recorrente';
 
 export function rowToProposal(row: ProposalRow): ProposalRecord {
   return {
@@ -120,6 +126,8 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     areaM2: Number(row.area_m2 ?? 0),
     valorPorModulo: Number(row.valor_por_modulo ?? 0),
     manutencaoItens: row.manutencao_itens ?? [],
+    manutencaoRegime: (row.manutencao_regime === 'recorrente' ? 'recorrente' : 'pontual') as ManutencaoRegime,
+    manutencaoVisitasAno: Number(row.manutencao_visitas_ano ?? 1) || 1,
     origemTipo: row.origem_tipo ?? '',
     origemRef: row.origem_ref ?? '',
     createdAt: row.created_at.slice(0, 10),
@@ -180,6 +188,8 @@ export interface ProposalInput {
   areaM2?: number;
   valorPorModulo?: number;
   manutencaoItens?: string[];
+  manutencaoRegime?: ManutencaoRegime;
+  manutencaoVisitasAno?: number;
   origemTipo?: string;
   origemRef?: string;
 }
@@ -215,6 +225,8 @@ function toRow(input: ProposalInput) {
     area_m2: input.areaM2 ?? 0,
     valor_por_modulo: input.valorPorModulo ?? 0,
     manutencao_itens: input.manutencaoItens ?? [],
+    manutencao_regime: input.manutencaoRegime ?? 'pontual',
+    manutencao_visitas_ano: input.manutencaoVisitasAno ?? 1,
     origem_tipo: input.origemTipo || null,
     origem_ref: input.origemRef || null,
   };

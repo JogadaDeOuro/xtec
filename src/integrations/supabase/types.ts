@@ -927,6 +927,8 @@ export type Database = {
           garantia_estendida_valor: number
           id: string
           manutencao_itens: string[]
+          manutencao_regime: string
+          manutencao_visitas_ano: number
           margem: number
           num_modulos: number
           numero: string | null
@@ -972,6 +974,8 @@ export type Database = {
           garantia_estendida_valor?: number
           id?: string
           manutencao_itens?: string[]
+          manutencao_regime?: string
+          manutencao_visitas_ano?: number
           margem?: number
           num_modulos?: number
           numero?: string | null
@@ -1017,6 +1021,8 @@ export type Database = {
           garantia_estendida_valor?: number
           id?: string
           manutencao_itens?: string[]
+          manutencao_regime?: string
+          manutencao_visitas_ano?: number
           margem?: number
           num_modulos?: number
           numero?: string | null
@@ -1305,6 +1311,8 @@ export type Database = {
           garantia_estendida_valor: number
           id: string
           manutencao_itens: string[]
+          manutencao_regime: string
+          manutencao_visitas_ano: number
           margem: number
           num_modulos: number
           numero: string | null

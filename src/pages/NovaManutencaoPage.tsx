@@ -19,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { describeSaasError } from '@/lib/saas';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import {
-  createProposal, updateProposal, fetchProposal, type ProposalInput,
+  createProposal, updateProposal, fetchProposal, type ProposalInput, type ManutencaoRegime,
 } from '@/lib/proposals';
 import {
   PAYMENT_CONDITIONS, getCondicaoLabel, buildPaymentRows, serializeAlt, parseAlt,
@@ -71,6 +71,8 @@ export default function NovaManutencaoPage() {
   const [valorFinalManual, setValorFinalManual] = useState<number | ''>('');
 
   const [itens, setItens] = useState<string[]>(ITENS_PADRAO);
+  const [regime, setRegime] = useState<ManutencaoRegime>('pontual');
+  const [visitasAno, setVisitasAno] = useState(2);
 
   const [condicao, setCondicao] = useState('avista');
   const [condicoesAlt, setCondicoesAlt] = useState<AltPaymentCondition[]>([]);
@@ -130,6 +132,8 @@ export default function NovaManutencaoPage() {
       setValorPorM2(p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 8);
       setValorFinalManual(p.valorSistema);
       setItens(p.manutencaoItens?.length ? p.manutencaoItens : ITENS_PADRAO);
+      setRegime(p.manutencaoRegime);
+      setVisitasAno(p.manutencaoVisitasAno || 2);
       setOrigemTipo((p.origemTipo as 'contrato' | 'proposta' | 'manual') || 'manual');
       setOrigemRef(p.origemRef || '');
       const pc = p.pagamentoConfig ?? {};
@@ -188,6 +192,8 @@ export default function NovaManutencaoPage() {
     areaM2,
     valorPorModulo: 0,
     manutencaoItens: itens,
+    manutencaoRegime: regime,
+    manutencaoVisitasAno: regime === 'recorrente' ? Math.max(1, visitasAno) : 1,
     origemTipo,
     origemRef: origemTipo === 'manual' ? '' : origemRef,
   });
@@ -326,6 +332,30 @@ export default function NovaManutencaoPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Tipo de serviço</Label>
+                  <Select value={regime} onValueChange={v => setRegime(v as ManutencaoRegime)}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pontual">Pontual (serviço único)</SelectItem>
+                      <SelectItem value="recorrente">Recorrente (plano anual)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {regime === 'recorrente' && (
+                  <div>
+                    <Label className="text-xs">Visitas por ano</Label>
+                    <Input
+                      type="text" inputMode="numeric" className="mt-1"
+                      value={visitasAno || ''}
+                      onChange={e => setVisitasAno(+e.target.value.replace(/\D/g, '') || 0)}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">O valor definido é por visita.</p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -567,9 +597,15 @@ export default function NovaManutencaoPage() {
                   <span className="text-sm font-medium">{formatCurrency(calc.valorPorM2)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-medium">Valor total</span>
+                  <span className="text-sm font-medium">{regime === 'recorrente' ? 'Valor por visita' : 'Valor total'}</span>
                   <span className="text-lg font-bold text-primary">{formatCurrency(calc.valorFinal)}</span>
                 </div>
+                {regime === 'recorrente' && (
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">Valor anual ({Math.max(1, visitasAno)} visitas)</span>
+                    <span className="text-sm font-medium">{formatCurrency(calc.valorFinal * Math.max(1, visitasAno))}</span>
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">
                   {itens.length} serviço(s) incluso(s)
                 </div>
@@ -620,6 +656,8 @@ export default function NovaManutencaoPage() {
           valorPorM2: calc.valorPorM2,
           itens,
           origemDescricao,
+          regime,
+          visitasAno: Math.max(1, visitasAno),
         }}
         payment={{
           condicao,
