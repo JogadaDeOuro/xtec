@@ -192,6 +192,8 @@ export default function NovaManutencaoPage() {
     areaM2,
     valorPorModulo: 0,
     manutencaoItens: itens,
+    manutencaoRegime: regime,
+    manutencaoVisitasAno: regime === 'recorrente' ? Math.max(1, visitasAno) : 1,
     origemTipo,
     origemRef: origemTipo === 'manual' ? '' : origemRef,
   });
