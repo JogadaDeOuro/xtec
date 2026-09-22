@@ -86,6 +86,8 @@ export interface ProposalRecord extends Proposal {
 }
 
 export type ProposalTipo = 'usina' | 'manutencao';
+/** Manutenção pontual (serviço único) ou recorrente (contrato anual). */
+export type ManutencaoRegime = 'pontual' | 'recorrente';
 
 export function rowToProposal(row: ProposalRow): ProposalRecord {
   return {
