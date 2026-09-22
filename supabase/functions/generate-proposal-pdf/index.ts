@@ -26,7 +26,10 @@ function safeOrigin(raw: unknown): string | null {
   let u: URL;
   try { u = new URL(raw); } catch { return null; }
   if (u.protocol !== 'https:') return null;
-  if (!/(^|\.)lovable\.app$/.test(u.hostname) && !/(^|\.)lovableproject\.com$/.test(u.hostname)) return null;
+  const isLovableHost = /(^|\.)lovable\.app$/.test(u.hostname)
+    || /(^|\.)lovableproject\.com$/.test(u.hostname);
+  const isCanonicalHost = u.hostname === 'solarflow.inforsol.group';
+  if (!isLovableHost && !isCanonicalHost) return null;
   return `${u.protocol}//${u.host}`;
 }
 
