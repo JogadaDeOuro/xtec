@@ -71,6 +71,8 @@ export default function NovaManutencaoPage() {
   const [valorFinalManual, setValorFinalManual] = useState<number | ''>('');
 
   const [itens, setItens] = useState<string[]>(ITENS_PADRAO);
+  const [regime, setRegime] = useState<ManutencaoRegime>('pontual');
+  const [visitasAno, setVisitasAno] = useState(2);
 
   const [condicao, setCondicao] = useState('avista');
   const [condicoesAlt, setCondicoesAlt] = useState<AltPaymentCondition[]>([]);
