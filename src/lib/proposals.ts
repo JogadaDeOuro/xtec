@@ -44,6 +44,8 @@ export interface ProposalRow {
   area_m2?: number | null;
   valor_por_modulo?: number | null;
   manutencao_itens?: string[] | null;
+  manutencao_regime?: string | null;
+  manutencao_visitas_ano?: number | null;
   origem_tipo?: string | null;
   origem_ref?: string | null;
   consultor: string | null;
