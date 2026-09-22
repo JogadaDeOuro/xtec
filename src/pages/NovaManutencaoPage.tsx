@@ -28,7 +28,7 @@ import {
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import {
-  MANUTENCAO_ITENS, areaSugerida, calcManutencao, AREA_POR_MODULO_M2,
+  MANUTENCAO_ITENS, areaSugerida, calcManutencao, AREA_POR_MODULO_M2, POTENCIA_MODULO_W,
 } from '@/lib/manutencao';
 import { customerUrl } from '@/lib/public-url';
 
