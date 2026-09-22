@@ -225,6 +225,8 @@ function toRow(input: ProposalInput) {
     area_m2: input.areaM2 ?? 0,
     valor_por_modulo: input.valorPorModulo ?? 0,
     manutencao_itens: input.manutencaoItens ?? [],
+    manutencao_regime: input.manutencaoRegime ?? 'pontual',
+    manutencao_visitas_ano: input.manutencaoVisitasAno ?? 1,
     origem_tipo: input.origemTipo || null,
     origem_ref: input.origemRef || null,
   };
