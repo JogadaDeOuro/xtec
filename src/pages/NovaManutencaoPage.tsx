@@ -334,6 +334,30 @@ export default function NovaManutencaoPage() {
                 </Select>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Tipo de serviço</Label>
+                  <Select value={regime} onValueChange={v => setRegime(v as ManutencaoRegime)}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pontual">Pontual (serviço único)</SelectItem>
+                      <SelectItem value="recorrente">Recorrente (plano anual)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {regime === 'recorrente' && (
+                  <div>
+                    <Label className="text-xs">Visitas por ano</Label>
+                    <Input
+                      type="text" inputMode="numeric" className="mt-1"
+                      value={visitasAno || ''}
+                      onChange={e => setVisitasAno(+e.target.value.replace(/\D/g, '') || 0)}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">O valor definido é por visita.</p>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs">Nº de módulos</Label>
