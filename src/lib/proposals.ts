@@ -126,6 +126,8 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     areaM2: Number(row.area_m2 ?? 0),
     valorPorModulo: Number(row.valor_por_modulo ?? 0),
     manutencaoItens: row.manutencao_itens ?? [],
+    manutencaoRegime: (row.manutencao_regime === 'recorrente' ? 'recorrente' : 'pontual') as ManutencaoRegime,
+    manutencaoVisitasAno: Number(row.manutencao_visitas_ano ?? 1) || 1,
     origemTipo: row.origem_tipo ?? '',
     origemRef: row.origem_ref ?? '',
     createdAt: row.created_at.slice(0, 10),
