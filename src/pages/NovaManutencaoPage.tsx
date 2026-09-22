@@ -28,7 +28,7 @@ import {
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { ProposalPDF } from '@/components/ProposalPDF';
 import {
-  MANUTENCAO_ITENS, areaSugerida, calcManutencao, AREA_POR_MODULO_M2,
+  MANUTENCAO_ITENS, areaSugerida, calcManutencao, AREA_POR_MODULO_M2, POTENCIA_MODULO_W,
 } from '@/lib/manutencao';
 import { customerUrl } from '@/lib/public-url';
 
@@ -338,6 +338,7 @@ export default function NovaManutencaoPage() {
                       const n = +e.target.value.replace(/\D/g, '') || 0;
                       setNumModulos(n);
                       setAreaM2(areaSugerida(n));
+                      setPotenciaKwp(n > 0 ? +((n * POTENCIA_MODULO_W) / 1000).toFixed(2) : 0);
                     }}
                   />
                 </div>
@@ -346,7 +347,13 @@ export default function NovaManutencaoPage() {
                   <Input
                     type="text" inputMode="numeric" className="mt-1"
                     value={areaM2 || ''}
-                    onChange={e => setAreaM2(+e.target.value.replace(/\D/g, '') || 0)}
+                    onChange={e => {
+                      const a = +e.target.value.replace(/\D/g, '') || 0;
+                      setAreaM2(a);
+                      const n = a > 0 ? Math.round(a / AREA_POR_MODULO_M2) : 0;
+                      setNumModulos(n);
+                      setPotenciaKwp(n > 0 ? +((n * POTENCIA_MODULO_W) / 1000).toFixed(2) : 0);
+                    }}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1">Sugestão: {AREA_POR_MODULO_M2} m²/módulo</p>
                 </div>
@@ -355,8 +362,15 @@ export default function NovaManutencaoPage() {
                   <Input
                     type="number" className="mt-1" step={0.01}
                     value={potenciaKwp || ''}
-                    onChange={e => setPotenciaKwp(+e.target.value || 0)}
+                    onChange={e => {
+                      const kwp = +e.target.value || 0;
+                      setPotenciaKwp(kwp);
+                      const n = kwp > 0 ? Math.round((kwp * 1000) / POTENCIA_MODULO_W) : 0;
+                      setNumModulos(n);
+                      setAreaM2(areaSugerida(n));
+                    }}
                   />
+                  <p className="text-[10px] text-muted-foreground mt-1">Base: {POTENCIA_MODULO_W} W/módulo</p>
                 </div>
               </div>
             </CardContent>
