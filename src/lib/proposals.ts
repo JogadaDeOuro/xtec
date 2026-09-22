@@ -188,6 +188,8 @@ export interface ProposalInput {
   areaM2?: number;
   valorPorModulo?: number;
   manutencaoItens?: string[];
+  manutencaoRegime?: ManutencaoRegime;
+  manutencaoVisitasAno?: number;
   origemTipo?: string;
   origemRef?: string;
 }
