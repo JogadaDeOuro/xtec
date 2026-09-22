@@ -19,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { describeSaasError } from '@/lib/saas';
 import { formatCurrency, formatNumber } from '@/lib/mock-data';
 import {
-  createProposal, updateProposal, fetchProposal, type ProposalInput,
+  createProposal, updateProposal, fetchProposal, type ProposalInput, type ManutencaoRegime,
 } from '@/lib/proposals';
 import {
   PAYMENT_CONDITIONS, getCondicaoLabel, buildPaymentRows, serializeAlt, parseAlt,
