@@ -132,6 +132,8 @@ export default function NovaManutencaoPage() {
       setValorPorM2(p.areaM2 > 0 ? +(p.valorSistema / p.areaM2).toFixed(2) : 8);
       setValorFinalManual(p.valorSistema);
       setItens(p.manutencaoItens?.length ? p.manutencaoItens : ITENS_PADRAO);
+      setRegime(p.manutencaoRegime);
+      setVisitasAno(p.manutencaoVisitasAno || 2);
       setOrigemTipo((p.origemTipo as 'contrato' | 'proposta' | 'manual') || 'manual');
       setOrigemRef(p.origemRef || '');
       const pc = p.pagamentoConfig ?? {};
