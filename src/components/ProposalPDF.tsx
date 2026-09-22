@@ -155,10 +155,11 @@ export function ProposalPDF(props: ProposalPDFProps) {
     if (downloading) return;
     setDownloading(true);
     const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
+    let officialProposalId = props.proposalId;
     try {
       // 1) motor oficial: Chromium server-side
       const syncedProposalId = await props.beforeServerDownload?.();
-      const officialProposalId = syncedProposalId || props.proposalId;
+      officialProposalId = syncedProposalId || props.proposalId;
       if (officialProposalId) {
         const result = await generateProposalPdfServerSide(officialProposalId, nome, setProgress);
         if (!(await sharePdf(result.blob, result.fileName))) {
