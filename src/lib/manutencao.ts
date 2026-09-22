@@ -5,6 +5,9 @@
 
 export const AREA_POR_MODULO_M2 = 3.1;
 
+/** Potência média do módulo usado como referência (W). */
+export const POTENCIA_MODULO_W = 620;
+
 export interface ManutencaoItem {
   key: string;
   label: string;
