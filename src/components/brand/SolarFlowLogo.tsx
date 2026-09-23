@@ -16,10 +16,10 @@ export function SolarFlowLogo({ variant = 'horizontal', tone = 'auto', className
 
   if (tone === 'auto') {
     return (
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcSet={darkAsset.url} />
-        <img src={horizontalAsset.url} alt="SolarFlow" className={cn('object-contain', className)} />
-      </picture>
+      <span className={cn('inline-flex items-center', className)}>
+        <img src={horizontalAsset.url} alt="SolarFlow" className="h-full w-full object-contain dark:hidden" />
+        <img src={darkAsset.url} alt="SolarFlow" className="hidden h-full w-full object-contain dark:block" />
+      </span>
     );
   }
 

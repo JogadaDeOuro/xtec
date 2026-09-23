@@ -62,7 +62,7 @@ const NEUTRO = "'Helvetica Neue', Arial, Helvetica, sans-serif";
 export const PROPOSAL_THEMES: ProposalTheme[] = [
   {
     id: 'classico',
-    name: 'INFORSOL Clássico',
+    name: 'SolarFlow Clássico',
     description: 'Verde institucional, faixas coloridas, cards arredondados. O padrão da casa.',
     apply: base => make(base, {
       corPrimaria: '#1B5E20', corSecundaria: '#2D7A4F', corDestaque: '#A5D64C',
