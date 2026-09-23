@@ -1,21 +1,23 @@
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
-const SITE = 'Inforsol';
+const SITE = 'SolarFlow';
+const ORIGIN = 'https://solarflow.inforsol.group';
+const SOCIAL_IMAGE = `${ORIGIN}/solarflow-social-card.png`;
 
 type Meta = { title: string; description: string; noindex?: boolean };
 
 const STATIC_ROUTES: Record<string, Meta> = {
   '/': {
-    title: 'SolarFlow — gestão comercial para energia solar',
-    description: 'CRM, propostas, contratos e pós-venda para empresas de energia solar em uma só plataforma. Comece grátis.',
+     title: 'SolarFlow — gestão para integradoras solares',
+     description: 'Organize CRM, propostas, contratos e operação comercial da sua integradora solar em um único fluxo com a SolarFlow.',
   },
   '/cadastro': {
     title: 'Criar conta grátis — SolarFlow',
     description: 'Crie sua conta gratuita no SolarFlow e organize clientes, propostas e contratos de energia solar.',
   },
   '/dashboard': {
-    title: `Painel comercial — ${SITE}`,
+     title: `Dashboard | ${SITE}`,
     description: 'Acompanhe propostas, contratos e obras de energia solar em um só painel.',
   },
   '/conta/plano': {
@@ -29,20 +31,20 @@ const STATIC_ROUTES: Record<string, Meta> = {
     noindex: true,
   },
   '/login': {
-    title: `Entrar — ${SITE} Propostas & Contratos`,
-    description: 'Acesse a plataforma Inforsol para criar propostas e contratos de energia solar.',
+     title: `Entrar | ${SITE}`,
+     description: 'Acesse a SolarFlow e coloque sua operação solar em fluxo.',
   },
   '/reset-password': {
     title: `Redefinir senha — ${SITE}`,
-    description: 'Redefina a senha da sua conta Inforsol.',
+     description: 'Redefina a senha da sua conta SolarFlow.',
     noindex: true,
   },
   '/crm': {
-    title: `CRM de clientes — ${SITE}`,
+     title: `CRM | ${SITE}`,
     description: 'Funil de vendas solar com clientes, responsáveis e etapas de negociação.',
   },
   '/propostas': {
-    title: `Gestão de propostas — ${SITE}`,
+     title: `Propostas | ${SITE}`,
     description: 'Crie, envie e acompanhe propostas de energia solar com cálculo de payback.',
   },
   '/propostas/nova': {
@@ -56,7 +58,7 @@ const STATIC_ROUTES: Record<string, Meta> = {
     noindex: true,
   },
   '/contratos': {
-    title: `Contratos e assinaturas — ${SITE}`,
+     title: `Contratos | ${SITE}`,
     description: 'Gere contratos de instalação e manutenção com assinatura digital.',
   },
   '/etapas': {
@@ -64,7 +66,7 @@ const STATIC_ROUTES: Record<string, Meta> = {
     description: 'Acompanhe as etapas técnicas e os prazos de cada instalação solar.',
   },
   '/financeiro': {
-    title: `Financeiro — ${SITE}`,
+     title: `Financeiro | ${SITE}`,
     description: 'Indicadores financeiros de propostas, contratos e recebimentos.',
   },
   '/whatsapp': {
@@ -78,7 +80,7 @@ const STATIC_ROUTES: Record<string, Meta> = {
   },
   '/integracoes': {
     title: `Integrações — ${SITE}`,
-    description: 'Conecte serviços externos à plataforma Inforsol.',
+     description: 'Conecte serviços externos à plataforma SolarFlow.',
     noindex: true,
   },
   '/personalizacao-proposta': {
@@ -104,15 +106,15 @@ const STATIC_ROUTES: Record<string, Meta> = {
 
 const PREFIX_ROUTES: Array<[string, Meta]> = [
   ['/propostas/', { title: `Editar proposta — ${SITE}`, description: 'Edite e envie a proposta comercial ao cliente.', noindex: true }],
-  ['/proposta/', { title: `Proposta comercial — ${SITE} Energia Solar`, description: 'Sua proposta de sistema fotovoltaico com economia e payback estimados.', noindex: true }],
-  ['/aceite/', { title: `Aceite da proposta — ${SITE} Energia Solar`, description: 'Revise as condições e aceite sua proposta de energia solar.', noindex: true }],
-  ['/assinar/', { title: `Assinatura de contrato — ${SITE} Energia Solar`, description: 'Assine digitalmente o contrato do seu sistema fotovoltaico.', noindex: true }],
-  ['/acompanhamento/', { title: `Andamento da instalação — ${SITE} Energia Solar`, description: 'Acompanhe em tempo real as etapas da instalação da sua usina solar.', noindex: true }],
+   ['/proposta/', { title: `Proposta comercial | ${SITE}`, description: 'Sua proposta de sistema fotovoltaico com economia e payback estimados.', noindex: true }],
+   ['/aceite/', { title: `Aceite da proposta | ${SITE}`, description: 'Revise as condições e aceite sua proposta de energia solar.', noindex: true }],
+   ['/assinar/', { title: `Assinatura de contrato | ${SITE}`, description: 'Assine digitalmente o contrato do seu sistema fotovoltaico.', noindex: true }],
+   ['/acompanhamento/', { title: `Andamento da instalação | ${SITE}`, description: 'Acompanhe em tempo real as etapas da instalação da sua usina solar.', noindex: true }],
 ];
 
 const FALLBACK: Meta = {
-  title: `${SITE} — Propostas & Contratos de energia solar`,
-  description: 'Sistema de gestão comercial para energia solar — Inforsol Energia Solar.',
+   title: `${SITE} — gestão para integradoras solares`,
+   description: 'Tecnologia para colocar sua operação solar em fluxo.',
   noindex: true,
 };
 
@@ -126,7 +128,8 @@ function resolve(pathname: string): Meta {
 export function RouteSeo() {
   const { pathname } = useLocation();
   const meta = resolve(pathname);
-  const canonical = pathname.length > 1 ? pathname.replace(/\/+$/, '') : '/';
+   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : '/';
+   const canonical = new URL(path, ORIGIN).toString();
 
   return (
     <Helmet>
@@ -136,8 +139,15 @@ export function RouteSeo() {
       <meta property="og:title" content={meta.title} />
       <meta property="og:description" content={meta.description} />
       <meta property="og:url" content={canonical} />
+       <meta property="og:type" content="website" />
+       <meta property="og:image" content={SOCIAL_IMAGE} />
+       <meta property="og:image:width" content="1200" />
+       <meta property="og:image:height" content="630" />
+       <meta property="og:image:alt" content="SolarFlow — Sua operação solar em fluxo." />
+       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={meta.title} />
       <meta name="twitter:description" content={meta.description} />
+       <meta name="twitter:image" content={SOCIAL_IMAGE} />
       {meta.noindex ? <meta name="robots" content="noindex, follow" /> : null}
     </Helmet>
   );
