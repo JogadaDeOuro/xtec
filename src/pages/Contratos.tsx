@@ -219,7 +219,7 @@ export default function Contratos() {
       email: signEmail.trim(),
       signed_at: now.toISOString(),
       ip: 'Assinatura interna',
-      location: 'Plataforma Inforsol',
+      location: 'Plataforma SolarFlow',
       user_agent: navigator.userAgent,
       hash: generatedHash,
       signature_font: signFont,

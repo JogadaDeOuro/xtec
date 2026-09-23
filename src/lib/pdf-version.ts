@@ -23,5 +23,5 @@ export function pdfBuildId(): string {
 }
 
 export function pdfGeneratorTag(engine: PdfEngine): string {
-  return `Inforsol PDF ${PDF_TEMPLATE_VERSION} · engine=${engine} · env=${pdfEnvironment()}`;
+  return `SolarFlow PDF ${PDF_TEMPLATE_VERSION} · engine=${engine} · env=${pdfEnvironment()}`;
 }
