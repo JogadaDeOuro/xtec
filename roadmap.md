@@ -13,3 +13,14 @@
 - [ ] Publish the app so the OAuth consent page becomes available on the live domain (waiting for explicit publish approval)
 - [ ] Verify authentication, permissions, and MCP protocol behavior
 - [ ] Document the connection URL and usage
+
+## Rebranding SolarFlow
+
+- [ ] Preparar sistema oficial de logos, ícones e social card
+- [ ] Aplicar paleta e temas SolarFlow globalmente
+- [ ] Atualizar landing e superfícies de autenticação
+- [ ] Atualizar sidebar, layouts e páginas públicas
+- [ ] Revisar SEO, canonical, Open Graph e manifest
+- [ ] Preservar white-label de propostas e contratos
+- [ ] Validar desktop, mobile, dark mode e fluxos principais
+- [ ] Gerar relatório técnico final
