@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 const mainItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard, pageKey: 'dashboard' },
@@ -67,14 +67,14 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <img src={logoInforsol} alt="Inforsol" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+          <SolarFlowLogo variant="symbol" className="h-9 w-9 shrink-0" />
           {!collapsed && (
             <div className="flex flex-col">
               <span className="font-display text-sm font-bold text-sidebar-foreground">
-                Inforsol
+                SolarFlow
               </span>
               <span className="text-[10px] text-sidebar-foreground/60">
-                Propostas & Contratos
+                Operação em fluxo
               </span>
             </div>
           )}

@@ -11,7 +11,7 @@ import { formatCurrency } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import { CheckCircle, FileSignature, Shield, AlertTriangle, MapPin, Globe, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import logoImg from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 import { SignatureStylePicker } from '@/components/SignatureStylePicker';
 import { supabase } from '@/integrations/supabase/client';
 import { invokePublicPortal } from '@/lib/public-portal';
@@ -277,7 +277,8 @@ export default function AssinarContrato() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <img src={logoImg} alt="Inforsol" className="h-10 mx-auto" />
+          <SolarFlowLogo className="mx-auto h-10 w-auto max-w-[210px] dark:hidden" tone="light" />
+          <SolarFlowLogo className="mx-auto hidden h-10 w-auto max-w-[210px] dark:block" tone="dark" />
           <h1 className="text-2xl font-bold text-foreground">Assinatura Digital de Contrato</h1>
           <p className="text-sm text-muted-foreground">Revise os termos e assine digitalmente</p>
         </div>

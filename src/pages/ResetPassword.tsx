@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Lock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -52,7 +52,8 @@ export default function ResetPassword() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
       <Card className="w-full max-w-md relative animate-fade-in">
         <CardHeader className="text-center space-y-4">
-          <img src={logoInforsol} alt="Inforsol" className="mx-auto h-16 w-auto object-contain" />
+          <SolarFlowLogo className="mx-auto h-12 w-auto max-w-[220px] dark:hidden" tone="light" />
+          <SolarFlowLogo className="mx-auto hidden h-12 w-auto max-w-[220px] dark:block" tone="dark" />
           <div>
             <CardTitle className="text-xl font-display">Nova Senha</CardTitle>
             <CardDescription>Defina sua nova senha abaixo</CardDescription>

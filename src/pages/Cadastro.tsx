@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/integrations/supabase/client';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -79,10 +79,11 @@ export default function Cadastro() {
 
         <Card className="border-border/60 bg-card/95 shadow-elegant backdrop-blur-sm">
           <CardHeader className="space-y-3 text-center">
-            <img src={logoInforsol} alt="SolarFlow" className="mx-auto h-14 w-auto object-contain" />
+            <SolarFlowLogo className="mx-auto h-12 w-auto max-w-[210px] dark:hidden" tone="light" />
+            <SolarFlowLogo className="mx-auto hidden h-12 w-auto max-w-[210px] dark:block" tone="dark" />
             <div>
               <CardTitle className="font-display text-xl">Criar conta grátis</CardTitle>
-              <CardDescription>Plano Gratuito: 10 clientes, 1 proposta e 1 contrato por semana.</CardDescription>
+               <CardDescription>Coloque sua operação em fluxo com o plano Gratuito.</CardDescription>
             </div>
           </CardHeader>
           <CardContent>

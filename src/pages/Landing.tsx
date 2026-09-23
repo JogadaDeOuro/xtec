@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, Users, FileText, FileSignature, Clock, BarChart3, MessageSquare,
-  Check, Menu, X, ShieldCheck, Zap, Sun, Moon, TrendingUp, Layers3,
+  Check, Menu, X, ShieldCheck, Route, Sun, Moon, TrendingUp, Layers3,
   Smile, XCircle, CircleCheck, TriangleAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/saas';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 interface PublicPlan {
   id: string;
@@ -88,10 +88,8 @@ export default function Landing() {
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-2.5">
-            <img src={logoInforsol} alt="SolarFlow" className="h-9 w-9 rounded-lg object-contain" />
-            <span className="font-display text-lg font-bold tracking-tight">SolarFlow</span>
-          </div>
+           <SolarFlowLogo className="h-9 w-auto max-w-[180px] dark:hidden" tone="light" />
+           <SolarFlowLogo className="hidden h-9 w-auto max-w-[180px] dark:block" tone="dark" />
 
           <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
             <a href="#recursos" className="transition-colors hover:text-foreground">Recursos</a>
@@ -128,25 +126,26 @@ export default function Landing() {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-40 right-0 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-3xl" />
+       <section className="relative overflow-hidden border-b border-border/60">
+         <div className="pointer-events-none absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
+         <div className="pointer-events-none absolute right-16 top-0 h-72 w-px rotate-45 bg-accent/50" />
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-2">
           <motion.div initial="hidden" animate="show" variants={fadeUp}>
-            <Badge variant="secondary" className="mb-5 gap-1.5">
-              <Zap className="h-3 w-3" /> Plataforma para empresas de energia solar
+             <Badge variant="secondary" className="mb-5 gap-1.5">
+               <Route className="h-3 w-3" /> Plataforma de gestão para integradoras solares
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl">
-              Enquanto sua operação está espalhada, oportunidades e credibilidade ficam pelo caminho.
+               Sua operação solar em fluxo.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              O SolarFlow reúne CRM, vendas, propostas, contratos e pós-venda em um fluxo único — mais velocidade
-              para vender, mais controle para entregar e uma experiência profissional para cada cliente.
+               Centralize clientes, oportunidades, propostas, contratos e processos comerciais em uma operação clara,
+               organizada e controlável.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="gap-2" asChild>
                 <Link to="/cadastro">Começar grátis <ArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button size="lg" variant="outline" asChild><a href="#recursos">Conhecer recursos</a></Button>
+               <Button size="lg" variant="outline" asChild><a href="#como-funciona">Ver como funciona</a></Button>
             </div>
             <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5" /> Dados de cada empresa isolados e protegidos.
@@ -154,8 +153,9 @@ export default function Landing() {
           </motion.div>
 
           {/* Representação do produto com componentes reais da interface */}
-          <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ delay: 0.15 }} className="relative">
-            <div className="rounded-2xl border border-border bg-card p-3 shadow-elegant">
+           <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ delay: 0.15 }} className="relative">
+             <div className="absolute -inset-4 -z-10 translate-x-5 translate-y-5 rounded-2xl border border-accent/40" />
+             <div className="rounded-xl border border-border bg-card p-3 shadow-elegant">
               <div className="mb-3 flex items-center gap-1.5 px-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-destructive/50" />
                 <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
@@ -201,12 +201,12 @@ export default function Landing() {
             variants={fadeUp}
             className="mx-auto max-w-3xl text-center"
           >
-            <p className="text-sm font-semibold uppercase text-primary">Impacto comercial esperado</p>
+             <p className="text-sm font-semibold uppercase text-primary">Do improviso ao controle</p>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-5xl">
-              Transforme processos dispersos em uma operação que vende e entrega melhor.
+               Sua operação está espalhada. Coloque sua empresa em fluxo.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Menos troca de ferramentas, menos retrabalho e mais tempo para a equipe cuidar do que gera receita e confiança.
+               Leads esquecidos, propostas atrasadas e informações dispersas reduzem a visibilidade. A SolarFlow conecta o trabalho e devolve clareza à gestão.
             </p>
           </motion.div>
 
@@ -238,7 +238,7 @@ export default function Landing() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 transition={{ delay: index * 0.08 }}
-                className="border-t-2 border-primary bg-card p-7 shadow-soft"
+               className="border-t-2 border-accent bg-card p-7 shadow-soft"
               >
                 <metric.icon className="h-6 w-6 text-primary" />
                 <p className="mt-5 font-display text-4xl font-bold text-primary">{metric.value}</p>
@@ -286,12 +286,12 @@ export default function Landing() {
       <section className="border-y border-border/60 bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 md:px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-semibold uppercase text-primary">Uma plataforma, uma operação</p>
+             <p className="text-sm font-semibold uppercase text-primary">Clareza para operar. Controle para crescer.</p>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
               Trocar entre 3 ou mais softwares custa tempo, dinheiro e credibilidade.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              O SolarFlow mantém o cliente e toda a jornada comercial conectados, sem redigitação entre etapas.
+               A SolarFlow transforma tarefas dispersas em um fluxo de trabalho contínuo, sem redigitação entre etapas.
             </p>
           </div>
 
@@ -338,8 +338,8 @@ export default function Landing() {
       {/* RECURSOS */}
       <section id="recursos" className="mx-auto max-w-6xl px-4 py-20 md:px-6">
         <div className="max-w-2xl">
-          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Tudo que a operação solar precisa</h2>
-          <p className="mt-3 text-muted-foreground">Recursos construídos para o dia a dia de integradores de energia solar.</p>
+           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Tecnologia para colocar sua operação solar em fluxo.</h2>
+           <p className="mt-3 text-muted-foreground">Recursos construídos para dar clareza e controle ao dia a dia das integradoras solares.</p>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
@@ -370,8 +370,8 @@ export default function Landing() {
               Profissionalizar depois também tem um custo agora.
             </h2>
             <p className="mt-4 text-sidebar-foreground/70">
-              Enquanto a equipe procura informações em planilhas e sistemas separados, o cliente percebe demora,
-              inconsistência e falta de acompanhamento. Centralize hoje e transforme agilidade em vantagem competitiva.
+               Enquanto a equipe procura informações em planilhas e sistemas separados, o cliente percebe demora,
+               inconsistência e falta de acompanhamento. Conecte a operação e transforme agilidade em confiança.
             </p>
           </div>
           <Button size="lg" variant="secondary" className="w-full shrink-0 gap-2 md:w-auto" asChild>
@@ -433,23 +433,23 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 py-20 md:px-6">
         <div className="rounded-3xl border border-border bg-gradient-primary p-10 text-primary-foreground md:p-14">
           <h2 className="max-w-2xl font-display text-3xl font-bold tracking-tight md:text-4xl">
-            Organize sua operação solar ainda hoje.
+             Coloque sua operação solar em fluxo.
           </h2>
           <p className="mt-3 max-w-xl text-primary-foreground/80">
-            Crie sua conta gratuita, cadastre seus primeiros clientes e envie a primeira proposta em minutos.
+             Comece com clareza, conecte seus processos e construa uma operação mais controlável desde o primeiro cliente.
           </p>
           <Button size="lg" variant="secondary" className="mt-8 gap-2" asChild>
-            <Link to="/cadastro">Criar conta grátis <ArrowRight className="h-4 w-4" /></Link>
+             <Link to="/cadastro">Começar grátis <ArrowRight className="h-4 w-4" /></Link>
           </Button>
         </div>
       </section>
 
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row md:px-6">
-          <div className="flex items-center gap-2">
-            <img src={logoInforsol} alt="SolarFlow" className="h-6 w-6 rounded object-contain" />
-            <span>SolarFlow — gestão para energia solar</span>
-          </div>
+           <div className="flex items-center gap-3">
+             <SolarFlowLogo variant="symbol" className="h-7 w-7" />
+             <span>SolarFlow — plataforma de gestão para integradoras solares</span>
+           </div>
           <div className="flex gap-6">
             <Link to="/login" className="hover:text-foreground">Entrar</Link>
             <Link to="/cadastro" className="hover:text-foreground">Criar conta</Link>

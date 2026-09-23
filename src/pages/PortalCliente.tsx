@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import { invokePublicPortal } from '@/lib/public-portal';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 interface PortalProposal {
   id: string; numero: string | null; public_token: string; status: string;
@@ -64,6 +65,10 @@ export default function PortalCliente() {
   return (
     <div className="min-h-screen bg-muted/30 py-10 px-4">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl space-y-4">
+        <div className="flex justify-center pb-2">
+          <SolarFlowLogo className="h-10 w-auto max-w-[200px] dark:hidden" tone="light" />
+          <SolarFlowLogo className="hidden h-10 w-auto max-w-[200px] dark:block" tone="dark" />
+        </div>
         <Card className="overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-8">
             <div className="flex items-center gap-2 mb-1">

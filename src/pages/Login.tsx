@@ -5,12 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Loader2, Sun, Moon, Zap, ShieldCheck, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Loader2, Sun, Moon, Route, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/use-theme';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -77,7 +77,8 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-hero" />
         <Card className="w-full max-w-md relative animate-fade-in shadow-elegant border-border/60 backdrop-blur-sm bg-card/95">
           <CardHeader className="text-center space-y-4">
-            <img src={logoInforsol} alt="Inforsol" className="mx-auto h-16 w-auto object-contain" />
+            <SolarFlowLogo className="mx-auto h-12 w-auto max-w-[220px] dark:hidden" tone="light" />
+            <SolarFlowLogo className="mx-auto hidden h-12 w-auto max-w-[220px] dark:block" tone="dark" />
             <div>
               <CardTitle className="text-xl font-display">Recuperar Senha</CardTitle>
               <CardDescription>Informe seu e-mail para redefinir a senha</CardDescription>
@@ -117,32 +118,27 @@ export default function Login() {
         </Button>
       </div>
       {/* Left brand panel */}
-      <div className="relative hidden lg:flex flex-col justify-between p-12 text-primary-foreground bg-gradient-primary overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-60" />
-        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary-foreground/10 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-primary-foreground/5 blur-3xl" />
+       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-sidebar p-12 text-sidebar-foreground">
+         <div className="absolute inset-x-0 top-1/3 h-px bg-sidebar-primary/40" />
+         <div className="absolute left-1/4 top-1/3 h-48 w-px -rotate-45 bg-sidebar-primary/20" />
 
         <div className="relative flex items-center gap-3">
-          <img src={logoInforsol} alt="Inforsol" className="h-11 w-11 rounded-xl bg-white/10 p-1 backdrop-blur" />
-          <div>
-            <p className="font-display text-xl font-bold leading-none">Inforsol</p>
-            <p className="text-xs text-primary-foreground/70 mt-1">Energia Solar</p>
-          </div>
+           <SolarFlowLogo tone="dark" className="h-11 w-auto max-w-[240px]" />
         </div>
 
         <div className="relative space-y-6 max-w-md">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground/80">
-            <Sun className="h-3.5 w-3.5" /> Plataforma comercial solar
+             <Route className="h-3.5 w-3.5" /> Plataforma de gestão para integradoras solares
           </p>
           <h1 className="font-display text-4xl font-bold leading-tight">
-            Do primeiro orçamento ao contrato assinado.
+             Sua operação solar em fluxo.
           </h1>
           <p className="text-primary-foreground/80 text-sm leading-relaxed">
-            Dimensione o sistema, gere a proposta, feche o contrato com assinatura digital e acompanhe a obra — tudo num só lugar.
+             Clareza para operar. Controle para crescer. Conecte clientes, oportunidades, propostas, contratos e processos.
           </p>
           <div className="grid grid-cols-1 gap-3 pt-2">
             {[
-              { icon: Zap, t: 'Propostas em minutos', d: 'Dimensionamento e payback automatizados' },
+               { icon: Route, t: 'Processos conectados', d: 'Informação contínua entre cada etapa' },
               { icon: ShieldCheck, t: 'Contratos com validade jurídica', d: 'Assinatura digital com metadados' },
               { icon: Sparkles, t: 'CRM solar especializado', d: 'Funil, vendedores e métricas em tempo real' },
             ].map(f => (
@@ -160,7 +156,7 @@ export default function Login() {
         </div>
 
         <div className="relative text-xs text-primary-foreground/60">
-          © {new Date().getFullYear()} Inforsol Energia Solar
+           © {new Date().getFullYear()} SolarFlow by Inforsol
         </div>
       </div>
 
@@ -168,9 +164,10 @@ export default function Login() {
       <div className="flex items-center justify-center p-4 sm:p-8 relative">
         <div className="absolute inset-0 bg-gradient-hero lg:hidden" />
         <Card className="w-full max-w-md relative animate-fade-in shadow-elegant border-border/60 bg-card/95 backdrop-blur-sm">
-        <h1 className="sr-only lg:hidden">Inforsol — Propostas e contratos de energia solar</h1>
+         <h1 className="sr-only lg:hidden">SolarFlow — plataforma de gestão para integradoras solares</h1>
         <CardHeader className="text-center space-y-3">
-          <img src={logoInforsol} alt="Inforsol" className="mx-auto h-14 w-auto object-contain lg:hidden" />
+           <SolarFlowLogo className="mx-auto h-11 w-auto max-w-[220px] lg:hidden dark:hidden" tone="light" />
+           <SolarFlowLogo className="mx-auto hidden h-11 w-auto max-w-[220px] dark:block lg:dark:hidden" tone="dark" />
           <div>
             <CardTitle className="text-2xl font-display tracking-tight">Bem-vindo de volta</CardTitle>
             <CardDescription>Acesse sua conta para continuar</CardDescription>
@@ -246,7 +243,7 @@ export default function Login() {
             </TabsContent>
           </Tabs>
           <p className="text-center text-xs text-muted-foreground mt-6">
-            © {new Date().getFullYear()} Inforsol Energia Solar
+             © {new Date().getFullYear()} SolarFlow by Inforsol
           </p>
         </CardContent>
         </Card>

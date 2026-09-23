@@ -34,7 +34,7 @@ import { useAuth } from '@/hooks/useAuth';
 const SAMPLE: ProposalDocData = {
   numero: 'PROP-2026-0001',
   data: new Date(),
-  consultor: 'Consultor Inforsol',
+  consultor: 'Nome do consultor',
   clientName: 'Cliente Exemplo',
   clientCity: 'Luziânia',
   clientState: 'GO',

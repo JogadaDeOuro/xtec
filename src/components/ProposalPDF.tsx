@@ -154,7 +154,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
   const handleDownload = async () => {
     if (downloading) return;
     setDownloading(true);
-    const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'Inforsol'}-${props.clientName.replace(/\W+/g, '-')}`;
+    const nome = `Proposta-${(data.numero || '').replace(/\W+/g, '') || 'SolarFlow'}-${props.clientName.replace(/\W+/g, '-')}`;
     let officialProposalId = props.proposalId;
     try {
       // 1) motor oficial: Chromium server-side

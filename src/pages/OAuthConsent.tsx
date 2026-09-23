@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import logoInforsol from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 type AuthorizationDetails = {
   authorization_id: string;
@@ -68,14 +68,15 @@ export default function OAuthConsent() {
     <main className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-lg border-border shadow-elegant">
         <CardHeader className="space-y-4 text-center">
-          <img src={logoInforsol} alt="Inforsol" className="mx-auto h-14 w-auto object-contain" />
+          <SolarFlowLogo className="mx-auto h-11 w-auto max-w-[220px] dark:hidden" tone="light" />
+          <SolarFlowLogo className="mx-auto hidden h-11 w-auto max-w-[220px] dark:block" tone="dark" />
           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Bot className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
             <CardTitle>Autorizar assistente</CardTitle>
             <CardDescription className="mt-2">
-              {details?.client.name ?? 'Um assistente'} quer acessar sua conta Inforsol.
+               {details?.client.name ?? 'Um assistente'} quer acessar sua conta SolarFlow.
             </CardDescription>
           </div>
         </CardHeader>

@@ -1,4 +1,4 @@
-// Mock data for the Inforsol system
+// Mock data for the SolarFlow system
 
 export type ClientStatus = 'novo' | 'em_atendimento' | 'proposta_enviada' | 'negociacao' | 'fechado' | 'perdido' | 'instalacao' | 'finalizado' | 'arquivado';
 export type ClientType = 'residencial' | 'comercial' | 'industrial' | 'rural';
