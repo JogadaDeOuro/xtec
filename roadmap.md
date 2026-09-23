@@ -22,5 +22,5 @@
 - [x] Atualizar sidebar, layouts e páginas públicas
 - [x] Revisar SEO, canonical, Open Graph e manifest
 - [x] Preservar white-label de propostas e contratos
-- [ ] Validar desktop, mobile, dark mode e fluxos principais
-- [ ] Gerar relatório técnico final
+- [x] Validar desktop, mobile, dark mode e fluxos principais
+- [x] Gerar relatório técnico final
