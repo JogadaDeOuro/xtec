@@ -11,7 +11,7 @@ import { formatCurrency } from '@/lib/mock-data';
 import { formatCpfCnpj, isValidCpfCnpj } from '@/lib/utils';
 import { CheckCircle, FileSignature, Shield, AlertTriangle, MapPin, Globe, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import logoImg from '@/assets/logo-inforsol.png';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 import { SignatureStylePicker } from '@/components/SignatureStylePicker';
 import { supabase } from '@/integrations/supabase/client';
 import { invokePublicPortal } from '@/lib/public-portal';

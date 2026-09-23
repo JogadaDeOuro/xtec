@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, Clock, AlertTriangle, Loader2, Sun } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import { SolarFlowLogo } from '@/components/brand/SolarFlowLogo';
 
 type StageStatus = 'pendente' | 'em_andamento' | 'concluido' | 'atrasado';
 
@@ -33,17 +34,17 @@ const stageLabels: Record<StageStatus, string> = {
 };
 
 const stageColors: Record<StageStatus, string> = {
-  concluido: 'text-green-600',
-  em_andamento: 'text-blue-500',
-  pendente: 'text-gray-400',
-  atrasado: 'text-red-500',
+  concluido: 'text-success',
+  em_andamento: 'text-info',
+  pendente: 'text-muted-foreground',
+  atrasado: 'text-destructive',
 };
 
 const stageBg: Record<StageStatus, string> = {
-  concluido: 'bg-green-50 border-green-200',
-  em_andamento: 'bg-blue-50 border-blue-200',
-  pendente: 'bg-gray-50 border-gray-200',
-  atrasado: 'bg-red-50 border-red-200',
+  concluido: 'bg-success/10 border-success/20',
+  em_andamento: 'bg-info/10 border-info/20',
+  pendente: 'bg-muted/50 border-border',
+  atrasado: 'bg-destructive/10 border-destructive/20',
 };
 
 export default function AcompanhamentoPublico() {
@@ -74,15 +75,15 @@ export default function AcompanhamentoPublico() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
-        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
+       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
         <Card className="max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <p className="text-lg font-semibold">Link não encontrado</p>
@@ -94,28 +95,28 @@ export default function AcompanhamentoPublico() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+     <div className="min-h-screen bg-gradient-subtle">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
-            <Sun className="h-6 w-6 text-yellow-500" />
-            <span className="font-bold text-lg text-green-800">Inforsol</span>
+             <SolarFlowLogo className="h-9 w-auto max-w-[190px] dark:hidden" tone="light" />
+             <SolarFlowLogo className="hidden h-9 w-auto max-w-[190px] dark:block" tone="dark" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Acompanhamento da Obra</h1>
-          <p className="text-sm text-gray-500 mt-1">{clientName}</p>
+           <h1 className="text-xl font-bold text-foreground">Acompanhamento da Obra</h1>
+           <p className="text-sm text-muted-foreground mt-1">{clientName}</p>
         </div>
 
         {/* Progress */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Progresso geral</span>
+               <span className="text-sm font-medium text-foreground">Progresso geral</span>
               <Badge variant="outline">{progress}/{stages.length} etapas</Badge>
             </div>
-            <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
+             <div className="h-3 rounded-full bg-muted overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full"
+                 className="h-full bg-primary rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${stages.length ? (progress / stages.length) * 100 : 0}%` }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -142,17 +143,17 @@ export default function AcompanhamentoPublico() {
                 <div className="flex flex-col items-center">
                   <div className={cn(
                     'w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0',
-                    stage.status === 'concluido' ? 'bg-green-100 border-green-500' :
-                    stage.status === 'em_andamento' ? 'bg-blue-100 border-blue-500' :
-                    stage.status === 'atrasado' ? 'bg-red-100 border-red-500' :
-                    'bg-gray-100 border-gray-300'
+                     stage.status === 'concluido' ? 'bg-success/10 border-success' :
+                     stage.status === 'em_andamento' ? 'bg-info/10 border-info' :
+                     stage.status === 'atrasado' ? 'bg-destructive/10 border-destructive' :
+                     'bg-muted border-border'
                   )}>
                     <Icon className={cn('h-4 w-4', stageColors[stage.status])} />
                   </div>
                   {!isLast && (
                     <div className={cn(
                       'w-0.5 flex-1 min-h-[24px]',
-                      stage.status === 'concluido' ? 'bg-green-300' : 'bg-gray-200'
+                       stage.status === 'concluido' ? 'bg-success/40' : 'bg-border'
                     )} />
                   )}
                 </div>
@@ -161,12 +162,12 @@ export default function AcompanhamentoPublico() {
                 <div className={cn('flex-1 pb-4', !isLast && 'mb-0')}>
                   <div className={cn('rounded-lg border p-3', stageBg[stage.status])}>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-gray-900">{stage.name}</p>
+                     <p className="text-sm font-medium text-foreground">{stage.name}</p>
                       <Badge variant="secondary" className="text-[10px] shrink-0">
                         {stageLabels[stage.status]}
                       </Badge>
                     </div>
-                    <div className="flex gap-4 mt-1.5 text-xs text-gray-500">
+                     <div className="flex gap-4 mt-1.5 text-xs text-muted-foreground">
                       {stage.data_prevista && <span>Previsto: {stage.data_prevista}</span>}
                       {stage.data_real && <span>Realizado: {stage.data_real}</span>}
                     </div>
@@ -177,8 +178,8 @@ export default function AcompanhamentoPublico() {
           })}
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-8">
-          Atualizado em tempo real • Inforsol Energia Solar
+         <p className="text-center text-xs text-muted-foreground mt-8">
+           Atualizado em tempo real • tecnologia SolarFlow
         </p>
       </div>
     </div>
