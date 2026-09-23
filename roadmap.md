@@ -16,11 +16,11 @@
 
 ## Rebranding SolarFlow
 
-- [ ] Preparar sistema oficial de logos, ícones e social card
-- [ ] Aplicar paleta e temas SolarFlow globalmente
-- [ ] Atualizar landing e superfícies de autenticação
-- [ ] Atualizar sidebar, layouts e páginas públicas
-- [ ] Revisar SEO, canonical, Open Graph e manifest
-- [ ] Preservar white-label de propostas e contratos
+- [x] Preparar sistema oficial de logos, ícones e social card
+- [x] Aplicar paleta e temas SolarFlow globalmente
+- [x] Atualizar landing e superfícies de autenticação
+- [x] Atualizar sidebar, layouts e páginas públicas
+- [x] Revisar SEO, canonical, Open Graph e manifest
+- [x] Preservar white-label de propostas e contratos
 - [ ] Validar desktop, mobile, dark mode e fluxos principais
 - [ ] Gerar relatório técnico final
