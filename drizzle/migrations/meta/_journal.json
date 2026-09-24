@@ -85,6 +85,13 @@
       "when": 1790092811571,
       "tag": "0011_add_manutencao_regime",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790282559766,
+      "tag": "0012_restrict_branding_read",
+      "breakpoints": true
     }
   ]
 }
