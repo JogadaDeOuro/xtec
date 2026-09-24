@@ -229,9 +229,9 @@ export default function NovaManutencaoPage() {
     if (numModulos <= 0) throw new Error('Informe os dados da usina antes de baixar o PDF.');
     if (calc.valorFinal <= 0) throw new Error('Defina o valor da manutenção antes de baixar o PDF.');
     const proposalId = savedId ?? id;
-    const saved = proposalId
-      ? await updateProposal(proposalId, buildInput('rascunho'))
-      : await createProposal(buildInput('rascunho'));
+    // Download is read-only for existing proposals: never overwrite status/accepted_at or stored data.
+    if (proposalId) return proposalId;
+    const saved = await createProposal(buildInput('rascunho'));
     setSavedId(saved.id);
     return saved.id;
   };
