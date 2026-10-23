@@ -40,7 +40,11 @@ export default function OrcamentoPersonalizado() {
   const [busy, setBusy] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [consultor, setConsultor] = useState('');
+  const [consultores, setConsultores] = useState<string[]>([]);
 
+  useEffect(() => {
+    supabase.from('profiles').select('full_name').order('full_name').then(({ data }) => setConsultores([...new Set((data ?? []).map(p => p.full_name?.trim()).filter((n): n is string => !!n))]));
+  }, []);
   useEffect(() => {
     let active = true;
     Promise.all([supabase.from('clients').select('id,name,city,state,email,phone,document').order('name'), fetchProposalSettings(), id ? fetchProposal(id) : Promise.resolve(null)]).then(([cl, cfg, p]) => {
@@ -60,6 +64,9 @@ export default function OrcamentoPersonalizado() {
   }, [id]);
   const client = clients.find(c => c.id === clientId);
   const totals = quoteTotals(quote);
+  const prazoMatch = quote.prazo.match(/^(\d+)\s*(dias|meses)?/i);
+  const prazoNum = prazoMatch?.[1] ?? '';
+  const prazoUnid = prazoMatch?.[2]?.toLowerCase() === 'meses' ? 'meses' : 'dias';
   const patch = (data: Partial<CustomQuote>) => setQuote(q => ({ ...q, ...data }));
   const patchItem = (itemId: string, data: Partial<QuoteItem>) => setQuote(q => ({ ...q, itens: q.itens.map(i => i.id === itemId ? { ...i, ...data } : i) }));
   const validate = () => {
@@ -106,7 +113,7 @@ export default function OrcamentoPersonalizado() {
         <section className="space-y-4 border-b pb-6"><h2 className="font-semibold">Dados do orçamento</h2>
           <Label>Cliente<Select value={clientId} onValueChange={setClientId}><SelectTrigger className="mt-2"><SelectValue placeholder="Selecione o cliente" /></SelectTrigger><SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></Label>
           <Label className="block">Título do orçamento<Input aria-label="Título do orçamento" className="mt-2" value={quote.titulo} onChange={e => patch({ titulo: e.target.value })} placeholder="Passagem de cabeamento e ligações necessárias" /></Label>
-          <Label className="block">Consultor<Input className="mt-2" value={consultor} onChange={e => setConsultor(e.target.value)} /></Label>
+          <Label className="block">Consultor<Select value={consultor} onValueChange={setConsultor}><SelectTrigger className="mt-2"><SelectValue placeholder="Selecione o consultor" /></SelectTrigger><SelectContent>{[...new Set([...consultores, ...(consultor ? [consultor] : [])])].map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent></Select></Label>
           <Label className="block">Descrição dos serviços / produtos<Textarea aria-label="Descrição dos serviços / produtos" className="mt-2" rows={5} value={quote.detalhes} onChange={e => patch({ detalhes: e.target.value })} /></Label>
         </section>
         <section className="space-y-4 border-b pb-6"><div className="flex items-center justify-between"><h2 className="font-semibold">Produtos e serviços</h2><Button variant="outline" size="sm" className="gap-2" onClick={() => patch({ itens: [...quote.itens, newItem()] })}><Plus className="h-4 w-4" />Adicionar item</Button></div>
@@ -115,14 +122,16 @@ export default function OrcamentoPersonalizado() {
             <Label className="block">Descrição<Input aria-label={`Descrição do item ${ix + 1}`} className="mt-1" value={i.descricao} onChange={e => patchItem(i.id, { descricao: e.target.value })} /></Label>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Label>Tipo<Select value={i.categoria} onValueChange={v => patchItem(i.id, { categoria: v as QuoteItem['categoria'] })}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="produto">Produto</SelectItem><SelectItem value="servico">Serviço</SelectItem></SelectContent></Select></Label>
-              <Label>Unidade<Input aria-label={`Unidade do item ${ix + 1}`} className="mt-1" list="quote-units" value={i.unidade} onChange={e => patchItem(i.id, { unidade: e.target.value })} /></Label>
+              <Label>Unidade<Select value={i.unidade} onValueChange={v => patchItem(i.id, { unidade: v })}><SelectTrigger aria-label={`Unidade do item ${ix + 1}`} className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{[...new Set([...QUOTE_UNITS, i.unidade])].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></Label>
               <Label>Quantidade<QuoteNumberInput aria-label={`Quantidade do item ${ix + 1}`} className="mt-1" value={i.quantidade} onValueChange={v => patchItem(i.id, { quantidade: v })} /></Label>
               <Label>Valor unitário (R$)<QuoteNumberInput aria-label={`Valor unitário do item ${ix + 1}`} className="mt-1" value={i.valorUnitario} onValueChange={v => patchItem(i.id, { valorUnitario: v })} /></Label>
             </div><p className="text-right text-sm font-semibold">Total do item: {formatCurrency(quoteItemTotal(i))}</p>
-          </div>)}<datalist id="quote-units">{QUOTE_UNITS.map(u => <option key={u} value={u} />)}</datalist>
+          </div>)}
           <div className="grid gap-3 sm:grid-cols-2">{([['entrega', 'Taxa de entrega (R$)'], ['maoDeObra', 'Mão de obra adicional (R$)']] as const).map(([key, title]) => <Label key={key}>{title}<QuoteNumberInput aria-label={title} className="mt-1" value={quote[key]} onValueChange={v => patch({ [key]: v })} /></Label>)}</div>
         </section>
-        <section className="space-y-4 border-b pb-6"><h2 className="font-semibold">Detalhes e condições do serviço</h2>{([['prazo', 'Prazo de entrega / execução'], ['garantia', 'Garantia'], ['observacoes', 'Observações e responsabilidades']] as const).map(([key, title]) => <Label className="block" key={key}>{title}<Textarea className="mt-1" rows={3} value={quote[key]} onChange={e => patch({ [key]: e.target.value })} /></Label>)}</section>
+        <section className="space-y-4 border-b pb-6"><h2 className="font-semibold">Detalhes e condições do serviço</h2>
+          <Label className="block">Prazo de entrega / execução<div className="mt-1 flex gap-2"><Input aria-label="Prazo (número)" type="text" inputMode="numeric" className="w-28" value={prazoNum} onChange={e => patch({ prazo: e.target.value.replace(/\D/g, '') ? `${e.target.value.replace(/\D/g, '')} ${prazoUnid}` : '' })} /><Select value={prazoUnid} onValueChange={u => patch({ prazo: prazoNum ? `${prazoNum} ${u}` : '' })}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="dias">dias</SelectItem><SelectItem value="meses">meses</SelectItem></SelectContent></Select></div></Label>
+          {([['garantia', 'Garantia'], ['observacoes', 'Observações e responsabilidades']] as const).map(([key, title]) => <Label className="block" key={key}>{title}<Textarea className="mt-1" rows={key === 'garantia' ? 2 : 3} value={quote[key]} onChange={e => patch({ [key]: e.target.value })} /></Label>)}</section>
         <details className="space-y-4 border-b pb-6"><summary className="cursor-pointer font-semibold">Personalização deste documento</summary>
           <Label className="block">Apresentação da empresa e experiência no mercado<Textarea className="mt-2" rows={5} value={config.texts.apresentacao} onChange={e => setConfig(c => ({ ...c, texts: { ...c.texts, apresentacao: e.target.value } }))} /></Label>
           <Label className="block">Diferenciais<Textarea className="mt-2" rows={3} value={config.texts.diferenciais} onChange={e => setConfig(c => ({ ...c, texts: { ...c.texts, diferenciais: e.target.value } }))} /></Label>
@@ -130,6 +139,9 @@ export default function OrcamentoPersonalizado() {
           {config.sectionsPersonalizado.map(s => <div key={s.id} className="space-y-2"><Label className="flex items-center gap-2"><input type="checkbox" checked={s.enabled} disabled={s.required} onChange={e => setConfig(c => ({ ...c, sectionsPersonalizado: c.sectionsPersonalizado.map(x => x.id === s.id ? { ...x, enabled: e.target.checked } : x) }))} />{s.title}</Label>{s.key === 'personalizada' && <Textarea value={s.content ?? ''} onChange={e => setConfig(c => ({ ...c, sectionsPersonalizado: c.sectionsPersonalizado.map(x => x.id === s.id ? { ...x, content: e.target.value } : x) }))} />}</div>)}
           <Button variant="outline" size="sm" onClick={() => setConfig(c => ({ ...c, sectionsPersonalizado: [...c.sectionsPersonalizado, { id: crypto.randomUUID(), key: 'personalizada', title: 'Detalhes adicionais', enabled: true, newPage: false, background: 'branco', columns: 1, required: false, content: '' }] }))}><Plus className="mr-2 h-4 w-4" />Adicionar seção</Button>
         </details>
+        <section className="space-y-2 border-b pb-6"><h2 className="font-semibold">Valor total</h2>
+          <Label className="block">Valor total do orçamento (R$)<QuoteNumberInput aria-label="Valor total do orçamento" className="mt-1" placeholder={formatCurrency(quoteTotals({ ...quote, valorTotal: 0 }).total)} value={quote.valorTotal} onValueChange={v => patch({ valorTotal: v })} /></Label>
+          <p className="text-xs text-muted-foreground">Deixe em branco para usar a soma dos itens, entrega e mão de obra.</p></section>
         <section className="space-y-4"><h2 className="font-semibold">Formas de pagamento</h2>
           <Select value={condicao} onValueChange={setCondicao}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PAYMENT_CONDITIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent></Select>
           {['entrada-saldo', 'entrada-parcelas'].includes(condicao) && <Label className="block">Entrada (R$)<Input type="text" inputMode="numeric" value={entrada || ''} onChange={e => setEntrada(quoteNumber(e.target.value))} /></Label>}
