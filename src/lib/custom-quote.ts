@@ -1,3 +1,5 @@
+import { formatCurrency } from '@/lib/mock-data';
+
 export interface QuoteItem {
   id: string;
   descricao: string;
@@ -31,6 +33,8 @@ export const quoteNumber = (raw: string) => {
 };
 const money = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 export const quoteItemTotal = (item: QuoteItem) => money(item.quantidade * item.valorUnitario);
+/** Valores zerados saem como N/A nos documentos para não poluir a tabela. */
+export const quoteMoney = (n: number) => (n > 0 ? formatCurrency(n) : 'N/A');
 export function quoteTotals(quote: CustomQuote) {
   const subtotal = money(quote.itens.reduce((sum, item) => sum + quoteItemTotal(item), 0));
   return { subtotal, total: quote.valorTotal > 0 ? money(quote.valorTotal) : money(subtotal + quote.entrega + quote.maoDeObra) };
