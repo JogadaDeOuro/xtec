@@ -51,7 +51,8 @@ interface ProposalPDFProps {
   consultor?: string;
   finalidade?: Finalidade;
   desagioPct?: number;
-  tipo?: 'usina' | 'manutencao';
+  tipo?: 'usina' | 'manutencao' | 'personalizado';
+  personalizado?: ProposalDocData['personalizado'];
   manutencao?: ProposalDocData['manutencao'];
   /** configuração específica da proposta (snapshot); se ausente usa a global */
   docConfig?: ProposalDocConfig | null;
@@ -130,6 +131,7 @@ export function ProposalPDF(props: ProposalPDFProps) {
     finalidade: props.finalidade ?? 'consumo',
     desagioPct: props.desagioPct ?? 0,
     tipo: props.tipo ?? 'usina',
+    personalizado: props.personalizado,
     manutencao: props.manutencao,
   };
 
