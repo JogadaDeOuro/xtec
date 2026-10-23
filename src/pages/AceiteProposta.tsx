@@ -296,7 +296,7 @@ export default function AceiteProposta() {
               </div>
               <Button
                 className="w-full gap-2"
-                disabled={!docOk || !aceite}
+                disabled={!docOk || !aceite || proposal.tipo === 'personalizado'}
                 onClick={() => setConfirmOpen(true)}
               >
                 <CheckCircle2 className="h-4 w-4" /> Aceitar proposta

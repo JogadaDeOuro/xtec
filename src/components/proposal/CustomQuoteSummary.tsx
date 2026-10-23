@@ -6,9 +6,9 @@ export function CustomQuoteSummary({ quote }: { quote: CustomQuote }) {
   return <section className="space-y-4">
     {quote.detalhes && <p className="whitespace-pre-wrap text-sm">{quote.detalhes}</p>}
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs">
         <thead className="border-b text-left text-muted-foreground"><tr><th className="p-2">Descrição</th><th className="p-2">Qtd./un.</th><th className="p-2 text-right">Unitário</th><th className="p-2 text-right">Total</th></tr></thead>
-        <tbody>{quote.itens.map(i => <tr key={i.id} className="border-b"><td className="p-2 break-words">{i.descricao}</td><td className="p-2">{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="p-2 text-right whitespace-nowrap">{formatCurrency(i.valorUnitario)}</td><td className="p-2 text-right whitespace-nowrap">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody>
+        <tbody>{quote.itens.map(i => <tr key={i.id} className="border-b"><td className="p-2 break-words">{i.descricao}</td><td className="p-2">{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="p-2 text-right">{formatCurrency(i.valorUnitario)}</td><td className="p-2 text-right">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody>
       </table>
     </div>
     <dl className="space-y-2 text-sm">

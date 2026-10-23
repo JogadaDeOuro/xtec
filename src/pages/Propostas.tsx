@@ -255,6 +255,7 @@ export default function Propostas() {
                       size="icon"
                       className="h-8 w-8 text-primary"
                       title="Copiar link de aceite (cliente confirma com CPF/CNPJ)"
+                      disabled={p.tipo === 'personalizado'}
                       onClick={() => handleCopyAcceptLink(p.publicToken)}
                     >
                       <Link2 className="h-4 w-4" />
