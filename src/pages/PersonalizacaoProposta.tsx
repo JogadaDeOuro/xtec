@@ -241,7 +241,7 @@ export default function PersonalizacaoProposta() {
   const sample: ProposalDocData = useMemo(() => (
     previewTipo === 'personalizado' ? {
       ...SAMPLE, tipo: 'personalizado', valorBruto: 0, valorFinal: 0,
-      personalizado: { titulo: 'Orçamento personalizado', detalhes: '', itens: [], entrega: 0, maoDeObra: 0, prazo: '', garantia: '', observacoes: '' },
+      personalizado: { titulo: 'Orçamento personalizado', detalhes: '', itens: [], entrega: 0, maoDeObra: 0, valorTotal: 0, prazo: '', garantia: '', observacoes: '' },
     } : previewTipo === 'manutencao'
       ? {
           ...SAMPLE,
