@@ -1,0 +1,2 @@
+ALTER TABLE public.proposals ADD COLUMN IF NOT EXISTS personalizado_config jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.proposals.personalizado_config IS 'Custom quote title, itemized products/services, delivery, labor and service details. Existing organization policies apply.';

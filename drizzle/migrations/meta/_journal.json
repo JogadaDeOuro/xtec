@@ -92,6 +92,13 @@
       "when": 1790282559766,
       "tag": "0012_restrict_branding_read",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792779490973,
+      "tag": "0013_add_custom_quote_details",
+      "breakpoints": true
     }
   ]
 }
