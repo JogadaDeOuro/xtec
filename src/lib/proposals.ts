@@ -4,6 +4,7 @@ import { invokePublicPortal } from '@/lib/public-portal';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
 import { normalizeQuote, type CustomQuote } from '@/lib/custom-quote';
+import { acceptanceDateForEdit } from '@/lib/proposal-status';
 
 export interface PagamentoConfig {
   condicao?: string;
@@ -273,7 +274,7 @@ export async function updateProposal(id: string, input: ProposalInput): Promise<
     .from('proposals')
     .update({
       ...toRow(input),
-      accepted_at: input.status === 'aceita' ? current.acceptedAt ?? new Date().toISOString() : current.acceptedAt ?? null,
+      accepted_at: acceptanceDateForEdit(input.status, current.acceptedAt),
     })
     .eq('id', id)
     .select('*')
