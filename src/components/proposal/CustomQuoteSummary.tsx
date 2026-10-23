@@ -1,4 +1,4 @@
-import { quoteItemTotal, quoteTotals, type CustomQuote } from '@/lib/custom-quote';
+import { quoteItemTotal, quoteMoney, quoteTotals, type CustomQuote } from '@/lib/custom-quote';
 import { formatCurrency } from '@/lib/mock-data';
 
 export function CustomQuoteSummary({ quote }: { quote: CustomQuote }) {
@@ -8,11 +8,11 @@ export function CustomQuoteSummary({ quote }: { quote: CustomQuote }) {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead className="border-b text-left text-muted-foreground"><tr><th className="p-2">Descrição</th><th className="p-2">Qtd./un.</th><th className="p-2 text-right">Unitário</th><th className="p-2 text-right">Total</th></tr></thead>
-        <tbody>{quote.itens.map(i => <tr key={i.id} className="border-b"><td className="p-2 break-words">{i.descricao}</td><td className="p-2">{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="p-2 text-right">{formatCurrency(i.valorUnitario)}</td><td className="p-2 text-right">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody>
+        <tbody>{quote.itens.map(i => <tr key={i.id} className="border-b"><td className="p-2 break-words">{i.descricao}</td><td className="p-2">{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="p-2 text-right">{quoteMoney(i.valorUnitario)}</td><td className="p-2 text-right">{quoteMoney(quoteItemTotal(i))}</td></tr>)}</tbody>
       </table>
     </div>
     <dl className="space-y-2 text-sm">
-      <div className="flex justify-between"><dt>Subtotal dos itens</dt><dd>{formatCurrency(totals.subtotal)}</dd></div>
+      <div className="flex justify-between"><dt>Subtotal dos itens</dt><dd>{quoteMoney(totals.subtotal)}</dd></div>
       {quote.entrega > 0 && <div className="flex justify-between"><dt>Taxa de entrega</dt><dd>{formatCurrency(quote.entrega)}</dd></div>}
       {quote.maoDeObra > 0 && <div className="flex justify-between"><dt>Mão de obra adicional</dt><dd>{formatCurrency(quote.maoDeObra)}</dd></div>}
       <div className="flex justify-between border-t pt-2 font-semibold"><dt>Total do orçamento</dt><dd>{formatCurrency(totals.total)}</dd></div>

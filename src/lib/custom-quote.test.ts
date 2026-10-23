@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMPTY_QUOTE, normalizeQuote, quoteItemTotal, quoteNumber, quoteTotals, validateQuote } from './custom-quote';
+import { EMPTY_QUOTE, normalizeQuote, quoteItemTotal, quoteMoney, quoteNumber, quoteTotals, validateQuote } from './custom-quote';
 
 describe('Orçamento personalizado', () => {
   it('calcula quantidade em metros multiplicada pelo valor unitário', () => {
@@ -19,6 +19,11 @@ describe('Orçamento personalizado', () => {
     const q = { ...EMPTY_QUOTE, itens: [{ id: 'a', descricao: 'A', categoria: 'produto' as const, unidade: 'un', quantidade: 1, valorUnitario: 100 }], valorTotal: 90 };
     expect(quoteTotals(q).total).toBe(90);
     expect(EMPTY_QUOTE.garantia).toBe('1 ano');
+  });
+  it('mostra N/A em valores zerados em vez de R$ 0,00', () => {
+    expect(quoteMoney(0)).toBe('N/A');
+    expect(quoteMoney(232).replace(/\u00a0/g, ' ')).toBe('R$ 232,00');
+    expect(quoteMoney(quoteItemTotal({ id: 'x', descricao: 'X', categoria: 'servico', unidade: 'm', quantidade: 10, valorUnitario: 0 }))).toBe('N/A');
   });
   it('mantém itens, unidades, detalhes e custos após serialização', () => {
     const q = { ...EMPTY_QUOTE, titulo: 'Quadro de distribuição', detalhes: 'ART e normas ABNT', entrega: 20, maoDeObra: 80, itens: [{ id: '1', descricao: 'Cabo', categoria: 'produto' as const, unidade: 'm', quantidade: 250, valorUnitario: 2 }] };
