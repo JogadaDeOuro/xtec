@@ -8,7 +8,7 @@ import {
   itemByKey, MANUTENCAO_ITENS, PERDAS_POR_NEGLIGENCIA, RECOMENDACAO_PERIODICIDADE,
 } from '@/lib/manutencao';
 import type { EquipmentItem } from '@/lib/proposal-settings';
-import { quoteItemTotal, quoteTotals, type CustomQuote } from '@/lib/custom-quote';
+import { quoteItemTotal, quoteMoney, quoteTotals, type CustomQuote } from '@/lib/custom-quote';
 import {
   areaEstimada, arvoresEquivalentes, formatPotencia, percentualCompensacao, projecao, reducaoCo2Anual,
 } from '@/lib/solar-calc';
@@ -287,8 +287,8 @@ export function ProposalDocument({
       switch (s.key) {
         case 'orcamento_itens':
           return quote ? <>
-            <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th className="num">Qtd.</th><th>Unidade</th><th className="num">Valor unitário</th><th className="num">Total</th></tr></thead><tbody>{quote.itens.map(i => <tr key={i.id}><td>{i.descricao}</td><td className="num">{i.quantidade.toLocaleString('pt-BR')}</td><td>{i.unidade}</td><td className="num">{formatCurrency(i.valorUnitario)}</td><td className="num">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody></table>
-            <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{formatCurrency(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>
+            <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th className="num">Qtd.</th><th>Unidade</th><th className="num">Valor unitário</th><th className="num">Total</th></tr></thead><tbody>{quote.itens.map(i => <tr key={i.id}><td>{i.descricao}</td><td className="num">{i.quantidade.toLocaleString('pt-BR')}</td><td>{i.unidade}</td><td className="num">{quoteMoney(i.valorUnitario)}</td><td className="num">{quoteMoney(quoteItemTotal(i))}</td></tr>)}</tbody></table>
+            <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{quoteMoney(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>
           </> : null;
         case 'orcamento_detalhes':
           return quote ? <>{[['Descrição dos serviços / produtos', quote.detalhes], ['Prazo de entrega / execução', quote.prazo], ['Garantia', quote.garantia], ['Observações e responsabilidades', quote.observacoes]].filter(([, text]) => text).map(([title, text]) => <div key={title}><h3>{title}</h3><p style={{ whiteSpace: 'pre-wrap' }}>{text}</p></div>)}</> : null;
@@ -657,8 +657,8 @@ export function ProposalDocument({
       for (let offset = 0; offset < quote.itens.length; offset += 8) {
         const chunk = quote.itens.slice(offset, offset + 8);
         blocks.push({ id: `${s.id}-${offset}`, node: wrapSection(s, <>
-          <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th>Qtd./un.</th><th className="num">Unitário</th><th className="num">Total</th></tr></thead><tbody>{chunk.map(i => <tr key={i.id}><td>{i.descricao}</td><td>{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="num">{formatCurrency(i.valorUnitario)}</td><td className="num">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody></table>
-          {offset + 8 >= quote.itens.length && <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{formatCurrency(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>}
+          <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th>Qtd./un.</th><th className="num">Unitário</th><th className="num">Total</th></tr></thead><tbody>{chunk.map(i => <tr key={i.id}><td>{i.descricao}</td><td>{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="num">{quoteMoney(i.valorUnitario)}</td><td className="num">{quoteMoney(quoteItemTotal(i))}</td></tr>)}</tbody></table>
+          {offset + 8 >= quote.itens.length && <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{quoteMoney(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>}
         </>, offset ? `${s.title} — continuação` : s.title) });
       }
     } else if (s.key === 'orcamento_detalhes' && quote) {
