@@ -2,9 +2,10 @@
 
 ## Orçamento personalizado
 
-- [ ] Adicionar produtos/serviços, unidades, entrega e mão de obra
-- [ ] Integrar criação, edição, pagamentos e documentos personalizados
-- [ ] Validar cálculos e fluxo de salvar, editar e gerar PDF
+- [x] Adicionar produtos/serviços, unidades, entrega e mão de obra
+- [x] Integrar criação, edição, pagamentos e documentos personalizados
+- [x] Validar cálculos e fluxo de salvar e editar
+- [ ] Validar download oficial após publicação: servidor rejeita localhost e versão publicada ainda não contém a nova modalidade
 
 ## Página de vendas
 

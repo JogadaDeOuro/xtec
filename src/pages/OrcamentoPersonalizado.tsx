@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ProposalPDF } from '@/components/ProposalPDF';
 import { AltConditionsEditor } from '@/components/proposal/AltConditionsEditor';
 import { CustomQuoteSummary } from '@/components/proposal/CustomQuoteSummary';
+import { QuoteNumberInput } from '@/components/proposal/QuoteNumberInput';
 import { supabase } from '@/integrations/supabase/client';
 import { createProposal, fetchProposal, updateProposal, type ProposalInput, type ProposalRecord } from '@/lib/proposals';
 import { EMPTY_QUOTE, QUOTE_UNITS, quoteNumber, quoteItemTotal, quoteTotals, validateQuote, type CustomQuote, type QuoteItem } from '@/lib/custom-quote';
@@ -115,11 +116,11 @@ export default function OrcamentoPersonalizado() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Label>Tipo<Select value={i.categoria} onValueChange={v => patchItem(i.id, { categoria: v as QuoteItem['categoria'] })}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="produto">Produto</SelectItem><SelectItem value="servico">Serviço</SelectItem></SelectContent></Select></Label>
               <Label>Unidade<Input aria-label={`Unidade do item ${ix + 1}`} className="mt-1" list="quote-units" value={i.unidade} onChange={e => patchItem(i.id, { unidade: e.target.value })} /></Label>
-              <Label>Quantidade<Input aria-label={`Quantidade do item ${ix + 1}`} className="mt-1" type="text" inputMode="numeric" value={i.quantidade || ''} onChange={e => patchItem(i.id, { quantidade: quoteNumber(e.target.value) })} /></Label>
-              <Label>Valor unitário (R$)<Input aria-label={`Valor unitário do item ${ix + 1}`} className="mt-1" type="text" inputMode="numeric" value={i.valorUnitario || ''} onChange={e => patchItem(i.id, { valorUnitario: quoteNumber(e.target.value) })} /></Label>
+              <Label>Quantidade<QuoteNumberInput aria-label={`Quantidade do item ${ix + 1}`} className="mt-1" value={i.quantidade} onValueChange={v => patchItem(i.id, { quantidade: v })} /></Label>
+              <Label>Valor unitário (R$)<QuoteNumberInput aria-label={`Valor unitário do item ${ix + 1}`} className="mt-1" value={i.valorUnitario} onValueChange={v => patchItem(i.id, { valorUnitario: v })} /></Label>
             </div><p className="text-right text-sm font-semibold">Total do item: {formatCurrency(quoteItemTotal(i))}</p>
           </div>)}<datalist id="quote-units">{QUOTE_UNITS.map(u => <option key={u} value={u} />)}</datalist>
-          <div className="grid gap-3 sm:grid-cols-2">{([['entrega', 'Taxa de entrega (R$)'], ['maoDeObra', 'Mão de obra adicional (R$)']] as const).map(([key, title]) => <Label key={key}>{title}<Input aria-label={title} className="mt-1" type="text" inputMode="numeric" value={quote[key] || ''} onChange={e => patch({ [key]: quoteNumber(e.target.value) })} /></Label>)}</div>
+          <div className="grid gap-3 sm:grid-cols-2">{([['entrega', 'Taxa de entrega (R$)'], ['maoDeObra', 'Mão de obra adicional (R$)']] as const).map(([key, title]) => <Label key={key}>{title}<QuoteNumberInput aria-label={title} className="mt-1" value={quote[key]} onValueChange={v => patch({ [key]: v })} /></Label>)}</div>
         </section>
         <section className="space-y-4 border-b pb-6"><h2 className="font-semibold">Detalhes e condições do serviço</h2>{([['prazo', 'Prazo de entrega / execução'], ['garantia', 'Garantia'], ['observacoes', 'Observações e responsabilidades']] as const).map(([key, title]) => <Label className="block" key={key}>{title}<Textarea className="mt-1" rows={3} value={quote[key]} onChange={e => patch({ [key]: e.target.value })} /></Label>)}</section>
         <details className="space-y-4 border-b pb-6"><summary className="cursor-pointer font-semibold">Personalização deste documento</summary>
