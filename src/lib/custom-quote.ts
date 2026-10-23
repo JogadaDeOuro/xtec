@@ -13,6 +13,8 @@ export interface CustomQuote {
   itens: QuoteItem[];
   entrega: number;
   maoDeObra: number;
+  /** Valor total manual; 0 usa a soma automática. */
+  valorTotal: number;
   prazo: string;
   garantia: string;
   observacoes: string;
@@ -20,7 +22,7 @@ export interface CustomQuote {
 
 export const QUOTE_UNITS = ['un', 'm', 'm²', 'm³', 'L', 'kg', 'g', 'h', 'dia', 'serviço', 'kit', 'caixa', 'pacote'];
 export const EMPTY_QUOTE: CustomQuote = {
-  titulo: '', detalhes: '', itens: [], entrega: 0, maoDeObra: 0, prazo: '', garantia: '', observacoes: '',
+  titulo: '', detalhes: '', itens: [], entrega: 0, maoDeObra: 0, valorTotal: 0, prazo: '', garantia: '1 ano', observacoes: '',
 };
 export const quoteNumber = (raw: string) => {
   const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw;
@@ -31,7 +33,7 @@ const money = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 export const quoteItemTotal = (item: QuoteItem) => money(item.quantidade * item.valorUnitario);
 export function quoteTotals(quote: CustomQuote) {
   const subtotal = money(quote.itens.reduce((sum, item) => sum + quoteItemTotal(item), 0));
-  return { subtotal, total: money(subtotal + quote.entrega + quote.maoDeObra) };
+  return { subtotal, total: quote.valorTotal > 0 ? money(quote.valorTotal) : money(subtotal + quote.entrega + quote.maoDeObra) };
 }
 export function normalizeQuote(raw: unknown): CustomQuote {
   const q = (raw && typeof raw === 'object' ? raw : {}) as Partial<CustomQuote>;
@@ -39,7 +41,7 @@ export function normalizeQuote(raw: unknown): CustomQuote {
   return {
     titulo: text(q.titulo), detalhes: text(q.detalhes), prazo: text(q.prazo),
     garantia: text(q.garantia), observacoes: text(q.observacoes),
-    entrega: quoteNumber(String(q.entrega ?? 0)), maoDeObra: quoteNumber(String(q.maoDeObra ?? 0)),
+    entrega: quoteNumber(String(q.entrega ?? 0)), maoDeObra: quoteNumber(String(q.maoDeObra ?? 0)), valorTotal: quoteNumber(String(q.valorTotal ?? 0)),
     itens: Array.isArray(q.itens) ? q.itens.filter(i => i && typeof i === 'object').map((i, index) => ({
       id: text(i.id) || `item-${index}`, descricao: text(i.descricao),
       categoria: i.categoria === 'servico' ? 'servico' : 'produto', unidade: text(i.unidade) || 'un',

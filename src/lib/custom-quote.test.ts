@@ -15,6 +15,11 @@ describe('Orçamento personalizado', () => {
     expect(quoteTotals(q)).toEqual({ subtotal: 200, total: 280 });
     expect(quoteTotals({ ...q, entrega: 0, maoDeObra: 0 }).total).toBe(200);
   });
+  it('usa o valor total manual quando informado', () => {
+    const q = { ...EMPTY_QUOTE, itens: [{ id: 'a', descricao: 'A', categoria: 'produto' as const, unidade: 'un', quantidade: 1, valorUnitario: 100 }], valorTotal: 90 };
+    expect(quoteTotals(q).total).toBe(90);
+    expect(EMPTY_QUOTE.garantia).toBe('1 ano');
+  });
   it('mantém itens, unidades, detalhes e custos após serialização', () => {
     const q = { ...EMPTY_QUOTE, titulo: 'Quadro de distribuição', detalhes: 'ART e normas ABNT', entrega: 20, maoDeObra: 80, itens: [{ id: '1', descricao: 'Cabo', categoria: 'produto' as const, unidade: 'm', quantidade: 250, valorUnitario: 2 }] };
     expect(normalizeQuote(JSON.parse(JSON.stringify(q)))).toEqual(q);
