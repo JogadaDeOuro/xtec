@@ -22,7 +22,7 @@ describe('Orçamento personalizado', () => {
   });
   it('mostra N/A em valores zerados em vez de R$ 0,00', () => {
     expect(quoteMoney(0)).toBe('N/A');
-    expect(quoteMoney(232)).toBe('R$ 232,00');
+    expect(quoteMoney(232).replace(/\u00a0/g, ' ')).toBe('R$ 232,00');
     expect(quoteMoney(quoteItemTotal({ id: 'x', descricao: 'X', categoria: 'servico', unidade: 'm', quantidade: 10, valorUnitario: 0 }))).toBe('N/A');
   });
   it('mantém itens, unidades, detalhes e custos após serialização', () => {
