@@ -66,7 +66,9 @@ Deno.serve(async (req) => {
     const requested = safeOrigin(body?.origin);
     if (!requested) return json({ error: 'Origem não permitida' }, 400);
     const published = safeOrigin(Deno.env.get('PDF_BASE_URL') ?? '') ?? 'https://inforsol-app.lovable.app';
-    const origin = /^id-preview--/.test(new URL(requested).hostname) ? published : requested;
+    const host = new URL(requested).hostname;
+    // Previews exigem login no Lovable; o navegador do servidor só acessa o site publicado.
+    const origin = /^id-preview--/.test(host) || /lovableproject\.com$/.test(host) ? published : requested;
 
     // RLS decide o acesso: se a linha não voltar, o usuário não pode ver esta proposta.
     const { data: proposal, error } = await supabase
