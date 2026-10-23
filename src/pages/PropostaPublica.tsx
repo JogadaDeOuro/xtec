@@ -1,4 +1,7 @@
 import { formatPotencia } from '@/lib/solar-calc';
+import { CustomQuoteSummary } from '@/components/proposal/CustomQuoteSummary';
+import { Button } from '@/components/ui/button';
+import { buildPaymentRows } from '@/lib/payment-options';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, Sun, Zap, DollarSign, TrendingUp, Clock, Shield, CheckCircle2 } from 'lucide-react';
@@ -49,6 +52,8 @@ export default function PropostaPublica() {
 
   const milestones = getMilestones(proposal.condicaoPagamento);
   const totalGeral = proposal.valorSistema + (proposal.garantiaEstendidaValor || 0);
+
+  if (proposal.tipo === 'personalizado') return <div className="min-h-screen bg-background px-4 py-8"><main className="mx-auto max-w-3xl space-y-6"><header className="border-b pb-6"><p className="text-sm text-muted-foreground">{proposal.numero} · {proposal.clientName}</p><h1 className="mt-2 font-display text-2xl font-bold">{proposal.personalizado.titulo}</h1></header><CustomQuoteSummary quote={proposal.personalizado} /><section className="space-y-2 border-t pt-4"><h2 className="font-semibold">Condição de pagamento</h2>{buildPaymentRows(proposal.pagamentoConfig.condicao || 'avista', { valorTotal: proposal.valorSistema, entradaValor: proposal.pagamentoConfig.entradaValor, numParcelas: proposal.pagamentoConfig.numParcelas, etapas: proposal.pagamentoConfig.etapas }).map((r, i) => <div key={i} className="flex justify-between text-sm"><span>{r.label}</span><span>{formatCurrency(r.value)}</span></div>)}</section><Button onClick={() => { window.location.href = `/proposta/${token}/print`; }}>Ver proposta completa</Button></main></div>;
 
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">

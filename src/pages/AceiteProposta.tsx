@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CustomQuoteSummary } from '@/components/proposal/CustomQuoteSummary';
 import { useParams } from 'react-router-dom';
 import { Loader2, Sun, Shield, CheckCircle2, FileSignature, MapPin, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -109,7 +110,7 @@ export default function AceiteProposta() {
       raw: proposal.condicaoPagamento,
       cond: mapCondicaoFromLabel(proposal.condicaoPagamento),
       total: proposal.valorSistema,
-      rows: buildPaymentRows(mapCondicaoFromLabel(proposal.condicaoPagamento), { valorTotal: proposal.valorSistema }),
+      rows: buildPaymentRows(proposal.pagamentoConfig.condicao || mapCondicaoFromLabel(proposal.condicaoPagamento), { valorTotal: proposal.valorSistema, entradaValor: proposal.pagamentoConfig.entradaValor, numParcelas: proposal.pagamentoConfig.numParcelas, etapas: proposal.pagamentoConfig.etapas }),
     },
     ...(proposal.condicoesAlternativas ?? []).filter(Boolean).map(raw => {
       const alt = parseAlt(raw);
@@ -166,12 +167,12 @@ export default function AceiteProposta() {
               <Sun className="h-6 w-6" />
               <span className="text-sm font-medium opacity-80">ACEITE DA PROPOSTA</span>
             </div>
-            <h1 className="text-2xl font-bold">Sistema Fotovoltaico {proposal.systemType.toUpperCase()}</h1>
+            <h1 className="text-2xl font-bold">{proposal.tipo === 'personalizado' ? proposal.personalizado.titulo : `Sistema Fotovoltaico ${proposal.systemType.toUpperCase()}`}</h1>
             <p className="text-sm opacity-80 mt-1">{proposal.numero} · {proposal.clientName}</p>
           </div>
 
           <CardContent className="p-6 space-y-6">
-            <section className="grid grid-cols-2 gap-3">
+            {proposal.tipo === 'personalizado' ? <CustomQuoteSummary quote={proposal.personalizado} /> : <section className="grid grid-cols-2 gap-3">
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Potência</p>
                 <p className="text-sm font-semibold">{proposal.potenciaKwp} kWp</p>
@@ -188,7 +189,7 @@ export default function AceiteProposta() {
                 <p className="text-xs text-muted-foreground">Payback</p>
                 <p className="text-sm font-semibold">{proposal.paybackAnos > 0 ? `${proposal.paybackAnos} anos` : '—'}</p>
               </div>
-            </section>
+            </section>}
 
             {(milestones.length > 0 || opcoesPagamento.length > 1) && (
               <>
@@ -234,7 +235,7 @@ export default function AceiteProposta() {
 
             <Separator />
 
-            <section className="space-y-3">
+            {proposal.tipo !== 'personalizado' && <section className="space-y-3">
               <h2 className="text-sm font-semibold flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" /> Garantia da instalação
               </h2>
@@ -249,13 +250,13 @@ export default function AceiteProposta() {
                 </div>
                 <Switch aria-label="Incluir garantia estendida" checked={garantia} onCheckedChange={setGarantia} />
               </div>
-            </section>
+            </section>}
 
             <Separator />
 
             <section className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Sistema fotovoltaico</span>
+                <span className="text-muted-foreground">{proposal.tipo === 'personalizado' ? 'Orçamento personalizado' : 'Sistema fotovoltaico'}</span>
                 <span className="font-medium">{formatCurrency(baseValor)}</span>
               </div>
               {garantia && (
