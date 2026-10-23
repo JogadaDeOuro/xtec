@@ -30,6 +30,8 @@ export type SectionKey =
   | 'manutencao_resumo'
   | 'manutencao_escopo'
   | 'manutencao_recomendacoes'
+  | 'orcamento_itens'
+  | 'orcamento_detalhes'
   | 'personalizada';
 
 export interface SectionConfig {
@@ -200,6 +202,7 @@ export interface ProposalDocConfig {
   sections: SectionConfig[];
   /** estrutura das propostas de manutenção (independente da de usina) */
   sectionsManutencao: SectionConfig[];
+  sectionsPersonalizado: SectionConfig[];
 }
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
@@ -230,6 +233,8 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   manutencao_escopo: 'Serviços inclusos na manutenção',
   manutencao_recomendacoes: 'Por que manter a usina em dia',
   personalizada: 'Seção personalizada',
+  orcamento_itens: 'Produtos e serviços',
+  orcamento_detalhes: 'Detalhes, prazos e garantias',
 };
 
 /** Ordem das seções em propostas de MANUTENÇÃO. */
@@ -431,6 +436,13 @@ export const DEFAULT_PROPOSAL_CONFIG: ProposalDocConfig = {
   },
   sections: DEFAULT_SECTIONS,
   sectionsManutencao: DEFAULT_SECTIONS_MANUTENCAO,
+  sectionsPersonalizado: [
+    sec('capa', { newPage: true, required: true, background: 'imagem' }),
+    sec('apresentacao', { newPage: true }), sec('dados_cliente'),
+    sec('orcamento_itens', { newPage: true, required: true }),
+    sec('orcamento_detalhes'), sec('pagamento', { required: true }),
+    sec('galeria'), sec('validade'), sec('aceite', { enabled: false }),
+  ],
 };
 
 /** Completa uma lista salva com as seções padrão ausentes, na posição correta. */
@@ -480,6 +492,7 @@ export function mergeConfig(partial?: unknown): ProposalDocConfig {
     },
     sections,
     sectionsManutencao,
+    sectionsPersonalizado: mergeSectionList(p.sectionsPersonalizado, base.sectionsPersonalizado),
   };
 }
 

@@ -3,6 +3,8 @@ import { describeSaasError } from '@/lib/saas';
 import { invokePublicPortal } from '@/lib/public-portal';
 import type { Proposal, ProposalStatus, SystemType } from '@/lib/mock-data';
 import type { Finalidade } from '@/lib/investment';
+import { normalizeQuote, type CustomQuote } from '@/lib/custom-quote';
+import { acceptanceDateForEdit } from '@/lib/proposal-status';
 
 export interface PagamentoConfig {
   condicao?: string;
@@ -41,6 +43,7 @@ export interface ProposalRow {
   finalidade: string | null;
   desagio_pct: number | null;
   tipo?: string | null;
+  personalizado_config?: unknown;
   area_m2?: number | null;
   valor_por_modulo?: number | null;
   manutencao_itens?: string[] | null;
@@ -76,6 +79,7 @@ export interface ProposalRecord extends Proposal {
   templateId: string | null;
   docConfig: Record<string, unknown> | null;
   tipo: ProposalTipo;
+  personalizado: CustomQuote;
   areaM2: number;
   valorPorModulo: number;
   manutencaoItens: string[];
@@ -85,7 +89,7 @@ export interface ProposalRecord extends Proposal {
   origemRef: string;
 }
 
-export type ProposalTipo = 'usina' | 'manutencao';
+export type ProposalTipo = 'usina' | 'manutencao' | 'personalizado';
 /** Manutenção pontual (serviço único) ou recorrente (contrato anual). */
 export type ManutencaoRegime = 'pontual' | 'recorrente';
 
@@ -122,7 +126,8 @@ export function rowToProposal(row: ProposalRow): ProposalRecord {
     versao: Number(row.versao ?? 1),
     templateId: row.template_id ?? null,
     docConfig: (row.doc_config as Record<string, unknown> | null) ?? null,
-    tipo: (row.tipo === 'manutencao' ? 'manutencao' : 'usina') as ProposalTipo,
+    tipo: row.tipo === 'personalizado' ? 'personalizado' : row.tipo === 'manutencao' ? 'manutencao' : 'usina',
+    personalizado: normalizeQuote(row.personalizado_config),
     areaM2: Number(row.area_m2 ?? 0),
     valorPorModulo: Number(row.valor_por_modulo ?? 0),
     manutencaoItens: row.manutencao_itens ?? [],
@@ -185,6 +190,7 @@ export interface ProposalInput {
   templateId?: string | null;
   docConfig?: Record<string, unknown> | null;
   tipo?: ProposalTipo;
+  personalizado?: CustomQuote;
   areaM2?: number;
   valorPorModulo?: number;
   manutencaoItens?: string[];
@@ -222,6 +228,7 @@ function toRow(input: ProposalInput) {
     template_id: input.templateId ?? null,
     doc_config: (input.docConfig ?? null) as never,
     tipo: input.tipo ?? 'usina',
+    ...(input.personalizado ? { personalizado_config: input.personalizado as never } : {}),
     area_m2: input.areaM2 ?? 0,
     valor_por_modulo: input.valorPorModulo ?? 0,
     manutencao_itens: input.manutencaoItens ?? [],
@@ -261,11 +268,13 @@ export async function createProposal(input: ProposalInput): Promise<ProposalReco
 }
 
 export async function updateProposal(id: string, input: ProposalInput): Promise<ProposalRecord> {
+  const current = await fetchProposal(id);
+  if (!current) throw new Error('Proposta não encontrada');
   const { data, error } = await supabase
     .from('proposals')
     .update({
       ...toRow(input),
-      accepted_at: input.status === 'aceita' ? new Date().toISOString() : null,
+      accepted_at: acceptanceDateForEdit(input.status, current.acceptedAt),
     })
     .eq('id', id)
     .select('*')

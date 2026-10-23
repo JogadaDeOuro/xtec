@@ -49,6 +49,7 @@ export function buildProposalDocData(
     finalidade: p.finalidade,
     desagioPct: p.desagioPct,
     tipo: p.tipo,
+    personalizado: p.tipo === 'personalizado' ? p.personalizado : undefined,
     manutencao: p.tipo === 'manutencao' ? {
       areaM2: p.areaM2,
       valorPorModulo: p.valorPorModulo,

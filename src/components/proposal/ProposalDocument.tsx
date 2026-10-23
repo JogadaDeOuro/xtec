@@ -8,6 +8,7 @@ import {
   itemByKey, MANUTENCAO_ITENS, PERDAS_POR_NEGLIGENCIA, RECOMENDACAO_PERIODICIDADE,
 } from '@/lib/manutencao';
 import type { EquipmentItem } from '@/lib/proposal-settings';
+import { quoteItemTotal, quoteTotals, type CustomQuote } from '@/lib/custom-quote';
 import {
   areaEstimada, arvoresEquivalentes, formatPotencia, percentualCompensacao, projecao, reducaoCo2Anual,
 } from '@/lib/solar-calc';
@@ -65,7 +66,8 @@ export interface ProposalDocData {
   /** deságio aplicado na venda da energia (usina de investimento) */
   desagioPct?: number;
   /** 'usina' (padrão) ou 'manutencao' */
-  tipo?: 'usina' | 'manutencao';
+  tipo?: 'usina' | 'manutencao' | 'personalizado';
+  personalizado?: CustomQuote;
   /** dados exclusivos da proposta de manutenção */
   manutencao?: {
     areaM2: number;
@@ -117,8 +119,10 @@ export function ProposalDocument({
 }: { config: ProposalDocConfig; data: ProposalDocData; onLayout?: (info: DocLayoutInfo) => void }) {
   const vars = useMemo(() => buildVariables(config, data), [config, data]);
   const isManut = data.tipo === 'manutencao';
+  const isCustom = data.tipo === 'personalizado';
+  const quote = data.personalizado;
   const manut = data.manutencao;
-  const docTitulo = isManut ? 'Proposta de Manutenção de Usina Solar' : config.cover.titulo;
+  const docTitulo = isCustom ? quote?.titulo || 'Orçamento personalizado' : isManut ? 'Proposta de Manutenção de Usina Solar' : config.cover.titulo;
 
   /** Em manutenção o documento usa a estrutura própria salva para esse tipo. */
   const manutSections: SectionConfig[] = (config.sectionsManutencao?.length
@@ -134,7 +138,7 @@ export function ProposalDocument({
         required: key === 'capa',
       } as SectionConfig)));
 
-  const enabled = (isManut ? manutSections : config.sections).filter(s => s.enabled);
+  const enabled = (isCustom ? config.sectionsPersonalizado : isManut ? manutSections : config.sections).filter(s => s.enabled);
   const cover = enabled.find(s => s.key === 'capa');
 
   const t = (text: string) => interpolate(text, vars);
@@ -281,6 +285,13 @@ export function ProposalDocument({
   const renderSection = (s: SectionConfig) => {
     const body = (() => {
       switch (s.key) {
+        case 'orcamento_itens':
+          return quote ? <>
+            <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th className="num">Qtd.</th><th>Unidade</th><th className="num">Valor unitário</th><th className="num">Total</th></tr></thead><tbody>{quote.itens.map(i => <tr key={i.id}><td>{i.descricao}</td><td className="num">{i.quantidade.toLocaleString('pt-BR')}</td><td>{i.unidade}</td><td className="num">{formatCurrency(i.valorUnitario)}</td><td className="num">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody></table>
+            <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{formatCurrency(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>
+          </> : null;
+        case 'orcamento_detalhes':
+          return quote ? <>{[['Descrição dos serviços / produtos', quote.detalhes], ['Prazo de entrega / execução', quote.prazo], ['Garantia', quote.garantia], ['Observações e responsabilidades', quote.observacoes]].filter(([, text]) => text).map(([title, text]) => <div key={title}><h3>{title}</h3><p style={{ whiteSpace: 'pre-wrap' }}>{text}</p></div>)}</> : null;
         case 'apresentacao':
           return (<>
             <p>{t(config.texts.apresentacao)}</p>
@@ -642,7 +653,21 @@ export function ProposalDocument({
   for (const s of enabled) {
     if (s.key === 'capa') continue;
     const before = blocks.length;
-    if (s.key === 'economia' && isInv && ganhos.length > 8) {
+    if (s.key === 'orcamento_itens' && quote && quote.itens.length > 8) {
+      for (let offset = 0; offset < quote.itens.length; offset += 8) {
+        const chunk = quote.itens.slice(offset, offset + 8);
+        blocks.push({ id: `${s.id}-${offset}`, node: wrapSection(s, <>
+          <table className="pdoc-table"><thead><tr><th>Produto / serviço</th><th>Qtd./un.</th><th className="num">Unitário</th><th className="num">Total</th></tr></thead><tbody>{chunk.map(i => <tr key={i.id}><td>{i.descricao}</td><td>{i.quantidade.toLocaleString('pt-BR')} {i.unidade}</td><td className="num">{formatCurrency(i.valorUnitario)}</td><td className="num">{formatCurrency(quoteItemTotal(i))}</td></tr>)}</tbody></table>
+          {offset + 8 >= quote.itens.length && <div className="pdoc-invest"><div className="row"><span>Subtotal dos itens</span><span>{formatCurrency(quoteTotals(quote).subtotal)}</span></div>{quote.entrega > 0 && <div className="row"><span>Taxa de entrega</span><span>{formatCurrency(quote.entrega)}</span></div>}{quote.maoDeObra > 0 && <div className="row"><span>Mão de obra adicional</span><span>{formatCurrency(quote.maoDeObra)}</span></div>}<div className="row total"><span>Total do orçamento</span><span>{formatCurrency(data.valorFinal)}</span></div></div>}
+        </>, offset ? `${s.title} — continuação` : s.title) });
+      }
+    } else if (s.key === 'orcamento_detalhes' && quote) {
+      const entries = [['Descrição dos serviços / produtos', quote.detalhes], ['Prazo de entrega / execução', quote.prazo], ['Garantia', quote.garantia], ['Observações e responsabilidades', quote.observacoes]];
+      for (const [title, text] of entries) {
+        const paragraphs = text.match(/[\s\S]{1,900}(?:\s|$)|[\s\S]{1,900}/g) ?? [];
+        paragraphs.forEach((paragraph, index) => blocks.push({ id: `${s.id}-${title}-${index}`, node: wrapSection(s, <p style={{ whiteSpace: 'pre-wrap' }}>{paragraph}</p>, index ? `${title} — continuação` : title) }));
+      }
+    } else if (s.key === 'economia' && isInv && ganhos.length > 8) {
       // Anos estratégicos: cabe em uma única página junto dos cards
       const estrategicos = new Set<number>();
       for (let y = 1; y <= Math.min(5, ganhos.length); y++) estrategicos.add(y);
@@ -731,8 +756,8 @@ export function ProposalDocument({
             )}
             <div className={`inner ${cv.alinhamento}`}>
               <h1>{docTitulo}</h1>
-              {(isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo) && (
-                <div className="sub">{isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo}</div>
+              {(isCustom ? 'Proposta comercial · Produtos e serviços' : isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo) && (
+                <div className="sub">{isCustom ? 'Proposta comercial · Produtos e serviços' : isManut ? 'Manutenção preventiva e corretiva de sistemas fotovoltaicos' : cv.subtitulo}</div>
               )}
               {cv.mostrarCliente && data.clientName && (
                 <div className="cliente">Preparado para<strong>{data.clientName}</strong></div>
@@ -742,7 +767,7 @@ export function ProposalDocument({
               )}
             </div>
             <div className="facts">
-              {isManut ? (<>
+              {isCustom ? <div className="fact"><div className="k">Total do orçamento</div><div className="v">{formatCurrency(data.valorFinal)}</div></div> : isManut ? (<>
                 <div className="fact"><div className="k">Módulos</div><div className="v">{formatNumber(data.numModulos)} un.</div></div>
                 <div className="fact"><div className="k">Área da usina</div><div className="v">{formatNumber(manut?.areaM2 ?? 0)} m²</div></div>
               </>) : (<>

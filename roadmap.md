@@ -1,5 +1,12 @@
 # MCP agent integrations
 
+## Orçamento personalizado
+
+- [x] Adicionar produtos/serviços, unidades, entrega e mão de obra
+- [x] Integrar criação, edição, pagamentos e documentos personalizados
+- [x] Validar cálculos e fluxo de salvar e editar
+- [ ] Validar download oficial após publicação: servidor rejeita localhost e versão publicada ainda não contém a nova modalidade
+
 ## Página de vendas
 
 - [x] Reforçar mensagem de impacto comercial sem promessas garantidas

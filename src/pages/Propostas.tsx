@@ -1,5 +1,6 @@
 import { formatPotencia } from '@/lib/solar-calc';
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
+import { buildProposalDocData } from '@/lib/proposal-doc-data';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';
 import {
@@ -147,6 +148,7 @@ export default function Propostas() {
                   <span className="block text-xs text-muted-foreground">Cobrança por m², com escopo de serviços</span>
                 </span>
               </Button>
+              <Button variant="outline" onClick={() => { setTipoOpen(false); navigate('/propostas/personalizado'); }} className="h-auto justify-start gap-3 whitespace-normal p-4 text-left hover:border-primary hover:bg-primary/5"><FileText className="h-5 w-5 text-primary" /><span><span className="block text-sm font-semibold">Orçamento personalizado</span><span className="block text-xs text-muted-foreground">Produtos, serviços e valores por unidade</span></span></Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -198,7 +200,7 @@ export default function Propostas() {
         )}
         {!loading && visible.map((p) => (
           <Card key={p.id} className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
-            onClick={() => navigate(p.tipo === 'manutencao' ? `/propostas/manutencao/${p.id}` : `/propostas/${p.id}`)}
+            onClick={() => navigate(p.tipo === 'personalizado' ? `/propostas/personalizado/${p.id}` : p.tipo === 'manutencao' ? `/propostas/manutencao/${p.id}` : `/propostas/${p.id}`)}
           >
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -214,7 +216,7 @@ export default function Propostas() {
                       </Badge>
                     </div>
                     <p className="text-xs leading-relaxed text-muted-foreground">
-                      {p.numero} · {p.tipo === 'manutencao'
+                      {p.numero} · {p.tipo === 'personalizado' ? p.personalizado.titulo : p.tipo === 'manutencao'
                         ? `Manutenção · ${p.areaM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} m²`
                         : `${p.systemType.toUpperCase()} · ${formatPotencia(p.potenciaKwp)}`} · {p.createdAt}
                     </p>
@@ -224,7 +226,7 @@ export default function Propostas() {
                   <div className="min-w-0 text-left sm:text-right">
                     <p className="text-sm font-bold">{formatCurrency(p.valorSistema)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {p.tipo === 'manutencao'
+                      {p.tipo === 'personalizado' ? `${p.personalizado.itens.length} produtos / serviços` : p.tipo === 'manutencao'
                         ? `Área: ${p.areaM2.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} m²${p.areaM2 > 0 ? ` · ${formatCurrency(p.valorSistema / p.areaM2)}/m²` : ''}`
                         : `Economia: ${formatCurrency(p.economiaMensal)}/mês`}
                     </p>
@@ -253,6 +255,7 @@ export default function Propostas() {
                       size="icon"
                       className="h-8 w-8 text-primary"
                       title="Copiar link de aceite (cliente confirma com CPF/CNPJ)"
+                      disabled={p.tipo === 'personalizado'}
                       onClick={() => handleCopyAcceptLink(p.publicToken)}
                     >
                       <Link2 className="h-4 w-4" />
@@ -330,24 +333,14 @@ export default function Propostas() {
           finalidade={pdfProposal.finalidade}
           desagioPct={pdfProposal.desagioPct}
           tipo={pdfProposal.tipo}
+          personalizado={pdfProposal.personalizado}
           manutencao={pdfProposal.tipo === 'manutencao' ? {
             areaM2: pdfProposal.areaM2,
             valorPorModulo: pdfProposal.valorPorModulo,
             valorPorM2: pdfProposal.areaM2 > 0 ? +(pdfProposal.valorSistema / pdfProposal.areaM2).toFixed(2) : 0,
             itens: pdfProposal.manutencaoItens ?? [],
           } : undefined}
-          payment={{
-            condicao: mapCondicaoFromLabel(pdfProposal.condicaoPagamento),
-            alternativas: pdfProposal.condicoesAlternativas ?? [],
-
-            entradaValor: 0,
-            numParcelas: 0,
-            valorParcela: 0,
-            saldoAposEntrada: 0,
-            etapasPersonalizadas: [],
-            garantiaEstendida: pdfProposal.garantiaEstendida,
-            garantiaValor: pdfProposal.garantiaEstendidaValor,
-          }}
+          payment={buildProposalDocData(pdfProposal).payment}
         />
       )}
     </div>
