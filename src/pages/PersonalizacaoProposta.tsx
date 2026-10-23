@@ -173,10 +173,10 @@ export default function PersonalizacaoProposta() {
   };
 
   /* seções — cada tipo de proposta tem sua própria estrutura salva */
-  const secKey = (): 'sections' | 'sectionsManutencao' =>
-    previewTipo === 'manutencao' ? 'sectionsManutencao' : 'sections';
+  const secKey = (): 'sections' | 'sectionsManutencao' | 'sectionsPersonalizado' =>
+    previewTipo === 'personalizado' ? 'sectionsPersonalizado' : previewTipo === 'manutencao' ? 'sectionsManutencao' : 'sections';
   const secList = (): SectionConfig[] =>
-    (previewTipo === 'manutencao' ? config.sectionsManutencao : config.sections) ?? [];
+    config[secKey()] ?? [];
   const moveSection = (i: number, dir: -1 | 1) => {
     const arr = [...secList()];
     const j = i + dir;
@@ -236,10 +236,13 @@ export default function PersonalizacaoProposta() {
     );
   };
 
-  const [previewTipo, setPreviewTipo] = useState<'usina' | 'manutencao'>('usina');
+  const [previewTipo, setPreviewTipo] = useState<'usina' | 'manutencao' | 'personalizado'>('usina');
 
   const sample: ProposalDocData = useMemo(() => (
-    previewTipo === 'manutencao'
+    previewTipo === 'personalizado' ? {
+      ...SAMPLE, tipo: 'personalizado', valorBruto: 0, valorFinal: 0,
+      personalizado: { titulo: 'Orçamento personalizado', detalhes: '', itens: [], entrega: 0, maoDeObra: 0, prazo: '', garantia: '', observacoes: '' },
+    } : previewTipo === 'manutencao'
       ? {
           ...SAMPLE,
           tipo: 'manutencao',
@@ -449,11 +452,12 @@ export default function PersonalizacaoProposta() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Label className="text-xs">Editando a estrutura de:</Label>
-                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao' | 'personalizado')}>
                   <SelectTrigger className="h-8 w-[190px] text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="usina">Proposta de usina nova</SelectItem>
                     <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                    <SelectItem value="personalizado">Orçamento personalizado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -865,11 +869,12 @@ export default function PersonalizacaoProposta() {
             <CardHeader className="flex-row items-center justify-between space-y-0 py-3">
               <CardTitle className="text-sm">Pré-visualização A4</CardTitle>
               <div className="flex items-center gap-2">
-                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao')}>
+                <Select value={previewTipo} onValueChange={v => setPreviewTipo(v as 'usina' | 'manutencao' | 'personalizado')}>
                   <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="usina">Proposta de usina</SelectItem>
                     <SelectItem value="manutencao">Proposta de manutenção</SelectItem>
+                    <SelectItem value="personalizado">Orçamento personalizado</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(z => Math.max(0.25, +(z - 0.05).toFixed(2)))}>−</Button>
