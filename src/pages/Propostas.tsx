@@ -2,7 +2,7 @@ import { formatPotencia } from '@/lib/solar-calc';
 import { mapCondicaoFromLabel } from '@/lib/payment-options';
 import { buildProposalDocData } from '@/lib/proposal-doc-data';
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench } from 'lucide-react';
+import { Plus, Search, FileText, Printer, Copy, Trash2, Link2, Sun, Wrench, Package } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
@@ -14,6 +14,7 @@ import {
   proposalStatusLabels, proposalStatusColors, formatCurrency, type ProposalStatus,
 } from '@/lib/mock-data';
 import { fetchProposals, deleteProposal, type ProposalRecord } from '@/lib/proposals';
+import { proposalKind } from '@/lib/proposal-kind';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -198,7 +199,9 @@ export default function Propostas() {
         {loading && (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         )}
-        {!loading && visible.map((p) => (
+        {!loading && visible.map((p) => {
+          const kind = proposalKind(p);
+          return (
           <Card key={p.id} className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
             onClick={() => navigate(p.tipo === 'personalizado' ? `/propostas/personalizado/${p.id}` : p.tipo === 'manutencao' ? `/propostas/manutencao/${p.id}` : `/propostas/${p.id}`)}
           >
@@ -211,6 +214,18 @@ export default function Propostas() {
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <p className="truncate text-sm font-medium">{p.clientName}</p>
+                      <Badge
+                        title={kind.title}
+                        className={cn(
+                          'shrink-0 gap-1 border-transparent text-[10px] font-semibold uppercase tracking-wide',
+                          kind.className,
+                        )}
+                      >
+                        {kind.icon === 'sun' && <Sun className="h-3 w-3" />}
+                        {kind.icon === 'wrench' && <Wrench className="h-3 w-3" />}
+                        {kind.icon === 'package' && <Package className="h-3 w-3" />}
+                        {kind.label}
+                      </Badge>
                       <Badge className={cn('text-[10px]', proposalStatusColors[p.status])}>
                         {proposalStatusLabels[p.status]}
                       </Badge>
@@ -288,7 +303,8 @@ export default function Propostas() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
 
         {!loading && filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
